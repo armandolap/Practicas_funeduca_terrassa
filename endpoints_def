@@ -15,4 +15,6 @@ ESTATICOS
 /situacion_eco
 /tipo_domicilio
 
+La mayoria devuelven la lista , y con /:id/ devuelven el nombre de la calle o el nombre del curso, o ... 
+
 Creo que estos deberían de ser datos que sólo los responsables o sólo manel deberian de poder añadir cosas
