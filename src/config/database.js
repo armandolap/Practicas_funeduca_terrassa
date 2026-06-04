@@ -1,0 +1,1 @@
+// aqui crearemos la conexion de la base de datos con el script
