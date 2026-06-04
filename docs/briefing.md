@@ -1,133 +1,208 @@
-# Briefing per a la definició d'un CRM intern d'alumnat
-Cambiar luego!!!
+# Briefing per a la definició d'una plataforma interna de gestió socioeducativa
+
 ## 1. Nom del projecte
 
-**Implementació d'un CRM intern per a la gestió i traçabilitat de l'alumnat**
+**Implementació d'una plataforma interna per a la gestió i seguiment socioeducatiu de participants i famílies**
+
+---
 
 ## 2. Context
 
-Actualment es fa necessari disposar d'una eina interna que permeti **centralitzar, consultar i mantenir actualitzada** la informació relacionada amb l'alumnat del centre al llarg de tot el seu cicle de relació amb l'organització.
+Actualment la informació relativa als participants dels diferents projectes de l'entitat es gestiona principalment mitjançant fulls de càlcul Excel.
 
-L'objectiu és evitar la dispersió de dades, facilitar el seguiment administratiu i formatiu, i disposar d'un registre únic que permeti treballar amb més eficiència tant l'alumnat actual com l'històric i el potencial alumnat futur.
+Aquest sistema ha permès recopilar dades durant anys, però presenta limitacions importants pel que fa a:
+
+* Duplicació d'informació.
+* Errors d'introducció de dades.
+* Dificultat per treballar simultàniament diverses persones.
+* Complexitat per generar informes i estadístiques.
+* Manca de traçabilitat i seguiment estructurat.
+
+Es planteja la creació d'una eina interna que permeti centralitzar tota aquesta informació en una única base de dades accessible per l'equip tècnic i de coordinació.
+
+---
 
 ## 3. Necessitat detectada
 
-Es requereix un **CRM intern** que permeti registrar i segmentar la informació de persones vinculades al centre en tres grans categories:
+L'entitat necessita disposar d'un sistema que permeti:
 
-- **Alumnes actuals**
-- **Antics alumnes**
-- **Futurs alumnes**
+* Registrar participants i famílies.
+* Fer seguiment de la seva evolució educativa i social.
+* Gestionar la participació en projectes.
+* Consultar ràpidament informació rellevant.
+* Generar estadístiques i indicadors de forma automàtica.
+* Substituir progressivament l'ús dels fulls Excel actuals.
 
-Aquesta eina ha de permetre una gestió estructurada de les dades bàsiques, així com informació administrativa vinculada a autoritzacions i observacions.
+La solució ha de permetre el treball simultani d'entre 15 i 20 professionals.
+
+---
 
 ## 4. Objectiu principal
 
-Crear una eina interna que permeti:
+Desenvolupar una plataforma interna que permeti gestionar de forma centralitzada tota la informació relativa a les persones participants i les seves famílies, facilitant el seguiment socioeducatiu i la generació d'indicadors per a la presa de decisions.
 
-- Centralitzar la informació de l'alumnat en un únic entorn
-- Fer seguiment de la seva relació amb el centre
-- Consultar ràpidament dades administratives i de contacte
-- Disposar d'historial de participació formativa
-- Incorporar observacions rellevants per a la gestió interna
-- Facilitar futures accions de comunicació, seguiment i dinamització
+---
 
 ## 5. Objectius específics
 
-- Tenir un **registre únic per persona**
-- Diferenciar clarament l'estat de la persona: actual, antic/ga alumne/a o futur/a alumne/a
-- Registrar la traçabilitat formativa de cada persona
-- Disposar de dades bàsiques de contacte i identificació
-- Registrar consentiments i autoritzacions rellevants
-- Incorporar un camp o espai de comentaris per a seguiment intern
+* Disposar d'un registre únic per participant.
+* Associar participants a una unitat familiar.
+* Gestionar relacions familiars i de convivència.
+* Registrar dades personals, socials i educatives.
+* Gestionar la participació en diferents projectes.
+* Registrar altes i baixes.
+* Registrar situacions de risc i necessitats especials.
+* Registrar la coordinació amb serveis socials.
+* Facilitar la consulta i actualització de la informació.
+* Automatitzar l'obtenció d'indicadors i estadístiques.
 
-## 6. Informació mínima que ha de contenir el CRM
+---
 
-Les fitxes o registres haurien d'incloure, com a mínim, els següents camps:
+## 6. Informació mínima a registrar
 
-### Dades personals i de contacte
+### Dades personals
+
+| Camp              | Descripció               |
+| ----------------- | ------------------------ |
+| Nom               | Nom de la persona        |
+| Cognoms           | Cognoms                  |
+| Data de naixement | Data de naixement        |
+| Gènere            | Gènere de la persona     |
+| País de naixement | País d'origen            |
+| Nacionalitats     | Nacionalitats associades |
+
+---
+
+### Informació familiar
 
 | Camp              | Descripció                        |
 | ----------------- | --------------------------------- |
-| Nom               | Nom de la persona                 |
-| Cognoms           | Cognoms de la persona             |
-| DNI               | Document d'identificació          |
-| Telèfon           | Número de contacte                |
-| Correu electrònic | Adreça de correu electrònic       |
+| Família           | Unitat familiar associada         |
+| Rol familiar      | Mare, pare, fill/a, tutor/a, etc. |
+| Domicili          | Domicili familiar                 |
+| Tipus d'habitatge | Lloguer, hipoteca, ocupació, etc. |
 
-### Classificació de l'alumnat
+---
 
-| Tipus              | Descripció                                  |
-| ------------------ | ------------------------------------------- |
-| Alumne/a actual    | Persona matriculada en un curs vigent       |
-| Antic/a alumne/a   | Persona que ja ha finalitzat la formació    |
-| Futur/a alumne/a   | Persona interessada o pre-inscrita          |
+### Informació educativa
 
-### Informació formativa
+| Camp              | Descripció                    |
+| ----------------- | ----------------------------- |
+| Curs actual       | Nivell educatiu actual        |
+| Resultat acadèmic | Evolució educativa            |
+| Projectes         | Projectes als quals participa |
 
-| Camp               | Descripció                          |
-| ------------------ | ----------------------------------- |
-| Nom del curs       | Nom del curs o formació realitzada  |
-| Any de realització | Any en què es va cursar la formació |
+---
 
-### Autoritzacions i consentiments
+### Informació social
 
-| Camp                                    | Tipus |
-| --------------------------------------- | ----- |
-| Drets d'imatge                          | Sí/No |
-| Cessió de material amb fins pedagògics  | Sí/No |
+| Camp                  | Descripció                      |
+| --------------------- | ------------------------------- |
+| Nivell de risc        | Lleu, moderat, alt o sense risc |
+| Situació econòmica    | Situació laboral o econòmica    |
+| Necessitats especials | Diagnòstic o situació associada |
+| Seguiment SEBAS       | Coordinació amb serveis socials |
 
-### Nivell d'estudis
+---
 
-| Camp        | Descripció                            |
-| ----------- | ------------------------------------- |
-| Titulacions | ESO, Batxillerat, Grau, Màster, etc. |
+### Gestió administrativa
 
-### Altres
+| Camp           | Descripció                      |
+| -------------- | ------------------------------- |
+| Data d'alta    | Incorporació a l'entitat        |
+| Data de baixa  | Finalització de la participació |
+| Motiu de baixa | Causa de baixa                  |
 
-| Camp                     | Descripció                                       |
-| ------------------------ | ------------------------------------------------ |
-| Comentaris / observacions | Camp de text lliure per a seguiment intern       |
+---
 
 ## 7. Funcionalitats desitjades
 
-A nivell funcional, seria convenient que el CRM permetés:
+La plataforma hauria de permetre:
 
-- **Alta, baixa i edició** de registres
-- **Cerca ràpida** per nom, DNI, correu electrònic, curs o any
-- **Filtres i segmentació** per tipus d'alumnat
-- Consulta de l'**historial formatiu** per persona
-- Camps de tipus **sí/no** per autoritzacions
-- Camp de **comentaris oberts**
-- **Exportació de dades**, si escau, per a ús intern
-- **Control d'accessos** segons perfils d'usuari, si aplica
+### Gestió de participants
+
+* Alta de participants.
+* Edició de dades.
+* Consulta de fitxes individuals.
+* Baixa de participants.
+
+### Gestió familiar
+
+* Associació de persones a famílies.
+* Consulta de composició familiar.
+* Gestió de relacions familiars.
+
+### Gestió de projectes
+
+* Assignació de participants a projectes.
+* Consulta de participants per projecte.
+* Històric de participació.
+
+### Cerca i filtres
+
+* Cerca per nom o cognoms.
+* Filtrat per projecte.
+* Filtrat per curs.
+* Filtrat per risc.
+* Filtrat per país.
+* Filtrat per situació acadèmica.
+* Filtrat per SEBAS.
+
+### Estadístiques
+
+Obtenció automàtica d'indicadors com:
+
+* Participants per projecte.
+* Participants per gènere.
+* Participants per país de naixement.
+* Participants per nacionalitat.
+* Participants per nivell educatiu.
+* Participants per risc.
+* Participants per situació econòmica.
+* Participants amb necessitats especials.
+* Participants en seguiment per serveis socials.
+
+---
 
 ## 8. Usuaris principals
 
-Aquest CRM estaria orientat principalment a l'ús intern per part de:
+La plataforma estarà orientada principalment a:
 
-- Equip administratiu
-- Personal tècnic / gestió formativa
-- Coordinació
-- Altres perfils autoritzats del centre
+* Equip educatiu.
+* Equip tècnic.
+* Coordinació de projectes.
+* Direcció.
+* Personal administratiu autoritzat.
+
+Es preveu un volum aproximat de 15 a 20 usuaris simultanis.
+
+---
 
 ## 9. Beneficis esperats
 
-- Millora de l'organització interna
-- Reducció de duplicitats i errors
-- Accés àgil a la informació
-- Millor seguiment de l'alumnat
-- Facilitat per fer accions de comunicació i vinculació
-- Més traçabilitat documental i administrativa
+* Centralització de la informació.
+* Reducció d'errors humans.
+* Eliminació de duplicitats.
+* Millora de la qualitat de les dades.
+* Accés ràpid a la informació.
+* Facilitat per generar informes.
+* Millor seguiment dels participants.
+* Millor coordinació entre professionals.
+
+---
 
 ## 10. Consideracions importants
 
-Atès que es treballarà amb dades personals, el sistema hauria de contemplar:
+La plataforma haurà de contemplar:
 
-- Compliment de la normativa de **protecció de dades**
-- Accés restringit a personal autoritzat
-- Criteris clars de consulta, actualització i conservació de la informació
-- Revisió dels consentiments i tractament de dades vinculades a imatge i cessió de material
+* Compliment de la normativa vigent de protecció de dades.
+* Control d'accés per usuaris autoritzats.
+* Traçabilitat de la informació.
+* Conservació segura de les dades.
+* Possibilitat de creixement futur del model de dades.
+
+---
 
 ## 11. Resultat esperat
 
-Es demana valorar i definir una proposta de CRM intern que permeti disposar d'un sistema únic, pràctic i funcional per a la gestió de dades d'alumnat, tant actual com històric i potencial, amb els camps i funcionalitats descrits.
+Es demana el desenvolupament d'una plataforma interna que substitueixi progressivament els fulls de càlcul actuals i permeti gestionar de manera centralitzada la informació socioeducativa dels participants i les seves famílies, facilitant el seguiment, la coordinació professional i la generació automàtica d'indicadors per a l'entitat.

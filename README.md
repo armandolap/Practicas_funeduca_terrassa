@@ -52,10 +52,8 @@ No se utiliza ORM (Sequelize, TypeORM, Prisma, etc.).
 ├── back/
 │   ├── src/
 │   │   ├── controllers/
-│   │   ├── services/
 │   │   ├── routes/
 │   │   ├── middlewares/
-│   │   ├── models/
 │   │   ├── config/
 │   │   └── utils/
 │   │
