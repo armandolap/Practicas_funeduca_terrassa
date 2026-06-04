@@ -1,9 +1,11 @@
-ESTATICOS
+A TABLAS ESTATICAS
 
 /paises 
 /callejero
 
 /motiu_baja
+
+/estructura_familiar
 
 /NESES
 /risc
@@ -15,6 +17,34 @@ ESTATICOS
 /situacion_eco
 /tipo_domicilio
 
+
 La mayoria devuelven la lista , y con /:id/ devuelven el nombre de la calle o el nombre del curso, o ... 
 
 Creo que estos deberían de ser datos que sólo los responsables o sólo manel deberian de poder añadir cosas
+
+A MODIFICAR COSAS 
+/
+landing page con acceso a hacer cosas segun usuario y sus permisos
+
+/admin
+el endpoint para modificar la lista de proyectos, NECES , .. y el resto de tablas estáticas
+es el endpoint de administración de la base de datos
+
+
+/usuario
+Para que nos devuelva los datos del usuario , proyectos en los que está , datos personales/contacto , ....
+( la modificacion de ciertos datos propios, aunque algunos se deberían hacer a través de /admin )
+
+/proyecto
+Para que devuelva datos de los proyectos, responsable, centro de coord, sitio donde se lleva cabo al actividad
+cantidad de plazas, horarios y calendarios ....
+
+
+/cliente
+Datos de la persona en questión GET
+POST/PUT crearlos y modificarlos ( igual habría que meterlo dentro de usuario ya que no deberian de modificar datos de clientes que no estén 
+en sus proyectos ? )
+
+/familia
+
+GET y POST/PUT de Datos de la familia
