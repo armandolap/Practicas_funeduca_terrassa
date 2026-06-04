@@ -3,7 +3,7 @@ const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const express = require("express");
-
+const pool = require("./config/database");
 
 const server = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +12,11 @@ server.use(express.json());
 
 async function startServer() {
   try {
+    const connection = await pool.getConnection();
+
+    console.log(" MySQL conectado");
+
+    connection.release();
     server.listen(PORT, () => {
       console.log(`Servidor en http://localhost:${PORT}`);
       if (process.env.MOTD) console.log(`\x1b[33m ${process.env.MOTD} \x1b[0m`);
