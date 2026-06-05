@@ -16,7 +16,7 @@ async function getAlltipus_domicili(req, res) {
 }
 
 //GET: /tipo_domicilio/:id
-async function gettipus_domiciliById(req, res) {
+async function getTipus_domiciliById(req, res) {
     try {
         const { id } = req.params;
 
@@ -41,5 +41,5 @@ async function gettipus_domiciliById(req, res) {
 
 module.exports = {
     getAlltipus_domicili,
-    gettipus_domiciliById
+    getTipus_domiciliById
 };
