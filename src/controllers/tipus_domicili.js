@@ -1,11 +1,11 @@
-const paisosRepository = require("../repositories/tipus_domicili");
+const tipus_domiciliRepository = require("../repositories/tipus_domicili");
 
 //GET: /pais
 async function getAlltipus_domicili(req, res) {
     try {
-        const paises = await tipus_domiciliRepository.getAll();
+        const tipus_domicili = await tipus_domiciliRepository.getAll();
 
-        res.status(200).json(paises);
+        res.status(200).json(tipus_domicili);
     } catch (error) {
         console.error(error);
 
@@ -20,15 +20,15 @@ async function getTipus_domiciliById(req, res) {
     try {
         const { id } = req.params;
 
-        const pais = await tipus_domiciliRepository.getById(id);
+        const tipus_domicili = await tipus_domiciliRepository.getById(id);
 
-        if (!pais) {
+        if (!tipus_domicili) {
             return res.status(404).json({
                 message: "Tipus de Domicili no trobat"
             });
         }
 
-        res.status(200).json(pais);
+        res.status(200).json(tipus_domicili);
 
     } catch (error) {
         console.error(error);

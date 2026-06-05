@@ -1,11 +1,8 @@
 const router = require("express").Router();
-const paisController = require("../controllers/tipus_domicili");
+const tipusDomicili= require("../controllers/tipus_domicili");
 
-router.get("/", paisController.getAllTipo_Domicilo);
+router.get("/", tipusDomicili.getAlltipus_domicili);
 
-router.get("/:id", paisController.getTipo_DomiciloById);
+router.get("/:id", tipusDomicili.getTipus_domiciliById);
 
 module.exports = router;
-
-    getAlltipo_domicilio,
-    gettipo_domicilioById
