@@ -1,8 +1,8 @@
 const router = require("express").Router();
 const motiuBaixa = require("../controllers/motiu_baixa");
 
-router.get("/", motiuBaixa.getAllMotiuBaixa);
+router.get("/", motiuBaixa.getAllMotiu_baixa);
 
-router.get("/:id", motiuBaixa.getMotiuBaixaById);
+router.get("/:id", motiuBaixa.getMotiu_baixaById);
 
 module.exports = router;

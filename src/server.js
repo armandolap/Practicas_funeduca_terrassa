@@ -9,11 +9,12 @@ const estFamiliar = require("./routes/estructura_familiar");
 const motiuBaixa=require("./routes/motiu_baixa");
 const neses=require("./routes/NESES");
 const resulAcad=require("./routes/resul_acad");
-const riscos=require("./routes/risc");
+const risc=require("./routes/risc");
 const rol=require("./routes/rol");
 const sebas= require("./routes/SEBAS");
 const sitEco=require("./routes/situacio_eco");
 const tipusDomicili=require("./routes/tipus_domicili")
+const curso=require("./routes/curso");
 
 const server = express();
 const PORT = process.env.PORT || 3000;
@@ -24,11 +25,12 @@ server.use("/estFamilia", estFamiliar);
 server.use("/motiuBaixa",motiuBaixa);
 server.use("/neses",neses);
 server.use("/resulAcad",resulAcad);
-server.use("/riscos",riscos);
+server.use("/risc",risc);
 server.use("/rol",rol);
 server.use("/sebas",sebas);
 server.use("/sitEco",sitEco);
 server.use("/tipusDom",tipusDomicili);
+server.use("/curso",curso);
 
 async function startServer() {
   try {
