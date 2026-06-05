@@ -1,4 +1,4 @@
-const paisosRepository = require("../repositories/risc");
+const riscRepository = require("../repositories/risc");
 
 //GET: /pais
 async function getAllRisc(req, res) {

@@ -1,4 +1,4 @@
-const paisosRepository = require("../repositories/tipus_domicili");
+const tipus_domiciliRepository = require("../repositories/tipus_domicili");
 
 //GET: /pais
 async function getAlltipus_domicili(req, res) {

@@ -1,4 +1,4 @@
-const paisosRepository = require("../repositories/resul_acad");
+const Resul_acadRepository = require("../repositories/resul_acad");
 
 //GET: /pais
 async function getAllResul_acad(req, res) {

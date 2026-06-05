@@ -1,4 +1,4 @@
-const paisosRepository = require("../repositories/rol");
+const rolRepository = require("../repositories/rol");
 
 //GET: /pais
 async function getAllRol(req, res) {

@@ -1,4 +1,4 @@
-const paisosRepository = require("../repositories/SEBAS");
+const SEBASRepository = require("../repositories/SEBAS");
 
 //GET: /pais
 async function getAllSEBAS(req, res) {

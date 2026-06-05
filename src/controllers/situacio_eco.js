@@ -1,4 +1,4 @@
-const paisosRepository = require("../repositories/situacio_eco");
+const Situacio_ecoRepository = require("../repositories/situacio_eco");
 
 //GET: /pais
 async function getAllsituacio_eco(req, res) {
