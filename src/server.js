@@ -15,6 +15,7 @@ const sebas= require("./routes/SEBAS");
 const sitEco=require("./routes/situacio_eco");
 const tipusDomicili=require("./routes/tipus_domicili")
 const curso=require("./routes/curso");
+const usuari = require("./routes/usuari");
 
 const server = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +32,7 @@ server.use("/sebas",sebas);
 server.use("/sitEco",sitEco);
 server.use("/tipusDom",tipusDomicili);
 server.use("/curso",curso);
+server.use("/usuario",usuari);
 
 async function startServer() {
   try {
