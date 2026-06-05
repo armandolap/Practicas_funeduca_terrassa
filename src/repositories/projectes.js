@@ -1,5 +1,6 @@
 const pool = require("../config/database");
 // aqui v ala peticion al server SQL 
+// FALTEN PUT i POST per editar i crear
 
 async function getAll() {
     const [rows] = await pool.query(`
