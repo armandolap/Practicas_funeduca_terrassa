@@ -4,13 +4,13 @@ require("dotenv").config({ path: path.resolve(__dirname, "..",".env") });
 
 const express = require("express");
 const pool = require("./config/database");
-const paisRoutes = require("./routes/paisRoutes");
+const paisos = require("./routes/paisos");
 
 const server = express();
 const PORT = process.env.PORT || 3000;
 
 server.use(express.json());
-server.use("/pais", paisRoutes);
+server.use("/pais", paisos);
 
 async function startServer() {
   try {

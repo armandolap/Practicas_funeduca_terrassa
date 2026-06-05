@@ -1,9 +1,9 @@
-const paisRepository = require("../repositories/paisRepository");
+const paisosRepository = require("../repositories/paisos");
 
 //GET: /pais
 async function getAllPais(req, res) {
     try {
-        const paises = await paisRepository.getAll();
+        const paises = await paisosRepository.getAll();
 
         res.status(200).json(paises);
     } catch (error) {
@@ -20,7 +20,7 @@ async function getPaisById(req, res) {
     try {
         const { id } = req.params;
 
-        const pais = await paisRepository.getById(id);
+        const pais = await paisosRepository.getById(id);
 
         if (!pais) {
             return res.status(404).json({
