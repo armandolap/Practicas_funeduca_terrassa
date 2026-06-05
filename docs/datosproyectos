@@ -1,23 +1,31 @@
+MANEL:
+
 codigo de proyecto
 nombre
 def proyecto 
 responsable/s <-- esto hay que mirarlo bien
+centro de coord
 
-centro de coord 
+fecha inicio ( del proyecto ) --> abierto
+fecha fin ( del proyecto ) --> cerrado
+
+COORDINADOR:
+
 ubicación 
-
 
 plazas/aforo
 
-inscritos 
-asistentes 
+añadir:
+    inscritos 
+    asistentes  
 
-fecha inicio ( del proyecto ) --> abierto
 fecha inicio ( con asistentes ) --> en curso 
 fecha fin ( con asistentes ) --> finalizado 
-fecha fin ( del proyecto ) --> cerrado
 
-estado: ( abierto , en curso, finalizado , cerrado ) 
+USUARIO PLANO:
+añadir:
+    inscritos 
+    asistentes 
 
 
 <-- en curso referido a que se está dando el curso/actividad y finalizado que ya no hay asistentes y cerrado es que ya se ha cerrado burocráticamente --> 
