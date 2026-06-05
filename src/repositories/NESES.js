@@ -3,8 +3,8 @@ const pool = require("../config/database");
 async function getAll() {
     const [rows] = await pool.query(`
     SELECT *
-    FROM Tipus_domicili
-    ORDER BY Nom_domicili
+    FROM necessitats_especials
+    ORDER BY Nom_necessitat
   `);
 
     return rows;
@@ -14,8 +14,8 @@ async function getById(id) {
     const [rows] = await pool.query(
         `
     SELECT *
-    FROM Tipus_domicili
-    WHERE idTipus_domicili = ?
+    FROM necessitats_especials
+    WHERE idNecessitat_especial = ?
     `,
         [id]
     );
