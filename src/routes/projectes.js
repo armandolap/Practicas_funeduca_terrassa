@@ -1,8 +1,8 @@
 const router = require("express").Router();
 const projectes = require("../controllers/projectes");
 
-router.get("/", projectes.getAllprojectes);
+router.get("/", projectes.getAllProjectes);
 
-router.get("/:id", projectes.getprojectesById);
+router.get("/:id", projectes.getProjectesById);
 
 module.exports = router;
