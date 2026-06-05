@@ -10,7 +10,7 @@ async function getAllPais(req, res) {
         console.error(error);
 
         res.status(500).json({
-            message: "Error obteniendo países"
+            message: "Error obtenint països"
         });
     }
 }
@@ -24,7 +24,7 @@ async function getPaisById(req, res) {
 
         if (!pais) {
             return res.status(404).json({
-                message: "País no encontrado"
+                message: "País no trobat"
             });
         }
 
@@ -34,7 +34,7 @@ async function getPaisById(req, res) {
         console.error(error);
 
         res.status(500).json({
-            message: "Error obteniendo país"
+            message: "Error obtenint país"
         });
     }
 }
