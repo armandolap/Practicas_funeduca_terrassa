@@ -12,7 +12,7 @@ const resulAcad=require("./routes/resul_acad");
 const riscos=require("./routes/risc");
 const rol=require("./routes/rol");
 const sebas= require("./routes/SEBAS");
-const sitEco=require("./routes/situacion_eco");
+const sitEco=require("./routes/situacio_eco");
 const tipusDomicili=require("./routes/tipus_domicili")
 
 const server = express();
