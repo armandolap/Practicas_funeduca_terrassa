@@ -65,22 +65,36 @@ CREATE INDEX `fk_Centros_coordinacion_Direcciones1_idx` ON `mydb`.`Centre_coordi
 -- -----------------------------------------------------
 -- Table `mydb`.`Proyectos`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Proyectos` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos` (
-  `idProyecto` INT NOT NULL AUTO_INCREMENT,
-  `Nom_projecte` VARCHAR(45) NOT NULL,
-  `Centre_coordinacio` INT NOT NULL,
-  PRIMARY KEY (`idProyecto`, `Centre_coordinacio`),
-  CONSTRAINT `fk_Proyectos_Centros_coordinacion1`
-    FOREIGN KEY (`Centre_coordinacio`)
-    REFERENCES `mydb`.`Centre_coordinacio` (`idCentre_coord`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE INDEX `fk_Proyectos_Centros_coordinacion1_idx` ON `mydb`.`Proyectos` (`Centre_coordinacio` ASC) VISIBLE;
-
+DROP TABLE IF EXISTS `mydb`.`Proyectos`;
+CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos`
+    (
+        `idProyecto`         INT NOT NULL AUTO_INCREMENT,
+        `Nom_projecte`       VARCHAR(45) NOT NULL       ,
+        `Descripcio`         VARCHAR(512)               ,
+        `fecha_inicio`       DATE NOT NULL              ,
+        `fecha_fin`          DATE                       ,
+        `plazas`             INT NOT NULL DEFAULT 0     ,
+        `inscritos`          INT NOT NULL DEFAULT 0     ,
+        `fecha_inicio_act`   DATE                       ,
+        `fecha_fin_act`      DATE                       ,
+        `Centre_coordinacio` INT NOT NULL               ,
+        `responsable`        INT NOT NULL               ,
+        -- pendiente: Ubicacion donde se desarrolla la actividad
+        PRIMARY KEY (`idProyecto`),
+        -- Índices explícitos para las Foreign Keys (dentro de la tabla, más limpio)
+        INDEX `fk_Proyectos_Centros_coordinacion1_idx` (`Centre_coordinacio` ASC) VISIBLE,
+        INDEX `fk_Proyectos_Usuario_APP_idx` (`responsable` ASC) VISIBLE                 ,
+        -- Restricciones de Integridad Referencial
+        CONSTRAINT `fk_Proyectos_Usuario_APP` FOREIGN KEY (`responsable`) REFERENCES `mydb`.`Usuario_APP` (`idUsuario_APP`) ON
+        DELETE
+            NO ACTION ON
+        UPDATE
+            NO ACTION,
+            CONSTRAINT `fk_Proyectos_Centros_coordinacion1` FOREIGN KEY (`Centre_coordinacio`) REFERENCES `mydb`.`Centre_coordinacio` (`idCentre_coord`) ON
+        DELETE
+            NO ACTION ON
+        UPDATE
+            NO ACTION ) ENGINE = InnoDB;
 
 -- -----------------------------------------------------
 -- Table `mydb`.`Tipus_domicili`
