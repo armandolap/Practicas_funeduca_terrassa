@@ -52,13 +52,13 @@ async function create(projecteData) {
             Centre_coordinacio, 
             fecha_inicio, 
             fecha_fin, 
-            -- ubicacion, 
             plazas, 
             inscritos, 
             fecha_inicio_act, 
             fecha_fin_act
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+            -- ubicacion,
+        ) VALUES (?, ?, ?, ?, ?, ?,  ?, ?, ?, ?)
+    `; // cuidado que els 7o ? se ha quitado para no meter la ubicacion
 
     const values = [
         Nom_projecte,
@@ -67,11 +67,11 @@ async function create(projecteData) {
         Centro_coord,
         fecha_inicio,
         fecha_fin,
-        //ubicacion,
         plazas,
         inscritos,
         fecha_inicio_act,
-        fecha_fin_act
+        fecha_fin_act,
+        //ubicacion,
     ];
 
     // Ejecutamos la query. 'result' contendrá { affectedRows: 1, insertId: 42, ... }
