@@ -52,13 +52,13 @@ async function createProject(req, res) {
         // OJO , guarda la data UTC ( no la "española" , però en teoria no afecta xk no hauria de ser buida ni fer-se entre les 21 i les 3 , aixi que no hi haurà problema)
         // 2. Desestructuramos asignando esa fecha como valor por defecto
         const {
-            nom_projecte,
-            descripcio,
+            Nom_projecte,
+            Descripcio,
             responsable,
-            centro_coord,               // por defecto deberia ser la del centro de coord general , id = 1 ?? ( dnd fuimos )
+            Centre_coordinacio,               // por defecto deberia ser la del centro de coord general , id = 1 ?? ( dnd fuimos )
             fecha_inicio = fechaActual,         // Si viene undefined, toma la fecha de hoy
             fecha_fin = fechaActual,            // Si viene undefined, toma la fecha de hoy
-            ubicacion,                          // por defecto deberia ser la del centro de coord 
+            //ubicacion,   // por defecto deberia ser la del centro de coord 
             plazas = 0,                         // por defecto por ahora o està ok 
             inscritos = 0,                      // por defecto por ahora o està ok 
             fecha_inicio_act = fechaActual,   // Si viene undefined, toma la fecha de hoy
