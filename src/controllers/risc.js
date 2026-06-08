@@ -1,6 +1,6 @@
 const riscRepository = require("../repositories/risc");
 
-//GET: /pais
+//GET: /risc
 async function getAllRisc(req, res) {
     try {
         const risc = await riscRepository.getAll();
@@ -15,7 +15,7 @@ async function getAllRisc(req, res) {
     }
 }
 
-//GET: /pais/:id
+//GET: /risc/:id
 async function getRiscById(req, res) {
     try {
         const { id } = req.params;

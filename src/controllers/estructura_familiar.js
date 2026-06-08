@@ -1,6 +1,6 @@
 const estructura_familiarRepository = require("../repositories/estructura_familiar");
 
-//GET: /pais
+//GET: /estFamilia
 async function getAllEstructura_familiar(req, res) {
     try {
         const estructura_familiar = await estructura_familiarRepository.getAll();
@@ -15,7 +15,7 @@ async function getAllEstructura_familiar(req, res) {
     }
 }
 
-//GET: /pais/:id
+//GET: /estFamilia/:id
 async function getEstructura_familiarById(req, res) {
     try {
         const { id } = req.params;

@@ -1,6 +1,6 @@
 const Situacio_ecoRepository = require("../repositories/situacio_eco");
 
-//GET: /pais
+//GET: /sitEco
 async function getAllsituacio_eco(req, res) {
     try {
         const situacio_eco = await Situacio_ecoRepository.getAll();
@@ -15,7 +15,7 @@ async function getAllsituacio_eco(req, res) {
     }
 }
 
-//GET: /pais/:id
+//GET: /sitEco/:id
 async function getsituacio_ecoById(req, res) {
     try {
         const { id } = req.params;

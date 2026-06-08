@@ -17,6 +17,8 @@ const tipusDomicili=require("./routes/tipus_domicili")
 const curso=require("./routes/curso");
 const projectes=require("./routes/projectes");
 const usuari = require("./routes/usuari");
+const domicili =require("./routes/domicili");
+const familia =require("./routes/famili");
 
 const server = express();
 const PORT = process.env.PORT || 3000;
@@ -35,6 +37,8 @@ server.use("/tipusDom",tipusDomicili);
 server.use("/curso",curso);
 server.use("/projectes",projectes);
 server.use("/usuario",usuari);
+server.use("/domicili",domicili);
+server.use("/famili",familia);
 
 async function startServer() {
   try {

@@ -1,6 +1,6 @@
 const rolRepository = require("../repositories/rol");
 
-//GET: /pais
+//GET: /rol
 async function getAllRol(req, res) {
     try {
         const rol = await rolRepository.getAll();
@@ -15,7 +15,7 @@ async function getAllRol(req, res) {
     }
 }
 
-//GET: /pais/:id
+//GET: /rol/:id
 async function getRolById(req, res) {
     try {
         const { id } = req.params;

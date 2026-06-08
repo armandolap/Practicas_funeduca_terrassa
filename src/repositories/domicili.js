@@ -2,10 +2,10 @@ const pool = require("../config/database");
 
 async function getAll() {
     const [rows] = await pool.query(`
-    SELECT *
-    FROM Curs_actual
-    ORDER BY idCurs_actual
-  `);
+        SELECT *
+        FROM Domicili
+        ORDER BY idDomicili
+    `);
 
     return rows;
 }
@@ -13,35 +13,39 @@ async function getAll() {
 async function getById(id) {
     const [rows] = await pool.query(
         `
-    SELECT *
-    FROM Curs_actual
-    WHERE idCurs_actual = ?
-    `,
+        SELECT *
+        FROM Domicili
+        WHERE idDomicili = ?
+        `,
         [id]
     );
 
     return rows[0] || null;
 }
 
-async function create(nom) {
+async function create(idTipusDomicili, direccio) {
     const [result] = await pool.query(
         `
-        INSERT INTO Curs_actual (Nom)
-        VALUES (?)
+        INSERT INTO Domicili
+        (Tipus_domicili, Direccio)
+        VALUES (?, ?)
         `,
-        [nom]
+        [idTipusDomicili, direccio]
     );
 
     return result.insertId;
 }
-async function update(id, nom) {
+
+async function update(id, idTipusDomicili, direccio) {
     const [result] = await pool.query(
         `
-        UPDATE Curs_actual
-        SET Nom = ?
-        WHERE idCurs_actual = ?
+        UPDATE Domicili
+        SET
+            Tipus_domicili = ?,
+            Direccio = ?
+        WHERE idDomicili = ?
         `,
-        [nom, id]
+        [idTipusDomicili, direccio, id]
     );
 
     return result.affectedRows;
@@ -50,8 +54,8 @@ async function update(id, nom) {
 async function remove(id) {
     const [result] = await pool.query(
         `
-        DELETE FROM Curs_actual
-        WHERE idCurs_actual = ?
+        DELETE FROM Domicili
+        WHERE idDomicili = ?
         `,
         [id]
     );

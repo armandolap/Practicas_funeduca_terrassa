@@ -1,6 +1,6 @@
 const callejeroRepository = require("../repositories/callejero");
 
-//GET: /pais
+//GET: /calle
 async function getAllCallejero(req, res) {
     try {
         const callejero = await callejeroRepository.getAll();
@@ -15,7 +15,7 @@ async function getAllCallejero(req, res) {
     }
 }
 
-//GET: /pais/:id
+//GET: /calle/:id
 async function getCallejeroById(req, res) {
     try {
         const { id } = req.params;
