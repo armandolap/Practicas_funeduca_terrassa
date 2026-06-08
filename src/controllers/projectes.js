@@ -55,38 +55,24 @@ async function createProject(req, res) {
             nom_projecte,
             descripcio,
             responsable,
-            centro_coord,
-            fecha_inicio = fechaActual,       // Si viene undefined, toma la fecha de hoy
-            fecha_fin = fechaActual,          // Si viene undefined, toma la fecha de hoy
-            ubicación,
-            plazas = 0,
-            inscritos = 0,
+            centro_coord,               // por defecto deberia ser la del centro de coord general , id = 1 ?? ( dnd fuimos )
+            fecha_inicio = fechaActual,         // Si viene undefined, toma la fecha de hoy
+            fecha_fin = fechaActual,            // Si viene undefined, toma la fecha de hoy
+            ubicación,                          // por defecto deberia ser la del centro de coord 
+            plazas = 0,                         // por defecto por ahora o està ok 
+            inscritos = 0,                      // por defecto por ahora o està ok 
             fecha_inicio_act = fechaActual,   // Si viene undefined, toma la fecha de hoy
             fecha_fin_act = fechaActual       // Si viene undefined, toma la fecha de hoy
         } = projecte || {}; // El '|| {}' evita errors si projecte es null o undefined.
 
 
-
-
-
-
-
-
-
-        //    `idProyecto` INT NOT NULL AUTO_INCREMENT,
-        //   `Nom_projecte` VARCHAR(45) NOT NULL,
-        //   'Descripcio' VARCHAR(512) ,
-        //   -- 'responsable' <--- foreign key usuario?
-        //   -- -- OK -- 'centro_coord' <--- foreign key ? falta tabla centros de coord?
-        //   'fecha_inicio' DATE NOT NULL , -- inicio proyecto, no actividad, por defecto cuando se crea 
-        //   'fecha_fin' DATE ,  
-        //   -- 'ubicación'
-        //   'plazas' INT NOT NULL,
-        //   'inscritos' INT NOT NULL,
-        //   'fecha_inicio_act' DATE ,
-        //   'fecha_fin_act' DATE ,
-        //   `Centre_coordinacio` INT NOT NULL,
-
+        // aseguramos que los datos están rellenados
+        if (!nom_projecte?.trim() || !descripcio?.trim() || !responsable?.trim()) {
+            // tirem error 400 (Bad Request) al client
+            return res.status(400).json({
+                error: "Faltan campos obligatorios, REPASAR : nom_projecte, descripcio y responsable QUE SÓN NECESSARIS."
+            });
+        }
 
 
     } catch (error) {
