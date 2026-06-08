@@ -39,7 +39,43 @@ async function getProjectesById(req, res) {
     }
 }
 
+
+async function createProject(req, res) {
+    try {
+        console.log("Creant projecte, de moment no fa res");
+        
+        projecte = req.body.projecte ; 
+        console.log(projecte);
+
+//    `idProyecto` INT NOT NULL AUTO_INCREMENT,
+//   `Nom_projecte` VARCHAR(45) NOT NULL,
+//   'Descripcio' VARCHAR(512) ,
+//   -- 'responsable' <--- foreign key usuario?
+//   -- -- OK -- 'centro_coord' <--- foreign key ? falta tabla centros de coord?
+//   'fecha_inicio' DATE NOT NULL , -- inicio proyecto, no actividad, por defecto cuando se crea 
+//   'fecha_fin' DATE ,  
+//   -- 'ubicación'
+//   'plazas' INT NOT NULL,
+//   'inscritos' INT NOT NULL,
+//   'fecha_inicio_act' DATE ,
+//   'fecha_fin_act' DATE ,
+//   `Centre_coordinacio` INT NOT NULL,
+
+
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Error obtenint projecte"
+        });
+    }
+}
+
+
+
 module.exports = {
     getAllProjectes,
-    getProjectesById
+    getProjectesById,
+    createProject
 };

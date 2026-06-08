@@ -72,14 +72,14 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos` (
   `Nom_projecte` VARCHAR(45) NOT NULL,
   'Descripcio' VARCHAR(512) ,
   -- 'responsable' <--- foreign key usuario?
-  -- 'centro_coord' <--- foreign key ? falta tabla centros de coord?
-  -- 'fecha_inicio' <-- inicio proyecto, no actividad
-  -- 'fecha_fin' <-- fin proyecto, no actividad
+  -- -- OK -- 'centro_coord' <--- foreign key ? falta tabla centros de coord?
+  'fecha_inicio' DATE NOT NULL , -- inicio proyecto, no actividad, por defecto cuando se crea 
+  'fecha_fin' DATE ,  
   -- 'ubicación'
-  -- 'plazas'
-  -- 'inscritos'
-  -- 'fecha_inicio_act'
-  -- 'fecha_fin_act'
+  'plazas' INT NOT NULL,
+  'inscritos' INT NOT NULL,
+  'fecha_inicio_act' DATE ,
+  'fecha_fin_act' DATE ,
   `Centre_coordinacio` INT NOT NULL,
   PRIMARY KEY (`idProyecto`, `Centre_coordinacio`),
   CONSTRAINT `fk_Proyectos_Centros_coordinacion1`
