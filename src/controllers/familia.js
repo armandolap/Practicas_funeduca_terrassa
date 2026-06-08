@@ -1,6 +1,6 @@
-const familiaRepository = require("../repositories/famili");
+const familiaRepository = require("../repositories/familia");
 
-// GET /famili
+// GET /familia
 async function getAllFamilias(req, res) {
     try {
         const familias = await familiaRepository.getAll();
@@ -16,7 +16,7 @@ async function getAllFamilias(req, res) {
     }
 }
 
-// GET /famili/:id
+// GET /familia/:id
 async function getFamiliaById(req, res) {
     try {
         const { id } = req.params;
@@ -40,7 +40,7 @@ async function getFamiliaById(req, res) {
     }
 }
 
-// POST /famili
+// POST /familia
 async function createFamilia(req, res) {
     try {
         const {
@@ -69,7 +69,7 @@ async function createFamilia(req, res) {
     }
 }
 
-// PUT /famili/:id
+// PUT /familia/:id
 async function updateFamilia(req, res) {
     try {
         const { id } = req.params;
@@ -106,7 +106,7 @@ async function updateFamilia(req, res) {
     }
 }
 
-// DELETE /famili/:id
+// DELETE /familia/:id
 async function deleteFamilia(req, res) {
     try {
         const { id } = req.params;
