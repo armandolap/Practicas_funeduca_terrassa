@@ -1,5 +1,7 @@
 const projectesRepository = require("../repositories/projectes");
 
+// FALTEN PUT I POST per crear i modificar projectes
+
 async function getAllProjectes(req, res) {
     try {
         const projecte = await projectesRepository.getAll();
