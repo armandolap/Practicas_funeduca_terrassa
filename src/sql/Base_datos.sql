@@ -70,6 +70,16 @@ DROP TABLE IF EXISTS `mydb`.`Proyectos` ;
 CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos` (
   `idProyecto` INT NOT NULL AUTO_INCREMENT,
   `Nom_projecte` VARCHAR(45) NOT NULL,
+  'Descripcio' VARCHAR(512) ,
+  -- 'responsable' <--- foreign key usuario?
+  -- 'centro_coord' <--- foreign key ? falta tabla centros de coord?
+  -- 'fecha_inicio' <-- inicio proyecto, no actividad
+  -- 'fecha_fin' <-- fin proyecto, no actividad
+  -- 'ubicación'
+  -- 'plazas'
+  -- 'inscritos'
+  -- 'fecha_inicio_act'
+  -- 'fecha_fin_act'
   `Centre_coordinacio` INT NOT NULL,
   PRIMARY KEY (`idProyecto`, `Centre_coordinacio`),
   CONSTRAINT `fk_Proyectos_Centros_coordinacion1`
@@ -78,6 +88,9 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
+
+
+
 
 CREATE INDEX `fk_Proyectos_Centros_coordinacion1_idx` ON `mydb`.`Proyectos` (`Centre_coordinacio` ASC) VISIBLE;
 
