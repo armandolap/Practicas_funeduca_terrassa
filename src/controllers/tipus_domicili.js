@@ -1,6 +1,6 @@
 const tipus_domiciliRepository = require("../repositories/tipus_domicili");
 
-//GET: /pais
+//GET: /tipusDom
 async function getAlltipus_domicili(req, res) {
     try {
         const tipus_domicili = await tipus_domiciliRepository.getAll();
@@ -15,7 +15,7 @@ async function getAlltipus_domicili(req, res) {
     }
 }
 
-//GET: /tipo_domicilio/:id
+//GET: /tipusDom/:id
 async function getTipus_domiciliById(req, res) {
     try {
         const { id } = req.params;

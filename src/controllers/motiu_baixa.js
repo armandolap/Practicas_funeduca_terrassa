@@ -1,6 +1,6 @@
 const motiu_baixaRepository = require("../repositories/motiu_baixa");
 
-//GET: /pais
+//GET: /motiuBaixa
 async function getAllMotiu_baixa(req, res) {
     try {
         const motiu_baixa = await motiu_baixaRepository.getAll();
@@ -15,7 +15,7 @@ async function getAllMotiu_baixa(req, res) {
     }
 }
 
-//GET: /pais/:id
+//GET: /motiuBaixa/:id
 async function getMotiu_baixaById(req, res) {
     try {
         const { id } = req.params;

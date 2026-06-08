@@ -1,6 +1,6 @@
 const SEBASRepository = require("../repositories/SEBAS");
 
-//GET: /pais
+//GET: /sebas
 async function getAllSEBAS(req, res) {
     try {
         const SEBAS = await SEBASRepository.getAll();
@@ -15,7 +15,7 @@ async function getAllSEBAS(req, res) {
     }
 }
 
-//GET: /pais/:id
+//GET: /sebas/:id
 async function getSEBASById(req, res) {
     try {
         const { id } = req.params;

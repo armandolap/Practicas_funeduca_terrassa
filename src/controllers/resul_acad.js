@@ -1,6 +1,6 @@
 const Resul_acadRepository = require("../repositories/resul_acad");
 
-//GET: /pais
+//GET: /resulAcad
 async function getAllResul_acad(req, res) {
     try {
         const resul_acad = await Resul_acadRepository.getAll();
@@ -15,7 +15,7 @@ async function getAllResul_acad(req, res) {
     }
 }
 
-//GET: /pais/:id
+//GET: /resulAcad/:id
 async function getResul_acadById(req, res) {
     try {
         const { id } = req.params;
