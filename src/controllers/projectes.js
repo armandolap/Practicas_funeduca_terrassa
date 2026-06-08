@@ -75,13 +75,13 @@ async function createProject(req, res) {
         }
 
         const nuevoProjecteId = await projectesRepository.create({
-            nom_projecte,
-            descripcio,
+            Nom_projecte,
+            Descripcio,
             responsable,
-            centro_coord,
+            Centre_coordinacio,
             fecha_inicio,
             fecha_fin,
-            ubicacion,
+            //ubicacion,
             plazas,
             inscritos,
             fecha_inicio_act,
