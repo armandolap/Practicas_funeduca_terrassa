@@ -108,11 +108,11 @@ Route file is empty; repository is fully commented out. Dead code.
 
 ### `/familia`
 ```
-GET    /familia          → famili.getAllFamilias       → famili.getAll
-POST   /familia          → famili.createFamilia        → famili.create
-GET    /familia/:id      → famili.getFamiliaById       → famili.getById
-PUT    /familia/:id      → famili.updateFamilia        → famili.update
-DELETE /familia/:id      → famili.deleteFamilia        → famili.remove
+GET    /familia          → familia.getAllFamilias       → familia.getAll
+POST   /familia          → familia.createFamilia        → familia.create
+GET    /familia/:id      → familia.getFamiliaById       → familia.getById
+PUT    /familia/:id      → familia.updateFamilia        → familia.update
+DELETE /familia/:id      → familia.deleteFamilia        → familia.remove
 ```
 
 ### `/domicili`
