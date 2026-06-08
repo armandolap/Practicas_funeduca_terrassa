@@ -30,13 +30,13 @@ async function getById(id) {
 async function create(projecteData) {
     // Desestructuramos para mayor claridad y asignamos valores por defecto de BBDD si es necesario
     const {
-        nom_projecte,
-        descripcio,
+        Nom_projecte,
+        Descripcio,
         responsable,
-        centro_coord = 1, // Valor por defecto a nivel de BBDD si no viene
+        Centro_coord = 1, // Valor por defecto a nivel de BBDD si no viene
         fecha_inicio,
         fecha_fin,
-        ubicacion,
+        //ubicacion,
         plazas = 0,
         inscritos = 0,
         fecha_inicio_act,
@@ -52,7 +52,7 @@ async function create(projecteData) {
             Centre_coordinacio, 
             fecha_inicio, 
             fecha_fin, 
-            ubicacion, 
+            -- ubicacion, 
             plazas, 
             inscritos, 
             fecha_inicio_act, 
@@ -61,13 +61,13 @@ async function create(projecteData) {
     `;
 
     const values = [
-        nom_projecte,
-        descripcio,
+        Nom_projecte,
+        Descripcio,
         responsable,
-        centro_coord,
+        Centro_coord,
         fecha_inicio,
         fecha_fin,
-        ubicacion,
+        //ubicacion,
         plazas,
         inscritos,
         fecha_inicio_act,
