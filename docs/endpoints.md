@@ -106,13 +106,13 @@ GET    /callejero/:id   → callejero.getCallejeroById   → callejero.getById [
 ```
 Route file is empty; repository is fully commented out. Dead code.
 
-### `/famili`
+### `/familia`
 ```
-GET    /famili          → famili.getAllFamilias       → famili.getAll
-POST   /famili          → famili.createFamilia        → famili.create
-GET    /famili/:id      → famili.getFamiliaById       → famili.getById
-PUT    /famili/:id      → famili.updateFamilia        → famili.update
-DELETE /famili/:id      → famili.deleteFamilia        → famili.remove
+GET    /familia          → famili.getAllFamilias       → famili.getAll
+POST   /familia          → famili.createFamilia        → famili.create
+GET    /familia/:id      → famili.getFamiliaById       → famili.getById
+PUT    /familia/:id      → famili.updateFamilia        → famili.update
+DELETE /familia/:id      → famili.deleteFamilia        → famili.remove
 ```
 
 ### `/domicili`
