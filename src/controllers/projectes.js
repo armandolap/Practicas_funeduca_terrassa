@@ -43,23 +43,48 @@ async function getProjectesById(req, res) {
 async function createProject(req, res) {
     try {
         console.log("Creant projecte, de moment no fa res");
-        
-        projecte = req.body.projecte ; 
-        console.log(projecte);
 
-//    `idProyecto` INT NOT NULL AUTO_INCREMENT,
-//   `Nom_projecte` VARCHAR(45) NOT NULL,
-//   'Descripcio' VARCHAR(512) ,
-//   -- 'responsable' <--- foreign key usuario?
-//   -- -- OK -- 'centro_coord' <--- foreign key ? falta tabla centros de coord?
-//   'fecha_inicio' DATE NOT NULL , -- inicio proyecto, no actividad, por defecto cuando se crea 
-//   'fecha_fin' DATE ,  
-//   -- 'ubicación'
-//   'plazas' INT NOT NULL,
-//   'inscritos' INT NOT NULL,
-//   'fecha_inicio_act' DATE ,
-//   'fecha_fin_act' DATE ,
-//   `Centre_coordinacio` INT NOT NULL,
+        projecte = req.body.projecte || {}; // por si viene vacío no pete el server por ser "undefined" 
+        console.log(projecte);
+        // 1. Creamos una constante con la fecha actual en formato 'YYYY-MM-DD' (ideal para SQL)
+        const fechaActual = new Date().toISOString().split('T')[0];
+
+        // 2. Desestructuramos asignando esa fecha como valor por defecto
+        const {
+            nom_projecte,
+            descripcio,
+            responsable,
+            centro_coord,
+            fecha_inicio = fechaActual,       // Si viene undefined, toma la fecha de hoy
+            fecha_fin = fechaActual,          // Si viene undefined, toma la fecha de hoy
+            ubicación,
+            plazas = 0,
+            inscritos = 0,
+            fecha_inicio_act = fechaActual,   // Si viene undefined, toma la fecha de hoy
+            fecha_fin_act = fechaActual       // Si viene undefined, toma la fecha de hoy
+        } = projecte || {}; // El '|| {}' evita errors si projecte es null o undefined.
+
+
+
+
+
+
+        
+
+
+        //    `idProyecto` INT NOT NULL AUTO_INCREMENT,
+        //   `Nom_projecte` VARCHAR(45) NOT NULL,
+        //   'Descripcio' VARCHAR(512) ,
+        //   -- 'responsable' <--- foreign key usuario?
+        //   -- -- OK -- 'centro_coord' <--- foreign key ? falta tabla centros de coord?
+        //   'fecha_inicio' DATE NOT NULL , -- inicio proyecto, no actividad, por defecto cuando se crea 
+        //   'fecha_fin' DATE ,  
+        //   -- 'ubicación'
+        //   'plazas' INT NOT NULL,
+        //   'inscritos' INT NOT NULL,
+        //   'fecha_inicio_act' DATE ,
+        //   'fecha_fin_act' DATE ,
+        //   `Centre_coordinacio` INT NOT NULL,
 
 
 
