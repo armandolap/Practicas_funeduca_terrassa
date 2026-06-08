@@ -48,7 +48,8 @@ async function createProject(req, res) {
         console.log(projecte);
         // 1. Creamos una constante con la fecha actual en formato 'YYYY-MM-DD' (ideal para SQL)
         const fechaActual = new Date().toISOString().split('T')[0];
-
+        // Resultado: "2026-06-08T13:30:00.000Z" <--- la T separa la data de la hora, la fem servir per guardar en un format que SQL entengui com a DATE
+        // OJO , guarda la data UTC ( no la "española" , però en teoria no afecta xk no hauria de ser buida ni fer-se entre les 21 i les 3 , aixi que no hi haurà problema)
         // 2. Desestructuramos asignando esa fecha como valor por defecto
         const {
             nom_projecte,
@@ -69,7 +70,7 @@ async function createProject(req, res) {
 
 
 
-        
+
 
 
         //    `idProyecto` INT NOT NULL AUTO_INCREMENT,
