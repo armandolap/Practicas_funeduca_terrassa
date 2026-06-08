@@ -67,7 +67,7 @@ async function createProject(req, res) {
 
 
         // aseguramos que los datos están rellenados
-        if (!nom_projecte?.trim() || !descripcio?.trim() || !responsable?.trim()) {
+        if (!Nom_projecte?.trim() || !Descripcio?.trim() || !responsable?.trim()) {
             // tirem error 400 (Bad Request) al client
             return res.status(400).json({
                 error: "Faltan campos obligatorios, REPASAR : nom_projecte, descripcio y responsable QUE SÓN NECESSARIS."
