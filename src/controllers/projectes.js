@@ -44,7 +44,7 @@ async function createProject(req, res) {
     try {
         console.log("Creant projecte, de moment no fa res");
 
-        projecte = req.body.projecte || {}; // por si viene vacío no pete el server por ser "undefined" 
+        const projecte = req.body.projecte || {}; // por si viene vacío no pete el server por ser "undefined" 
         console.log(projecte);
         // 1. Creamos una constante con la fecha actual en formato 'YYYY-MM-DD' (ideal para SQL)
         const fechaActual = new Date().toISOString().split('T')[0];
@@ -58,7 +58,7 @@ async function createProject(req, res) {
             centro_coord,               // por defecto deberia ser la del centro de coord general , id = 1 ?? ( dnd fuimos )
             fecha_inicio = fechaActual,         // Si viene undefined, toma la fecha de hoy
             fecha_fin = fechaActual,            // Si viene undefined, toma la fecha de hoy
-            ubicación,                          // por defecto deberia ser la del centro de coord 
+            ubicacion,                          // por defecto deberia ser la del centro de coord 
             plazas = 0,                         // por defecto por ahora o està ok 
             inscritos = 0,                      // por defecto por ahora o està ok 
             fecha_inicio_act = fechaActual,   // Si viene undefined, toma la fecha de hoy
@@ -74,12 +74,32 @@ async function createProject(req, res) {
             });
         }
 
+        const nuevoProjecteId = await projectesRepository.create({
+            nom_projecte,
+            descripcio,
+            responsable,
+            centro_coord,
+            fecha_inicio,
+            fecha_fin,
+            ubicacion,
+            plazas,
+            inscritos,
+            fecha_inicio_act,
+            fecha_fin_act
+        });
+
+        // 4. BUENA PRÁCTICA: Devolver 201 (Created) y el ID del recurso creado
+        res.status(201).json({
+            message: `Projecte ID: ${nuevoProjecteId} --> ${nom_projecte} \ncreat correctament`,
+            id: nuevoProjecteId
+        });
+
 
     } catch (error) {
         console.error(error);
 
         res.status(500).json({
-            message: "Error obtenint projecte"
+            message: "Error creant projecte"
         });
     }
 }

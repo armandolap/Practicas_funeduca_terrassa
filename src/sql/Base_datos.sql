@@ -70,17 +70,19 @@ DROP TABLE IF EXISTS `mydb`.`Proyectos` ;
 CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos` (
   `idProyecto` INT NOT NULL AUTO_INCREMENT,
   `Nom_projecte` VARCHAR(45) NOT NULL,
-  'Descripcio' VARCHAR(512) ,
-  -- 'responsable' <--- foreign key usuario?
-  -- -- OK -- 'centro_coord' <--- foreign key ? falta tabla centros de coord?
-  'fecha_inicio' DATE NOT NULL , -- inicio proyecto, no actividad, por defecto cuando se crea 
-  'fecha_fin' DATE ,  
+  `Descripcio` VARCHAR(512) ,
+    
+  `fecha_inicio` DATE NOT NULL , -- inicio proyecto, no actividad, por defecto cuando se crea 
+  `fecha_fin` DATE ,  
   -- 'ubicación'
-  'plazas' INT NOT NULL,
-  'inscritos' INT NOT NULL,
-  'fecha_inicio_act' DATE ,
-  'fecha_fin_act' DATE ,
+  `plazas` INT NOT NULL,
+  `inscritos` INT NOT NULL,
+  `fecha_inicio_act` DATE ,
+  `fecha_fin_act` DATE ,
   `Centre_coordinacio` INT NOT NULL,
+
+  `responsable` ,   -- foreign key usuario APP
+  `ubicación` -- foreing keys de 
   PRIMARY KEY (`idProyecto`, `Centre_coordinacio`),
   CONSTRAINT `fk_Proyectos_Centros_coordinacion1`
     FOREIGN KEY (`Centre_coordinacio`)
