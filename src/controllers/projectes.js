@@ -90,7 +90,7 @@ async function createProject(req, res) {
 
         // 4. BUENA PRÁCTICA: Devolver 201 (Created) y el ID del recurso creado
         res.status(201).json({
-            message: `Projecte ID: ${nuevoProjecteId} --> ${nom_projecte} \ncreat correctament`,
+            message: `Projecte ID: ${nuevoProjecteId} --> ${Nom_projecte} \ncreat correctament`,
             id: nuevoProjecteId
         });
 
