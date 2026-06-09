@@ -1,10 +1,14 @@
-const fs = require("fs");
-const path = require("path");
-const { spawn } = require("child_process");
 
+const path = require("path");
+require("dotenv").config({
+    path: path.resolve(__dirname, "..", ".env")
+});
+
+const fs = require("fs");
+const { spawn } = require("child_process");
 const seed = require("./seeder/seeder");
 
-const BASE_URL = "http://localhost:3001";
+const BASE_URL = "http://localhost:3000";
 
 const ENDPOINTS = [
     { path: "/paisos", readOnly: true },
