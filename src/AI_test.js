@@ -157,7 +157,7 @@ function buildPayload(path) {
             projecte: {
                 Nom_projecte: "Projecte Test 2",
                 Descripcio: "Descripcio test 2",
-                responsable: "Responsable 2",
+                responsable: 1,
             }
         },
         "/usuario": { Rol_usuario: "Test User" },
