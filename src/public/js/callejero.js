@@ -87,7 +87,7 @@ function selectResult(r) {
     cpInput.value = r.codi_postal || "";
     dropdown.style.display = "none";
     lastQuery = r.Nom_complet;
-    selectedId = r.idCallejero;
+    selectedId = r.idDireccio;
     updatePreview(r);
 }
 

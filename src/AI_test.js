@@ -14,7 +14,7 @@ require("dotenv").config({ path: envPath });
 
 const { spawn } = require("child_process");
 const seed = require("./seeder/seeder");
-const { carregaCallejero } = require("./seeder/carrega_callejero");
+
 
 const BASE_URL = "http://localhost:3000";
 
@@ -84,6 +84,7 @@ async function testEndpoint(path, readOnly) {
                 || body[0].idTipus_domicili || body[0].idCurs_actual
                 || body[0].idProyecto || body[0].idUsuario_APP
                 || body[0].idDomicili || body[0].idFamilia || body[0].idClient
+                || body[0].idDireccio || body[0].idTipus_via || body[0].idBarri || body[0].idCodi_postal
                 || Object.values(body[0]).find(v => typeof v === "number") || 1;
         }
     }
@@ -297,8 +298,7 @@ function getNextReportNumber() {
 async function main() {
     console.log("\n=== SEEDING DATABASE ===\n");
     try {
-        await seed.runSeed();
-        await carregaCallejero();
+    await seed.runSeed();
     } catch (err) {
         console.error("Error en seed:", err.message);
         console.error("Assegura't que la BD existeix i és accessible");

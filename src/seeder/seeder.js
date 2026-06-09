@@ -2,6 +2,25 @@ const fs = require("fs");
 const path = require("path");
 const pool = require("../config/database");
 
+async function runSQLFile(filePath) {
+    const sql = fs.readFileSync(filePath, "utf8");
+    const statements = sql
+        .replace(/^use\s+`?\w+`?\s*;/gim, "")
+        .replace(/^DROP\s+SCHEMA.+?;/gim, "")
+        .split(";")
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+    for (const stmt of statements) {
+        try {
+            await pool.query(stmt);
+        } catch (err) {
+            if (err.errno !== 1061 && err.errno !== 1050 && err.errno !== 1060 && err.errno !== 1062) {
+                console.warn(`  SQL advertencia: ${err.message.slice(0, 80)}`);
+            }
+        }
+    }
+}
+
 const ORDERED_TABLES = [
     "Persona_relacionada",
     "Proyectos_has_Usuarios APP",
@@ -13,7 +32,7 @@ const ORDERED_TABLES = [
     "Proyectos",
     "Domicili",
     "Centre_coordinacio",
-    "Direccio",
+    "direccio",
     "Tipus_domicili",
     "Pais",
     "Rol",
@@ -26,7 +45,10 @@ const ORDERED_TABLES = [
     "Genere",
     "Estructura_familiar",
     "Necessitats_especials",
-    "Usuario_APP"
+    "Usuario_APP",
+    "tipus_via",
+    "barri",
+    "codi_postal"
 ];
 
 async function runSeed() {
@@ -43,24 +65,15 @@ async function runSeed() {
             await connection.query(`ALTER TABLE \`${table}\` AUTO_INCREMENT = 1`);
         }
 
-        const sqlPath = path.join(__dirname, "..", "sql", "inserts_tablas_estaticas.sql");
-        const sqlContent = fs.readFileSync(sqlPath, "utf8");
+        // Load callejero schema (creates tables if not exist)
+        const schemaPath = path.join(__dirname, "..", "sql", "callejero_schema.sql");
+        await runSQLFile(schemaPath);
 
-        const statements = sqlContent
-            .replace(/^use\s+`?\w+`?\s*;/gim, "")
-            .split(";")
-            .map(s => s.trim())
-            .filter(s => s.length > 0);
+        // Load static + callejero data
+        const dataPath = path.join(__dirname, "..", "sql", "inserts_tablas_estaticas.sql");
+        await runSQLFile(dataPath);
 
-        for (const stmt of statements) {
-            await connection.query(stmt);
-        }
-
-        await connection.query(`
-            INSERT INTO Direccio (Calle, Nom_calle, Numero, Piso)
-            VALUES ('Carrer Test', 'Test', 1, NULL)
-        `);
-
+        // Test data (FKs assume IDs from static inserts)
         await connection.query(`
             INSERT INTO Centre_coordinacio (Nom_centre_coord, idDireccio)
             VALUES ('Centre Test', 1)

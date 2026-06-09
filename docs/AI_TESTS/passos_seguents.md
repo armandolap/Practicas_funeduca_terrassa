@@ -18,23 +18,26 @@
 ### 4. Testing
 - Ampliar `AI_test.js` per provar casos límit (caràcters especials, SQL injection, valors buits)
 - Afegir test per als endpoints de cerca de `callejero` amb diferents combinacions de paràmetres
-- Verificar que el `UNIQUE INDEX` de `callejero` funciona correctament (no es permeten duplicats)
+- Verificar que la clau única de `direccio` funciona (no es permeten duplicats)
 
 ### 5. Base de dades
-- Executar la migració `src/sql/migrations/001_callejero_unique.sql` en bases de dades existents
+- `[fet]` Taula `direccio` normalitzada amb FK a `tipus_via`, `barri`, `codi_postal`
+- `[fet]` Clau única a `direccio` sobre `(idTipus_via, Nom_calle, idBarri, idCodi_postal)`
+- `[fet]` Càrrega automàtica del schema + dades estáticas a l'arrencar `server.js`
 - Verificar que totes les FK estan correctament indexades per rendiment
 - Considerar canviar charset a `utf8mb4` per compatibilitat amb emojis
 
 ### 6. Desplegament
 - Configurar variables d'entorn per a producció (DB, secrets, port)
-- Script d'inicialització que creï la BD i execute totes les migracions
 - Dockeritzar l'aplicació (Dockerfile + docker-compose)
 
 ### 7. Millores al callejero
-- [`fet`] Clau única a la taula `callejero` per evitar duplicats en reimportar
-- [`fet`] ORDER BY per `Nom_complet, barri, codi_postal`
+- [`fet`] Taula `direccio` amb combinacions úniques reals (1648 files) — substitueix `callejero`
+- [`fet`] ORDER BY per `tv.Nom, d.Nom_calle, b.Nom, cp.Codi`
 - [`fet`] Desambiguació al dropdown: mostrar barri i CP quan hi ha noms repetits
 - [`fet`] Barra de previsualització del carrer seleccionat
+- [`fet`] `server.js` executa `callejero_schema.sql` + `inserts_tablas_estaticas.sql` a l'inici
+- [`fet`] Eliminada `carrega_callejero.js` — dades integrades al seeder principal
 
 ---
 *Generat automàticament — revisa i actualitza quan avancis.*
