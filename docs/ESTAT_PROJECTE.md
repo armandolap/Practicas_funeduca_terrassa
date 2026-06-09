@@ -6,7 +6,7 @@
 
 ## 1. Resum Executiu
 
-CRM per a gestió d'entitats socials amb: gestió de clients, famílies, domicilis, projectes, i un cercador de carrers (callejero) amb autocomplete. Stack Express 5 + mysql2/promise. Sense tests unitaris; bateria de tests d'integració via `AI_test.js`.
+CRM per a gestió d'entitats socials amb: gestió de clients, famílies, domicilis, projectes, i un cercador de carrers (callejero) amb autocomplete. Stack Express 5 + mysql2/promise. Tests d'integració via `AI_test.js` (~130 tests) + tests manuals d'usuari.
 
 ---
 
@@ -17,8 +17,9 @@ CRM per a gestió d'entitats socials amb: gestió de clients, famílies, domicil
 | Backend    | **Express 5** + **mysql2/promise**      |
 | Frontend   | HTML estátic + CSS + JS (vanilla)       |
 | Base de dades | MySQL 8, charset `utf8`, InnoDB      |
-| Sessió     | `express-session` + `MySQLStore` (no actiu) |
-| Auth       | Stub (`middlewares/auth.js` no actiu)   |
+| Sessió     | `express-session` + `MySQLStore` (pendent) |
+| Auth       | Stub (`middlewares/auth.js` pendent)   |
+| Dev script | `npm run dev` usa `node --watch` (hot reload) |
 
 ---
 
@@ -54,12 +55,16 @@ node src/server.js
   4. Registre de middlewares (20 rutes + static)
         │
         ▼
-  5. startServer():
+   5. startServer():
         ├── pool.getConnection() → verifica connexió MySQL
+        ├── SET FOREIGN_KEY_CHECKS=0
+        ├── runSQLFile("sql/Base_datos.sql")
+        │     → Crea TOTES les taules principals (24 taules + FKs)
         ├── runSQLFile("sql/callejero_schema.sql")
-         │     → DROP vella Direccio, CREATE tipus_via/barri/codi_postal/Direccio
+        │     → DROP vella Direccio, CREATE tipus_via/barri/codi_postal/Direccio
         ├── runSQLFile("sql/inserts_tablas_estaticas.sql")
         │     → INSERT dades catàleg + callejero (2076 línies SQL)
+        ├── SET FOREIGN_KEY_CHECKS=1
         └── server.listen(PORT)
 ```
 
@@ -100,7 +105,10 @@ npm run AI_test (src/AI_test.js)
         ├── SET FOREIGN_KEY_CHECKS=0
         ├── DELETE FROM 28 taules (ordre FK-safe)
         ├── ALTER TABLE … AUTO_INCREMENT=1
+        ├── runSQLFile("sql/Base_datos.sql")
+        │     → Crea/actualitza totes les taules principals
         ├── runSQLFile("sql/callejero_schema.sql")
+        │     → DROP vella Direccio, CREATE normalitzada
         ├── runSQLFile("sql/inserts_tablas_estaticas.sql")
         ├── INSERT test data (Centre_coordinacio, Domicili, Familia, Usuario_APP, Proyectos, Client)
         └── SET FOREIGN_KEY_CHECKS=1
@@ -169,6 +177,7 @@ npm run AI_test (src/AI_test.js)
 | 20 | `/callejero` | R/O | GET /?q=&tipus_via=, GET /:id | `callejero.searchCallejero`, `getCallejeroById` |
 
 **Total: 75 handlers** (comptant cada combinació mètode+ruta).
+**Tests:** ~130 automàtics + 7 blocs de tests manuals (veure `AI_test.js`).
 
 ---
 
@@ -488,10 +497,10 @@ Tots els repositoris usen `pool.query(SQL, params)` amb placeholders `?`.
 | `Tipus_domicili` | 7 | Manual |
 | `Genere` | 3 | Manual |
 | `Estructura_familiar` | 6 | Manual |
-| `tipus_via` | 24 | Generat de `inserts_calles.sql` |
-| `barri` | 56 | Generat de `inserts_calles.sql` |
-| `codi_postal` | 8 | Generat de `inserts_calles.sql` |
-| `Direccio` | 1648 | Generat de `inserts_calles.sql` — combinacions úniques reals |
+| `tipus_via` | 24 | Dades originals de Terrassa |
+| `barri` | 56 | Dades originals de Terrassa |
+| `codi_postal` | 8 | Dades originals de Terrassa |
+| `Direccio` | 1648 | Combinacions úniques reals de dades originals de Terrassa |
 
 ---
 
@@ -551,8 +560,6 @@ src/public/
 .env.example
 AGENTS.md
 ESTAT_PROJECTE.md        ← aquest fitxer
-opencode.json
-opencode.jsonc
 ```
 
 ### 8.2 `src/`
@@ -569,14 +576,11 @@ src/
 ├── controllers/                — 20 fitxers (un per entitat)
 ├── repositories/               — 20 fitxers (un per entitat)
 ├── seeder/
-│   ├── seeder.js               — Seed: buida BD + càrrega dades + test data
-│   └── genera_inserts_callejero.js — Script generador (ús intern)
+│   └── seeder.js               — Seed: buida BD + càrrega dades + test data
 ├── sql/
 │   ├── Base_datos.sql          — Esquema principal (528 línies, 24 taules)
 │   ├── callejero_schema.sql    — Esquema callejero (Direccio + catàlegs)
 │   ├── inserts_tablas_estaticas.sql — Totes les dades (16 taules, 2076 línies)
-│   ├── inserts_calles.sql      — Dades brutes de carrers (2746 línies)
-│   ├── calles_simplificadas.sql
 │   └── BBDD_model_original.mwb — Model MySQL Workbench
 └── public/
     ├── index.html
@@ -588,12 +592,10 @@ src/
 ```
 docs/
 ├── endpoints.md                — Documentació d'endpoints
+├── tasques_pendents.md         — Llista de tasques pendents i suggerències
 └── AI_TESTS/
-    ├── AI_test_001.md
-    ├── AI_test_002.md
-    ├── AI_test_003.md
-    ├── passos_seguents.md      — Llista de tasques pendents
-    └── resultat_test.md        — Resultat de l'última execució
+    ├── AI_test_NNN.md           — Informes de test (auto-numerats)
+    └── resultat_test.md         — Resultat de l'última execució
 ```
 
 ---
@@ -616,13 +618,12 @@ docs/
 - ⚠️ **`/projectes`** — falta PUT (update) i DELETE
 - ⚠️ **`/client`** — comentari `TODO: ubicacion — afegir gestió de Client_has_Domicili`
 - ⚠️ **`usuari.js`** — patró diferent (no `console.error`, retorna `error.message`, retorna `undefined` en lloc de `null`)
-- ⚠️ **Cal·lejero no registrat a `server.js`** (comentari a AGENTS.md ja resolt — està registrat)
 
 ### No implementat
 - ❌ **Autenticació** — `middlewares/auth.js` és un stub
 - ❌ **Sessions** — `express-session` + `MySQLStore` comentats
 - ❌ **UI de gestió** — No hi ha CRUD visual per a cap entitat
-- ❌ **Testos unitaris** — només tests d'integració via AI_test.js
+- ❌ **Tests unitaris** — només tests d'integració via `AI_test.js`
 - ❌ **Linter/Formatter** — no configurat
 - ❌ **Docker** — no hi ha Dockerfile
 
@@ -669,11 +670,17 @@ Delete en ordre invers a les dependencies:
 3. Taules sense FK (tipus_via, barri, codi_postal, catàlegs)
 
 ### AI_test.js
-- 20 endpoints, ~96 tests
+- 20 endpoints, ~130 tests automàtics
+- Per endpoint: GET all (200 + array + shape), GET/:id (200 + shape), GET/999999 (404)
+- Read-only: POST/PUT/DELETE → 404/405
+- CRUD: POST (201 + id + persistència), PUT (200 + verificació canvi), DELETE (200), GET after delete (404)
+- POST amb body buit → 400 per endpoints amb validació
+- Cerca específica `/callejero` amb q, tipus_via, buit, límit 3 caràcters
+- Fitxers estática: `/`, `/css/callejero.css`, `/js/callejero.js`
+- 7 blocs de tests manuals d'usuari impresos al final
 - Genera informe a `docs/AI_TESTS/AI_test_NNN.md` (auto-numerat)
 - Genera `docs/AI_TESTS/resultat_test.md` (sobreescrit)
-- Usa `buildPayload(path)` per generar payloads de POST
-- Usa `buildUpdatePayload(path)` per generar payloads de PUT
+- Usa `buildPayload(path)` / `buildUpdatePayload(path)` per payloads
 - Spawna servidor a port 3000 com a child process
 
 ---
