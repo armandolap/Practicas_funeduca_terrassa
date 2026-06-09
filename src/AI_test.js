@@ -227,10 +227,55 @@ function generateReport() {
     return lines.join("\n");
 }
 
+function generateSolutions() {
+    const failed = RESULTS.tests.filter(t => t.includes("✗"));
+    const lines = [];
+    lines.push(`# Resultat dels tests`);
+    lines.push(``);
+    lines.push(`**Data:** ${new Date().toISOString()}`);
+    lines.push(``);
+    if (failed.length === 0) {
+        lines.push(`✅ Tots els tests han passat correctament.`);
+        lines.push(``);
+        lines.push(`## Possibles problemes i solucions`);
+        lines.push(``);
+        lines.push(`No s'han detectat problemes.`);
+    } else {
+        lines.push(`❌ **${failed.length} test(s) han fallat** (de ${RESULTS.tests.length} totals)`);
+        lines.push(``);
+        lines.push(`## Possibles problemes i solucions`);
+        lines.push(``);
+        for (const f of failed) {
+            const match = f.match(/✗ (.+?) — (.+)/);
+            if (match) {
+                const [, label, detail] = match;
+                lines.push(`### ${label}`);
+                lines.push(``);
+                lines.push(`**Error:** ${detail}`);
+                lines.push(``);
+                const solution = suggestFix(label, detail);
+                lines.push(`**Possible solució:** ${solution}`);
+                lines.push(``);
+            }
+        }
+    }
+    lines.push(`---`);
+    lines.push(`*Aquest fitxer es sobrescriu en cada execució dels tests.*`);
+    return lines.join("\n");
+}
+
+function suggestFix(label, detail) {
+    if (detail.includes("404")) return "Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.";
+    if (detail.includes("201")) return "Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.";
+    if (detail.includes("200")) return "Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.";
+    if (detail.includes("id")) return "Assegura't que el payload de creació inclou totes les claus foranes necessàries i que existeixen a la BD.";
+    return "Revisa el codi de l'endpoint: ruta → controlador → repositori. Comprova que el seeder insereix les dades necessàries.";
+}
+
 function getNextReportNumber() {
-    const docsDir = path.join(__dirname, "..", "docs");
-    if (!fs.existsSync(docsDir)) return 1;
-    const files = fs.readdirSync(docsDir);
+    const dir = path.join(__dirname, "..", "docs", "AI_TESTS");
+    if (!fs.existsSync(dir)) return 1;
+    const files = fs.readdirSync(dir);
     const nums = files
         .filter(f => /^AI_test_(\d+)\.md$/.test(f))
         .map(f => parseInt(f.match(/^AI_test_(\d+)\.md$/)[1]))
@@ -295,12 +340,19 @@ async function main() {
         console.log(`Total:   ${RESULTS.pass + RESULTS.fail}`);
         console.log(RESULTS.fail === 0 ? "\n✅ TOTS ELS TESTS PASSATS" : `\n❌ ${RESULTS.fail} TEST(S) FALLATS`);
 
+        const testsDir = path.join(__dirname, "..", "docs", "AI_TESTS");
+        if (!fs.existsSync(testsDir)) fs.mkdirSync(testsDir, { recursive: true });
+
         const report = generateReport();
         const num = getNextReportNumber();
         const filename = `AI_test_${String(num).padStart(3, "0")}.md`;
-        const reportPath = path.join(__dirname, "..", "docs", filename);
+        const reportPath = path.join(testsDir, filename);
         fs.writeFileSync(reportPath, report, "utf8");
-        console.log(`\nInforme guardat a docs/${filename}`);
+        console.log(`\nInforme guardat a docs/AI_TESTS/${filename}`);
+
+        const solutionsPath = path.join(testsDir, "resultat_test.md");
+        fs.writeFileSync(solutionsPath, generateSolutions(), "utf8");
+        console.log(`Solucions guardades a docs/AI_TESTS/resultat_test.md`);
 
     } finally {
         serverProcess.kill();
