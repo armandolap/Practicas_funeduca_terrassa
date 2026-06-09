@@ -123,16 +123,39 @@ DELETE /client/:id      → client.deleteClient       → client.remove
 ```
 TODO: ubicació — Client_has_Domicili no està gestionat encara.
 
----
+### `/tipusVia`
+```
+GET    /tipusVia          → tipus_via.getAllTipus_via       → tipus_via.getAll
+POST   /tipusVia          → tipus_via.createTipus_via       → tipus_via.create
+GET    /tipusVia/:id      → tipus_via.getTipus_viaById      → tipus_via.getById
+PUT    /tipusVia/:id      → tipus_via.updateTipus_via       → tipus_via.update
+DELETE /tipusVia/:id      → tipus_via.deleteTipus_via       → tipus_via.remove
+```
 
-## Unregistered (files exist, **not** wired in `server.js`)
+### `/barri`
+```
+GET    /barri             → barri.getAllBarri               → barri.getAll
+POST   /barri             → barri.createBarri               → barri.create
+GET    /barri/:id         → barri.getBarriById              → barri.getById
+PUT    /barri/:id         → barri.updateBarri               → barri.update
+DELETE /barri/:id         → barri.deleteBarri               → barri.remove
+```
+
+### `/codiPostal`
+```
+GET    /codiPostal        → codi_postal.getAllCodi_postal       → codi_postal.getAll
+POST   /codiPostal        → codi_postal.createCodi_postal       → codi_postal.create
+GET    /codiPostal/:id    → codi_postal.getCodi_postalById      → codi_postal.getById
+PUT    /codiPostal/:id    → codi_postal.updateCodi_postal       → codi_postal.update
+DELETE /codiPostal/:id    → codi_postal.deleteCodi_postal       → codi_postal.remove
+```
 
 ### `/callejero`
 ```
-GET    /callejero       → callejero.getAllCallejero    → callejero.getAll [commented out]
-GET    /callejero/:id   → callejero.getCallejeroById   → callejero.getById [commented out]
+GET    /callejero?tipus_via=X&q=abc   → callejero.searchCallejero    → callejero.search
+GET    /callejero/:id                  → callejero.getCallejeroById   → callejero.getById
 ```
-Route file is empty; repository is fully commented out. Dead code.
+Search: `tipus_via` filtra per tipus de via (opcional). `q` cerca per nom complet (mínim 3 caràcters).
 
 ---
 
@@ -140,7 +163,6 @@ Route file is empty; repository is fully commented out. Dead code.
 
 | Category | Count | Endpoints |
 |---|---|---|
-| Read-only (GET only) | 9 | `paisos`, `estFamilia`, `motiuBaixa`, `resulAcad`, `risc`, `rol`, `sebas`, `sitEco`, `tipusDom` |
-| Full CRUD | 6 | `neses`, `curso`, `usuario`, `domicili`, `familia`, `client` |
+| Read-only (GET only) | 10 | `paisos`, `estFamilia`, `motiuBaixa`, `resulAcad`, `risc`, `rol`, `sebas`, `sitEco`, `tipusDom`, `callejero` |
+| Full CRUD | 9 | `neses`, `curso`, `usuario`, `domicili`, `familia`, `client`, `tipusVia`, `barri`, `codiPostal` |
 | Partial CRUD (no PUT/DELETE) | 1 | `projectes` |
-| Dead code | 1 | `callejero` |

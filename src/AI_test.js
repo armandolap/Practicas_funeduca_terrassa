@@ -14,6 +14,7 @@ require("dotenv").config({ path: envPath });
 
 const { spawn } = require("child_process");
 const seed = require("./seeder/seeder");
+const { carregaCallejero } = require("./seeder/carrega_callejero");
 
 const BASE_URL = "http://localhost:3000";
 
@@ -34,6 +35,10 @@ const ENDPOINTS = [
     { path: "/domicili", readOnly: false },
     { path: "/familia", readOnly: false },
     { path: "/client", readOnly: false },
+    { path: "/tipusVia", readOnly: false },
+    { path: "/barri", readOnly: false },
+    { path: "/codiPostal", readOnly: false },
+    { path: "/callejero", readOnly: true },
 ];
 
 const RESULTS = { pass: 0, fail: 0, tests: [] };
@@ -170,6 +175,9 @@ function buildPayload(path) {
         "/usuario": { Rol_usuario: "Test User" },
         "/domicili": { Tipus_domicili: 1, Direccio: 1 },
         "/familia": { Cognom_familiar: "Test", idDomicili: 1, Estructura_familiar: 1 },
+        "/tipusVia": { Nom: "TEST VIA" },
+        "/barri": { Nom: "TEST BARRI" },
+        "/codiPostal": { Codi: "99999" },
         "/client": {
             idFamilia: 1, idRol: 3, idGenere: 1,
             Nom: "Maria", Cognoms: "Test",
@@ -196,6 +204,9 @@ function buildUpdatePayload(path) {
     if (path === "/neses") return { ...base };
     if (path === "/curso") return { ...base };
     if (path === "/usuario") return { ...base };
+    if (path === "/tipusVia") return { Nom: "TEST VIA MOD" };
+    if (path === "/barri") return { Nom: "TEST BARRI MOD" };
+    if (path === "/codiPostal") return { Codi: "88888" };
     return base;
 }
 
@@ -287,6 +298,7 @@ async function main() {
     console.log("\n=== SEEDING DATABASE ===\n");
     try {
         await seed.runSeed();
+        await carregaCallejero();
     } catch (err) {
         console.error("Error en seed:", err.message);
         console.error("Assegura't que la BD existeix i és accessible");

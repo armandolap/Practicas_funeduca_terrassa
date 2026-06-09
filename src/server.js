@@ -20,6 +20,10 @@ const usuari = require("./routes/usuari");
 const domicili =require("./routes/domicili");
 const familia =require("./routes/familia");
 const client = require("./routes/client");
+const tipus_via = require("./routes/tipus_via");
+const barri = require("./routes/barri");
+const codi_postal = require("./routes/codi_postal");
+const callejero = require("./routes/callejero");
 
 const server = express();
 const PORT = process.env.PORT || 3000;
@@ -41,6 +45,11 @@ server.use("/usuario",usuari);
 server.use("/domicili",domicili);
 server.use("/familia",familia);
 server.use("/client", client);
+server.use("/tipusVia", tipus_via);
+server.use("/barri", barri);
+server.use("/codiPostal", codi_postal);
+server.use("/callejero", callejero);
+server.use(express.static(path.join(__dirname, "public")));
 
 async function startServer() {
   try {
