@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "AI_test": "node AI_test.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "config": "node ../setup.js"
   },
   "keywords": [],
   "author": "",
