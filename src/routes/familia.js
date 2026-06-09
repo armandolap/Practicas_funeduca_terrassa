@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const famili = require("../controllers/famili");
+const famili = require("../controllers/familia");
 
 router.get("/", famili.getAllFamilias);
 router.post("/", famili.createFamilia);

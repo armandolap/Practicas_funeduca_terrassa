@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Centre_coordinacio` (
   `idCentre_coord` INT NOT NULL AUTO_INCREMENT,
   `Nom_centre_coord` VARCHAR(45) NOT NULL,
   `idDireccio` INT NOT NULL,
-  PRIMARY KEY (`idCentre_coord`, `idDireccio`),
+  PRIMARY KEY (`idCentre_coord`),
   CONSTRAINT `fk_Centros_coordinacion_Direcciones1`
     FOREIGN KEY (`idDireccio`)
     REFERENCES `mydb`.`Direccio` (`idDireccio`)
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Domicili` (
   `idDomicili` INT NOT NULL AUTO_INCREMENT,
   `Tipus_domicili` INT NOT NULL,
   `Direccio` INT NOT NULL,
-  PRIMARY KEY (`idDomicili`, `Tipus_domicili`, `Direccio`),
+  PRIMARY KEY (`idDomicili`),
   CONSTRAINT `fk_Domicilio_Tipo_domicilio`
     FOREIGN KEY (`Tipus_domicili`)
     REFERENCES `mydb`.`Tipus_domicili` (`idTipus_domicili`)
@@ -182,7 +182,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Familia` (
   `Cognom_familiar` VARCHAR(45) NOT NULL,
   `idDomicili` INT NOT NULL,
   `Estructura_familiar` INT NOT NULL,
-  PRIMARY KEY (`idFamilia`, `idDomicili`, `Estructura_familiar`),
+  PRIMARY KEY (`idFamilia`),
   CONSTRAINT `fk_Familias_Domicilio1`
     FOREIGN KEY (`idDomicili`)
     REFERENCES `mydb`.`Domicili` (`idDomicili`)
@@ -335,7 +335,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Client` (
   `idSebas` INT NOT NULL,
   `derivacio_serveis_socials` TINYINT NOT NULL,
   `Curs_actual` INT NULL,
-  PRIMARY KEY (`idClient`, `idFamilia`, `idRol`, `idGenere`, `Pais_naixement`, `Risc`, `idSituacio_economica`, `idSebas`),
+  PRIMARY KEY (`idClient`),
   CONSTRAINT `fk_Usuarios_Familias1`
     FOREIGN KEY (`idFamilia`)
     REFERENCES `mydb`.`Familia` (`idFamilia`)
