@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`callejero` (
   `idBarri` INT NULL,
   `idCodi_postal` INT NULL,
   PRIMARY KEY (`idCallejero`),
+  UNIQUE INDEX `uq_callejero` (`idTipus_via`, `Nom_calle`, `idBarri`, `idCodi_postal`),
   INDEX `fk_callejero_tipus_via_idx` (`idTipus_via`),
   INDEX `fk_callejero_barri_idx` (`idBarri`),
   INDEX `fk_callejero_codi_postal_idx` (`idCodi_postal`),

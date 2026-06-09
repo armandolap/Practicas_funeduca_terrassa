@@ -155,7 +155,9 @@ DELETE /codiPostal/:id    → codi_postal.deleteCodi_postal       → codi_posta
 GET    /callejero?tipus_via=X&q=abc   → callejero.searchCallejero    → callejero.search
 GET    /callejero/:id                  → callejero.getCallejeroById   → callejero.getById
 ```
-Search: `tipus_via` filtra per tipus de via (opcional). `q` cerca per nom complet (mínim 3 caràcters).
+Search: `tipus_via` filtra per tipus de via (opcional). `q` cerca per nom complet (mínim 3 caràcters, debounce 500ms).
+La taula `callejero` té una clau única sobre `(idTipus_via, Nom_calle, idBarri, idCodi_postal)` per evitar duplicats.
+Per afegir-la a una BD existent: `src/sql/migrations/001_callejero_unique.sql`.
 
 ---
 

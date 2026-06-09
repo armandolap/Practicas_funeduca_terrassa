@@ -30,7 +30,7 @@ async function search({ tipus_via, q }) {
         params.push(`%${q}%`);
     }
 
-    sql += ` ORDER BY c.Nom_complet LIMIT 50`;
+    sql += ` ORDER BY c.Nom_complet, b.Nom, cp.Codi LIMIT 50`;
 
     const [rows] = await pool.query(sql, params);
     return rows;
