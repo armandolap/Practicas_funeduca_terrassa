@@ -95,6 +95,16 @@ PUT    /usuario/:id     → usuari.updateUsuario      → usuari.update
 DELETE /usuario/:id     → usuari.removeUsuario      → usuari.remove
 ```
 
+### `/client`
+```
+GET    /client          → client.getAllClients      → client.getAll
+POST   /client          → client.createClient       → client.create
+GET    /client/:id      → client.getClientById      → client.getById
+PUT    /client/:id      → client.updateClient       → client.update
+DELETE /client/:id      → client.deleteClient       → client.remove
+```
+TODO: ubicació — Client_has_Domicili no està gestionat encara.
+
 ---
 
 ## Unregistered (files exist, **not** wired in `server.js`)
@@ -131,6 +141,6 @@ DELETE /domicili/:id    → domicili.deleteDomicili     → domicili.remove
 | Category | Count | Endpoints |
 |---|---|---|
 | Read-only (GET only) | 9 | `paisos`, `estFamilia`, `motiuBaixa`, `resulAcad`, `risc`, `rol`, `sebas`, `sitEco`, `tipusDom` |
-| Full CRUD | 5 | `neses`, `curso`, `usuario`, `famili`, `domicili` |
+| Full CRUD | 6 | `neses`, `curso`, `usuario`, `famili`, `domicili`, `client` |
 | Partial CRUD (no PUT/DELETE) | 1 | `projectes` |
 | Dead code | 1 | `callejero` |

@@ -19,6 +19,7 @@ const projectes=require("./routes/projectes");
 const usuari = require("./routes/usuari");
 const domicili =require("./routes/domicili");
 const familia =require("./routes/familia");
+const client = require("./routes/client");
 
 const server = express();
 const PORT = process.env.PORT || 3000;
@@ -39,6 +40,7 @@ server.use("/projectes",projectes);
 server.use("/usuario",usuari);
 server.use("/domicili",domicili);
 server.use("/familia",familia);
+server.use("/client", client);
 
 async function startServer() {
   try {
