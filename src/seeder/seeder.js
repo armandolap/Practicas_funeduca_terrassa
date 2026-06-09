@@ -83,7 +83,7 @@ async function runSeed() {
 
         await connection.query(`
             INSERT INTO Proyectos (Nom_projecte, Descripcio, responsable, Centre_coordinacio, fecha_inicio, fecha_fin, plazas, inscritos, fecha_inicio_act, fecha_fin_act)
-            VALUES ('Projecte Test', 'Descripcio de prova', 'Responsable Test', 1, CURDATE(), CURDATE(), 10, 0, CURDATE(), CURDATE())
+            VALUES ('Projecte Test', 'Descripcio de prova', 1, 1, CURDATE(), CURDATE(), 10, 0, CURDATE(), CURDATE())
         `);
 
         await connection.query(`

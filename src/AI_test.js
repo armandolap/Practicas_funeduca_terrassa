@@ -244,7 +244,7 @@ async function main() {
     console.log("\n=== INICIANT SERVIDOR ===\n");
     const serverProcess = spawn("node", ["server.js"], {
         cwd: __dirname,
-        env: { ...process.env, PORT: "3001" },
+        env: { ...process.env, PORT: "3000" },
         stdio: ["ignore", "pipe", "pipe"],
     });
 
