@@ -1,10 +1,17 @@
 
 const path = require("path");
-require("dotenv").config({
-    path: path.resolve(__dirname, "..", ".env")
-});
-
 const fs = require("fs");
+
+const envPath = path.resolve(__dirname, "..", ".env");
+if (!fs.existsSync(envPath)) {
+    console.error("ERROR: No s'ha trobat el fitxer .env a l'arrel del projecte.");
+    console.error("Crea'l a partir de .env.example:");
+    console.error("  cp .env.example .env");
+    process.exit(1);
+}
+
+require("dotenv").config({ path: envPath });
+
 const { spawn } = require("child_process");
 const seed = require("./seeder/seeder");
 

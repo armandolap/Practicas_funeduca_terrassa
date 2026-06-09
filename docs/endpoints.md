@@ -95,6 +95,24 @@ PUT    /usuario/:id     → usuari.updateUsuario      → usuari.update
 DELETE /usuario/:id     → usuari.removeUsuario      → usuari.remove
 ```
 
+### `/domicili`
+```
+GET    /domicili        → domicili.getAllDomicilis    → domicili.getAll
+POST   /domicili        → domicili.createDomicili     → domicili.create
+GET    /domicili/:id    → domicili.getDomiciliById    → domicili.getById
+PUT    /domicili/:id    → domicili.updateDomicili     → domicili.update
+DELETE /domicili/:id    → domicili.deleteDomicili     → domicili.remove
+```
+
+### `/familia`
+```
+GET    /familia          → familia.getAllFamilias       → familia.getAll
+POST   /familia          → familia.createFamilia        → familia.create
+GET    /familia/:id      → familia.getFamiliaById       → familia.getById
+PUT    /familia/:id      → familia.updateFamilia        → familia.update
+DELETE /familia/:id      → familia.deleteFamilia        → familia.remove
+```
+
 ### `/client`
 ```
 GET    /client          → client.getAllClients      → client.getAll
@@ -116,24 +134,6 @@ GET    /callejero/:id   → callejero.getCallejeroById   → callejero.getById [
 ```
 Route file is empty; repository is fully commented out. Dead code.
 
-### `/familia`
-```
-GET    /familia          → familia.getAllFamilias       → familia.getAll
-POST   /familia          → familia.createFamilia        → familia.create
-GET    /familia/:id      → familia.getFamiliaById       → familia.getById
-PUT    /familia/:id      → familia.updateFamilia        → familia.update
-DELETE /familia/:id      → familia.deleteFamilia        → familia.remove
-```
-
-### `/domicili`
-```
-GET    /domicili        → domicili.getAllDomicilis    → domicili.getAll
-POST   /domicili        → domicili.createDomicili     → domicili.create
-GET    /domicili/:id    → domicili.getDomiciliById    → domicili.getById
-PUT    /domicili/:id    → domicili.updateDomicili     → domicili.update
-DELETE /domicili/:id    → domicili.deleteDomicili     → domicili.remove
-```
-
 ---
 
 ## Summary
@@ -141,6 +141,6 @@ DELETE /domicili/:id    → domicili.deleteDomicili     → domicili.remove
 | Category | Count | Endpoints |
 |---|---|---|
 | Read-only (GET only) | 9 | `paisos`, `estFamilia`, `motiuBaixa`, `resulAcad`, `risc`, `rol`, `sebas`, `sitEco`, `tipusDom` |
-| Full CRUD | 6 | `neses`, `curso`, `usuario`, `famili`, `domicili`, `client` |
+| Full CRUD | 6 | `neses`, `curso`, `usuario`, `domicili`, `familia`, `client` |
 | Partial CRUD (no PUT/DELETE) | 1 | `projectes` |
 | Dead code | 1 | `callejero` |
