@@ -57,7 +57,7 @@ node src/server.js
   5. startServer():
         ├── pool.getConnection() → verifica connexió MySQL
         ├── runSQLFile("sql/callejero_schema.sql")
-        │     → DROP vella Direccio, CREATE tipus_via/barri/codi_postal/direccio
+         │     → DROP vella Direccio, CREATE tipus_via/barri/codi_postal/Direccio
         ├── runSQLFile("sql/inserts_tablas_estaticas.sql")
         │     → INSERT dades catàleg + callejero (2076 línies SQL)
         └── server.listen(PORT)
@@ -81,7 +81,7 @@ Client → GET /callejero?q=abc
         ▼
   repositories/callejero.js: search({ tipus_via, q })
         │  SQL: SELECT d.idDireccio, ..., CONCAT(tv.Nom,' ',d.Nom_calle) AS Nom_complet
-        │  FROM direccio d JOIN tipus_via tv ...
+         │  FROM Direccio d JOIN tipus_via tv ...
         │  WHERE tv.Nom LIKE ? ...
         │  ORDER BY tv.Nom, d.Nom_calle, b.Nom, cp.Codi LIMIT 50
         ▼
@@ -423,8 +423,8 @@ Tots els repositoris usen `pool.query(SQL, params)` amb placeholders `?`.
 
 | Funció | SQL | Paràmetres | Retorn OK | Retorn no trobat |
 |--------|-----|-----------|-----------|-----------------|
-| `search({tipus_via, q})` | `SELECT d.idDireccio, d.Nom_calle, CONCAT(tv.Nom,' ',d.Nom_calle) AS Nom_complet, tv.Nom AS tipus_via, b.Nom AS barri, cp.Codi AS codi_postal FROM direccio d JOIN tipus_via tv ON tv.idTipus_via = d.idTipus_via LEFT JOIN barri b ON b.idBarri = d.idBarri LEFT JOIN codi_postal cp ON cp.idCodi_postal = d.idCodi_postal WHERE 1=1 [AND d.idTipus_via=?] [AND CONCAT(tv.Nom,' ',d.Nom_calle) LIKE ?] ORDER BY tv.Nom, d.Nom_calle, b.Nom, cp.Codi LIMIT 50` | `tipus_via` (opcional, FK), `q` (string, min 3) | `Array` d'objectes | `[]` |
-| `getById(id)` | `SELECT … FROM direccio d JOIN … WHERE d.idDireccio = ?` | `id` | `Objecte` | `null` |
+| `search({tipus_via, q})` | `SELECT d.idDireccio, d.Nom_calle, CONCAT(tv.Nom,' ',d.Nom_calle) AS Nom_complet, tv.Nom AS tipus_via, b.Nom AS barri, cp.Codi AS codi_postal FROM Direccio d JOIN tipus_via tv ON tv.idTipus_via = d.idTipus_via LEFT JOIN barri b ON b.idBarri = d.idBarri LEFT JOIN codi_postal cp ON cp.idCodi_postal = d.idCodi_postal WHERE 1=1 [AND d.idTipus_via=?] [AND CONCAT(tv.Nom,' ',d.Nom_calle) LIKE ?] ORDER BY tv.Nom, d.Nom_calle, b.Nom, cp.Codi LIMIT 50` | `tipus_via` (opcional, FK), `q` (string, min 3) | `Array` d'objectes | `[]` |
+| `getById(id)` | `SELECT … FROM Direccio d JOIN … WHERE d.idDireccio = ?` | `id` | `Objecte` | `null` |
 
 ---
 
@@ -470,7 +470,7 @@ Tots els repositoris usen `pool.query(SQL, params)` amb placeholders `?`.
 | 1 | `tipus_via` | `idTipus_via` PK, `Nom` UNIQUE | 24 | — |
 | 2 | `barri` | `idBarri` PK, `Nom` UNIQUE | 56 | — |
 | 3 | `codi_postal` | `idCodi_postal` PK, `Codi` UNIQUE | 8 | — |
-| 4 | `direccio` | `idDireccio` PK, `idTipus_via` FK, `Nom_calle`, `idBarri` FK, `idCodi_postal` FK. UNIQUE `(idTipus_via, Nom_calle, idBarri, idCodi_postal)` | 1648 | `tipus_via`, `barri`, `codi_postal` |
+| 4 | `Direccio` | `idDireccio` PK, `idTipus_via` FK, `Nom_calle`, `idBarri` FK, `idCodi_postal` FK. UNIQUE `(idTipus_via, Nom_calle, idBarri, idCodi_postal)` | 1648 | `tipus_via`, `barri`, `codi_postal` |
 
 ### 6.4 Dades injectades (inserts_tablas_estaticas.sql)
 
@@ -491,7 +491,7 @@ Tots els repositoris usen `pool.query(SQL, params)` amb placeholders `?`.
 | `tipus_via` | 24 | Generat de `inserts_calles.sql` |
 | `barri` | 56 | Generat de `inserts_calles.sql` |
 | `codi_postal` | 8 | Generat de `inserts_calles.sql` |
-| `direccio` | 1648 | Generat de `inserts_calles.sql` — combinacions úniques reals |
+| `Direccio` | 1648 | Generat de `inserts_calles.sql` — combinacions úniques reals |
 
 ---
 
@@ -573,7 +573,7 @@ src/
 │   └── genera_inserts_callejero.js — Script generador (ús intern)
 ├── sql/
 │   ├── Base_datos.sql          — Esquema principal (528 línies, 24 taules)
-│   ├── callejero_schema.sql    — Esquema callejero (direccio + catàlegs)
+│   ├── callejero_schema.sql    — Esquema callejero (Direccio + catàlegs)
 │   ├── inserts_tablas_estaticas.sql — Totes les dades (16 taules, 2076 línies)
 │   ├── inserts_calles.sql      — Dades brutes de carrers (2746 línies)
 │   ├── calles_simplificadas.sql
@@ -610,7 +610,7 @@ docs/
 - ✅ **Seeder** que buida i recarrega totes les dades (inclòs callejero) en ordre FK-safe
 - ✅ **Bateria de tests** (20 endpoints, ~96 tests) amb generació d'informe Markdown
 - ✅ **Guard `.env`** amb missatge d'error amigable
-- ✅ **Taula `direccio` normalitzada** amb UNIQUE INDEX i FK a catàlegs
+- ✅ **Taula `Direccio` normalitzada** amb UNIQUE INDEX i FK a catàlegs
 
 ### Parcial
 - ⚠️ **`/projectes`** — falta PUT (update) i DELETE

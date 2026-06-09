@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`codi_postal` (
   UNIQUE INDEX `Codi_UNIQUE` (`Codi`)
 ) ENGINE = InnoDB;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`direccio` (
+CREATE TABLE IF NOT EXISTS `mydb`.`Direccio` (
   `idDireccio` INT NOT NULL AUTO_INCREMENT,
   `idTipus_via` INT NOT NULL,
   `Nom_calle` VARCHAR(255) NOT NULL,

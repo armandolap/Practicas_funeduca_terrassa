@@ -156,7 +156,7 @@ GET    /callejero?tipus_via=X&q=abc   → callejero.searchCallejero    → calle
 GET    /callejero/:id                  → callejero.getCallejeroById   → callejero.getById
 ```
 Search: `tipus_via` filtra per tipus de via (opcional). `q` cerca per nom complet (mínim 3 caràcters, debounce 500ms).
-La taula `direccio` (reemplaça l'antiga `callejero`) normalitza via + carrer + barri + CP amb clau única.
+La taula `Direccio` (reemplaça l'antiga `callejero`) normalitza via + carrer + barri + CP amb clau única.
 Els inserts es carreguen automàticament des de `src/sql/inserts_tablas_estaticas.sql`.
 
 ---

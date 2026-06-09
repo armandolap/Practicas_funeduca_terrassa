@@ -32,7 +32,7 @@ const ORDERED_TABLES = [
     "Proyectos",
     "Domicili",
     "Centre_coordinacio",
-    "direccio",
+    "Direccio",
     "Tipus_domicili",
     "Pais",
     "Rol",
@@ -65,7 +65,11 @@ async function runSeed() {
             await connection.query(`ALTER TABLE \`${table}\` AUTO_INCREMENT = 1`);
         }
 
-        // Load callejero schema (creates tables if not exist)
+        // Load base schema (creates all main tables)
+        const basePath = path.join(__dirname, "..", "sql", "Base_datos.sql");
+        await runSQLFile(basePath);
+
+        // Load callejero schema (drops old Direccio, creates normalized Direccio)
         const schemaPath = path.join(__dirname, "..", "sql", "callejero_schema.sql");
         await runSQLFile(schemaPath);
 

@@ -12,7 +12,7 @@ async function search({ tipus_via, q }) {
             b.Nom AS barri,
             cp.idCodi_postal,
             cp.Codi AS codi_postal
-        FROM direccio d
+        FROM Direccio d
         JOIN tipus_via tv ON tv.idTipus_via = d.idTipus_via
         LEFT JOIN barri b ON b.idBarri = d.idBarri
         LEFT JOIN codi_postal cp ON cp.idCodi_postal = d.idCodi_postal
@@ -49,7 +49,7 @@ async function getById(id) {
             b.Nom AS barri,
             cp.idCodi_postal,
             cp.Codi AS codi_postal
-        FROM direccio d
+        FROM Direccio d
         JOIN tipus_via tv ON tv.idTipus_via = d.idTipus_via
         LEFT JOIN barri b ON b.idBarri = d.idBarri
         LEFT JOIN codi_postal cp ON cp.idCodi_postal = d.idCodi_postal

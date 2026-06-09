@@ -22,7 +22,7 @@ node src/server.js     # or `npx nodemon src/server.js`
 routes/{entity}.js → controllers/{entity}.js → repositories/{entity}.js
 ```
 
-Every entity has the same CRUD pattern: `getAll`, `getById`, `create`, `update`, `remove`. Routes registered in `server.js:25-37` under root (`/paisos`, `/usuario`, etc.).
+Every entity has the same CRUD pattern: `getAll`, `getById`, `create`, `update`, `remove`. Routes registered in `server.js:35-58` under root (`/paisos`, `/usuario`, etc.).
 
 ## Database
 
@@ -33,9 +33,9 @@ Every entity has the same CRUD pattern: `getAll`, `getById`, `create`, `update`,
 
 ## Key gotchas
 
-- `callejero.js` has routes/controllers/repos but is **not** registered in `server.js`
 - `middlewares/auth.js` is a stub — auth not wired up. `express-session`/`MySQLStore` fully commented out
 - `package.json` has no `dev` script — use `node` or `nodemon` directly
-- `public/css/css/` and `public/js/js/` have accidental nested dirs (flat structure intended)
 - DB pool: `src/config/database.js` — `mysql2/promise` pool, 10-connection limit
 - Express 5: `express.json()` is built-in
+- Server startup (in order): `SET FK_CHECKS=0` → `Base_datos.sql` → `callejero_schema.sql` → `inserts_tablas_estaticas.sql` → `SET FK_CHECKS=1`
+- Table name is `Direccio` (capital D) — case-sensitive on Linux MySQL

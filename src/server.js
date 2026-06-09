@@ -84,10 +84,14 @@ async function startServer() {
     connection.release();
 
     console.log(" MySQL conectado");
+    console.log(" Executant Base_datos.sql...");
+    await pool.query("SET FOREIGN_KEY_CHECKS = 0");
+    await runSQLFile(path.join(__dirname, "sql", "Base_datos.sql"));
     console.log(" Executant callejero_schema.sql...");
     await runSQLFile(path.join(__dirname, "sql", "callejero_schema.sql"));
     console.log(" Executant inserts_tablas_estaticas.sql...");
     await runSQLFile(path.join(__dirname, "sql", "inserts_tablas_estaticas.sql"));
+    await pool.query("SET FOREIGN_KEY_CHECKS = 1");
     console.log(" Dades carregades");
 
     server.listen(PORT, () => {
