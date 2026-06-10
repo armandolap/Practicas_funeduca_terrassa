@@ -8,7 +8,7 @@ async function runSQLFile(filePath) {
     const sql = fs.readFileSync(filePath, "utf8");
     const statements = sql
         .replace(/^use\s+`?\w+`?\s*;/gim, "")
-        .replace(/^DROP\s+SCHEMA.+?;/gim, "")
+       // .replace(/^DROP\s+SCHEMA.+?;/gim, "")
         .split(";")
         .map(s => s.trim())
         .filter(s => s.length > 0);
@@ -72,8 +72,8 @@ async function runSeed() {
         await runSQLFile(basePath);
 
         // Load callejero schema (drops old Direccio, creates normalized Direccio)
-        const schemaPath = path.join(__dirname, "..", "sql", "callejero_schema.sql");
-        await runSQLFile(schemaPath);
+        // const schemaPath = path.join(__dirname, "..", "sql", "callejero_schema.sql");
+        // await runSQLFile(schemaPath);
 
         // Load static + callejero data
         const dataPath = path.join(__dirname, "..", "sql", "inserts_tablas_estaticas.sql");
