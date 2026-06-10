@@ -7,18 +7,50 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema mydb
 -- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `mydb` ;
-
--- -----------------------------------------------------
--- Schema mydb
--- -----------------------------------------------------
 CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
 USE `mydb` ;
 
+
+CREATE TABLE IF NOT EXISTS `mydb`.`tipus_via` (
+  `idTipus_via` INT NOT NULL AUTO_INCREMENT,
+  `Nom` VARCHAR(50) NOT NULL,
+  PRIMARY KEY (`idTipus_via`),
+  UNIQUE INDEX `Nom_UNIQUE` (`Nom`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`barri` (
+  `idBarri` INT NOT NULL AUTO_INCREMENT,
+  `Nom` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`idBarri`),
+  UNIQUE INDEX `Nom_UNIQUE` (`Nom`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`codi_postal` (
+  `idCodi_postal` INT NOT NULL AUTO_INCREMENT,
+  `Codi` VARCHAR(10) NOT NULL,
+  PRIMARY KEY (`idCodi_postal`),
+  UNIQUE INDEX `Codi_UNIQUE` (`Codi`)
+) ENGINE = InnoDB;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`Direccio` (
+  `idDireccio` INT NOT NULL AUTO_INCREMENT,
+  `idTipus_via` INT NOT NULL,
+  `Nom_calle` VARCHAR(255) NOT NULL,
+  `idBarri` INT NULL,
+  `idCodi_postal` INT NULL,
+  PRIMARY KEY (`idDireccio`),
+  UNIQUE INDEX `uq_direccio` (`idTipus_via`, `Nom_calle`, `idBarri`, `idCodi_postal`),
+  INDEX `fk_direccio_tipus_via_idx` (`idTipus_via`),
+  INDEX `fk_direccio_barri_idx` (`idBarri`),
+  INDEX `fk_direccio_codi_postal_idx` (`idCodi_postal`),
+  CONSTRAINT `fk_direccio_tipus_via` FOREIGN KEY (`idTipus_via`) REFERENCES `mydb`.`tipus_via` (`idTipus_via`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_direccio_barri` FOREIGN KEY (`idBarri`) REFERENCES `mydb`.`barri` (`idBarri`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_direccio_codi_postal` FOREIGN KEY (`idCodi_postal`) REFERENCES `mydb`.`codi_postal` (`idCodi_postal`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Usuario_APP`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Usuario_APP` ;
+-- DROP TABLE IF EXISTS `mydb`.`Usuario_APP` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Usuario_APP` (
   `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
@@ -27,25 +59,11 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Usuario_APP` (
 ENGINE = InnoDB;
 
 
--- -----------------------------------------------------
--- Table `mydb`.`Direccio`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Direccio` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Direccio` (
-  `idDireccio` INT NOT NULL AUTO_INCREMENT,
-  `Calle` VARCHAR(45) NOT NULL,
-  `Nom_calle` VARCHAR(45) NOT NULL,
-  `Numero` INT NOT NULL,
-  `Piso` VARCHAR(45) NULL,
-  PRIMARY KEY (`idDireccio`))
-ENGINE = InnoDB;
-
 
 -- -----------------------------------------------------
 -- Table `mydb`.`Centre_coordinacio`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Centre_coordinacio` ;
+-- DROP TABLE IF EXISTS `mydb`.`Centre_coordinacio` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Centre_coordinacio` (
   `idCentre_coord` INT NOT NULL AUTO_INCREMENT,
@@ -65,7 +83,7 @@ CREATE INDEX `fk_Centros_coordinacion_Direcciones1_idx` ON `mydb`.`Centre_coordi
 -- -----------------------------------------------------
 -- Table `mydb`.`Proyectos`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Proyectos`;
+-- DROP TABLE IF EXISTS `mydb`.`Proyectos`;
 CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos`
     (
         `idProyecto`         INT NOT NULL AUTO_INCREMENT,
@@ -99,7 +117,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos`
 -- -----------------------------------------------------
 -- Table `mydb`.`Tipus_domicili`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Tipus_domicili` ;
+-- DROP TABLE IF EXISTS `mydb`.`Tipus_domicili` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Tipus_domicili` (
   `idTipus_domicili` INT NOT NULL AUTO_INCREMENT,
@@ -111,7 +129,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Domicili`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Domicili` ;
+-- DROP TABLE IF EXISTS `mydb`.`Domicili` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Domicili` (
   `idDomicili` INT NOT NULL AUTO_INCREMENT,
@@ -138,7 +156,7 @@ CREATE INDEX `fk_Domicilio_Direcciones1_idx` ON `mydb`.`Domicili` (`Direccio` AS
 -- -----------------------------------------------------
 -- Table `mydb`.`Proyectos_has_Usuarios APP`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Proyectos_has_Usuarios APP` ;
+-- DROP TABLE IF EXISTS `mydb`.`Proyectos_has_Usuarios APP` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos_has_Usuarios APP` (
   `idProyecto` INT NOT NULL,
@@ -163,7 +181,7 @@ CREATE INDEX `fk_Proyectos_has_Usuarios APP_Proyectos1_idx` ON `mydb`.`Proyectos
 -- -----------------------------------------------------
 -- Table `mydb`.`Estructura_familiar`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Estructura_familiar` ;
+-- DROP TABLE IF EXISTS `mydb`.`Estructura_familiar` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Estructura_familiar` (
   `idEstructura_familiar` INT NOT NULL AUTO_INCREMENT,
@@ -175,7 +193,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Familia`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Familia` ;
+-- DROP TABLE IF EXISTS `mydb`.`Familia` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Familia` (
   `idFamilia` INT NOT NULL AUTO_INCREMENT,
@@ -203,7 +221,7 @@ CREATE INDEX `fk_Familias_Estructura_familiar1_idx` ON `mydb`.`Familia` (`Estruc
 -- -----------------------------------------------------
 -- Table `mydb`.`Pais`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Pais` ;
+-- DROP TABLE IF EXISTS `mydb`.`Pais` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Pais` (
   `idPais` INT NOT NULL AUTO_INCREMENT,
@@ -215,7 +233,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Rol`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Rol` ;
+-- DROP TABLE IF EXISTS `mydb`.`Rol` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Rol` (
   `idRol` INT NOT NULL AUTO_INCREMENT,
@@ -227,7 +245,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Risc`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Risc` ;
+-- DROP TABLE IF EXISTS `mydb`.`Risc` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Risc` (
   `idRisc` INT NOT NULL AUTO_INCREMENT,
@@ -239,7 +257,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Resultat_academic`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Resultat_academic` ;
+-- DROP TABLE IF EXISTS `mydb`.`Resultat_academic` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Resultat_academic` (
   `idResultat_academic` INT NOT NULL AUTO_INCREMENT,
@@ -251,7 +269,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Motiu_baixa`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Motiu_baixa` ;
+-- DROP TABLE IF EXISTS `mydb`.`Motiu_baixa` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Motiu_baixa` (
   `idMotiu_baixa` INT NOT NULL AUTO_INCREMENT,
@@ -263,7 +281,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Situacio_economica`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Situacio_economica` ;
+-- DROP TABLE IF EXISTS `mydb`.`Situacio_economica` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Situacio_economica` (
   `idSituacio_economica` INT NOT NULL AUTO_INCREMENT,
@@ -275,7 +293,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Sebas`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Sebas` ;
+-- DROP TABLE IF EXISTS `mydb`.`Sebas` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Sebas` (
   `idSebas` INT NOT NULL AUTO_INCREMENT,
@@ -287,7 +305,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Curs_actual`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Curs_actual` ;
+-- DROP TABLE IF EXISTS `mydb`.`Curs_actual` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Curs_actual` (
   `idCurs_actual` INT NOT NULL AUTO_INCREMENT,
@@ -299,7 +317,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Genere`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Genere` ;
+-- DROP TABLE IF EXISTS `mydb`.`Genere` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Genere` (
   `idGenere` INT NOT NULL AUTO_INCREMENT,
@@ -311,7 +329,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Client`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Client` ;
+-- DROP TABLE IF EXISTS `mydb`.`Client` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Client` (
   `idClient` INT NOT NULL AUTO_INCREMENT,
@@ -412,7 +430,7 @@ CREATE INDEX `fk_Client_Genere1_idx` ON `mydb`.`Client` (`idGenere` ASC) VISIBLE
 -- -----------------------------------------------------
 -- Table `mydb`.`Client_has_Domicili`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Client_has_Domicili` ;
+-- DROP TABLE IF EXISTS `mydb`.`Client_has_Domicili` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Client_has_Domicili` (
   `idClient` INT NOT NULL,
@@ -437,7 +455,7 @@ CREATE INDEX `fk_Usuarios_has_Domicilio_Usuarios1_idx` ON `mydb`.`Client_has_Dom
 -- -----------------------------------------------------
 -- Table `mydb`.`Nacionalitat`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Nacionalitat` ;
+-- DROP TABLE IF EXISTS `mydb`.`Nacionalitat` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Nacionalitat` (
   `idPais` INT NOT NULL,
@@ -463,7 +481,7 @@ CREATE INDEX `fk_Paisos_nacionalitat_has_Usuarios_Paisos_nacionalitat1_idx` ON `
 -- -----------------------------------------------------
 -- Table `mydb`.`Necessitats_especials`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Necessitats_especials` ;
+-- DROP TABLE IF EXISTS `mydb`.`Necessitats_especials` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Necessitats_especials` (
   `idNecessitat_especial` INT NOT NULL AUTO_INCREMENT,
@@ -475,7 +493,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `mydb`.`Necessitats_especials_has_Client`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Necessitats_especials_has_Client` ;
+-- DROP TABLE IF EXISTS `mydb`.`Necessitats_especials_has_Client` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Necessitats_especials_has_Client` (
   `idNecessitat_especial` INT NOT NULL,
@@ -501,7 +519,7 @@ CREATE INDEX `fk_Necessitats_especials_has_Usuarios_Necessitats_especials_idx` O
 -- -----------------------------------------------------
 -- Table `mydb`.`Persona_relacionada`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Persona_relacionada` ;
+-- DROP TABLE IF EXISTS `mydb`.`Persona_relacionada` ;
 
 CREATE TABLE IF NOT EXISTS `mydb`.`Persona_relacionada` (
   `Client_idClient` INT NOT NULL,

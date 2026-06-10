@@ -1,6 +1,8 @@
 const fs = require("fs");
 const path = require("path");
-const pool = require("../config/database");
+const { createPool } = require("../config/database");
+
+const pool = createPool();
 
 async function runSQLFile(filePath) {
     const sql = fs.readFileSync(filePath, "utf8");

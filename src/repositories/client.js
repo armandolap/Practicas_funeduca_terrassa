@@ -1,4 +1,6 @@
-const pool = require("../config/database");
+const { createPool } = require("../config/database");
+
+const pool = createPool();
 // TODO: ubicacion — afegir gestió de Client_has_Domicili
 
 async function getAll() {

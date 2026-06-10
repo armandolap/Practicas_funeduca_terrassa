@@ -1,4 +1,6 @@
-const pool = require("../config/database");
+const { createPool } = require("../config/database");
+
+const pool = createPool();
 // aqui v ala peticion al server SQL 
 // FALTEN PUT i POST per editar i crear
 
