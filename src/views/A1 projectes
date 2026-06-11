@@ -28,3 +28,6 @@ los 4 botones son 3 filtros y el de CREAR ( vista apart ? )
 
      funcion filtro , coge los 2/4 criterios de los botones y  la cadena nos devuelve la lista de los que cumplen
         (query del repo)
+    RECIBE:  
+        2 BOOL  ( activo y abierto )
+        1 cadena ( para busqueda detallada )

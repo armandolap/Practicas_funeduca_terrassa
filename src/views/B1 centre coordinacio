@@ -9,3 +9,25 @@ Dentro de centros:
     Responsable(averiguar)
     Numero de proyectos asignados activos
     Numero de proyectos asignados abiertos
+
+_________________________________
+
+FUNCIONES
+
+LISTADO
+    lista de todos los centros de coordiancio 
+    de cadascun :
+    PER ORDRE DE CANTIDAD DE GENTE EN PROJECTES ACTIUS
+    retorna  
+    [
+        [num proy abiertos]
+        [num de proyectos activos]
+        NOMBRE centro 
+        Telefono contacto/mail 
+        [quantitat de gnet en projectes acitus]
+        [quant de families en projectes actius]
+    ]
+
+filtroCentros() 
+    esta devuelve lo mismo que la anterios, pero SOLO los que cumplen cadena de query 
+
