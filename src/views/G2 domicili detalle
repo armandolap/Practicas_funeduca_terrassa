@@ -1,0 +1,16 @@
+domicili detalle
+
+mostra 
+
+- direccio
+- tipo de domicili
+- llista de gent de la familia/direccio 
+        - info de la Persona
+                - nom Cognoms
+                - estat
+- familias que tenen aquesta direccio , en principi nomes 1
+        - nom familia , quant de membres ? , estructura_familiar
+
+
+- projectes als que participen les persones associades aaquest domicili 
+
