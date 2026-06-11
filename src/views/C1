@@ -1,0 +1,6 @@
+Responsable Projecte
+Tabla de los usuarios de la app
+Primer campo- Boton crear responsable
+        Botones para filtros: Todos - Responsable de proyecto- Trabajador de proyecto
+Debajo habrá una lista con todos los usuarios de la app
+Datos dentro de usuario app: Nombre, Apellidos, Rol de usuario, proyecto asignado

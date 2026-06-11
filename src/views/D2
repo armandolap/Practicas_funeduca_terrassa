@@ -1,0 +1,15 @@
+Vista detalle de los clientes (usuarios de los proyectos)
+Primero: Datos de la persona
+    Nom i cognoms
+    edat
+    Genere
+    temps a la associatio
+    quant de activitats fetes
+A la derecha: 
+    Familia
+    Domicili
+    Telefon
+    Correo
+Debajo: Filtro de proyectos en los que estuvo esta persona
+    Actius/Inscrit-futur/ passats           Tots
+Lista de proyectos en los que participo esta persona

@@ -1,0 +1,5 @@
+Usuario detalle:
+Pagina con los datos de cada usuario
+En grande: Nombre y Apellidos
+Debajo: Correo,numero de movil y rol del proyecto
+Debajo de esto: Lista de proyectos a los que esta asociado (asignado o trabajando)

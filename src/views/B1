@@ -1,0 +1,11 @@
+Centre coordinació
+Pagina donde mostraremos los centros de coordinacion registrados
+Primero tendra dos botones:
+    Tots(por si luego agregamos filtros)
+    Añadir: Para crear un nuevo centre coordinació
+Debajo una lista de centros de coordinacion
+Dentro de centros: 
+    Direccion
+    Responsable(averiguar)
+    Numero de proyectos asignados activos
+    Numero de proyectos asignados abiertos

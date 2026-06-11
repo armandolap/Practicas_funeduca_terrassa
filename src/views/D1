@@ -1,0 +1,13 @@
+Vista de clientes (usuarios de los proyectos)
+Arriba un boton de crear nuevo
+Debajo un campo de filtos:
+    Por nombre
+    Por edad
+    Por familias
+    Por genero 
+    Por barri
+Luego una lista con los nombres y apellidos de los usuarios
+    Campos extra:
+                Edad 
+                Familia
+                Proyecto en el que participa
