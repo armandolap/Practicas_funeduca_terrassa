@@ -30,7 +30,7 @@ LISTADO
     ]
 
 filtroCentros(por query una cadena de busqueda que puede ser vacía y devuelve todos) {
-    
+
     esta devuelve lo mismo que la anterios, pero SOLO los que cumplen cadena de query 
 }
 

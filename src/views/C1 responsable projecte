@@ -34,7 +34,7 @@ filtros :
         - resposables 
         - trabajadores
 
-        listaUsuariosAPP ( bool trabajador , bool empleado  , por query cadena de busqueda en nombre/apellido) { 
+listaUsuariosAPP ( bool trabajador , bool empleado  , por query cadena de busqueda en nombre/apellido) { 
 
                 filtra por cadena de busxqueda
         }
@@ -42,9 +42,25 @@ filtros :
         devuelve: array de personas responsables
         ORDER BY cantidad de proyectos activos 
         [
+                ID de usuario
                 nombre 
                 telefono 
                 correo 
+                num proj oberts 
+                num proj actius
+                num gent participant en proj actius
+                
         ]
+
+
+En la primera vista de la pagina se muestran SOLO los responsables, el filtro de trabajador , de momento está no activo ( filtro activo VERDE , inactivo lila ) 
+
+se muestra [proj activios](proj abiertos) [cantidad de gente participando en proj activos que dependenen de el] NOMBRE TELEFONO mail
+[ 5 ] ( 3 )  [ 45 ]  Angel martinez 666.456.953  (en oculto guardamos el ID del usuario )
+-----
+
+MANDAR A PAGINA DE DETALLE 
+        (front -->  ) recibe un id de usuario y se la manda a la siguiente vista para cargar los detalles 
+
 
 
