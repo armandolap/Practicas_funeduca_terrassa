@@ -4,3 +4,47 @@ Primer campo- Boton crear responsable
         Botones para filtros: Todos - Responsable de proyecto- Trabajador de proyecto
 Debajo habrá una lista con todos los usuarios de la app
 Datos dentro de usuario app: Nombre, Apellidos, Rol de usuario, proyecto asignado
+_________________________________
+
+aqui es mostra el llistat d'usuaris de la app. 
+
+d'entrada necesita la llista completa d'usuaris de la app
+    - nom i Cognoms 
+    - llista de projectes de cada Persona
+    - telefon de contacte-mail 
+    - num de projectes que té en actiu 
+
+Actius mostra totes les persones associades a projectes en actiu/oberts
+
+tots, mostra TOTS els usuaris de la app aka responsables de projectes 
+
+passats, no sé què mostrar.. 
+
+
+-------------------------------------
+CREAR ens faltarà la vista F3
+que sera similar a F2 pero editable? o en detall es podra editar derectament... ? 
+ES LO MISMO QUE USUAIOS APP 
+________________________________________________
+
+
+FUNCIONES
+
+filtros : 
+        - resposables 
+        - trabajadores
+
+        listaUsuariosAPP ( bool trabajador , bool empleado  , por query cadena de busqueda en nombre/apellido) { 
+
+                filtra por cadena de busxqueda
+        }
+        
+        devuelve: array de personas responsables
+        ORDER BY cantidad de proyectos activos 
+        [
+                nombre 
+                telefono 
+                correo 
+        ]
+
+
