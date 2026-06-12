@@ -14,3 +14,19 @@ mostra
 
 - projectes als que participen les persones associades aaquest domicili 
 
+_______________________________
+
+FUNCIONS
+
+getDomiciliDetalle (iD de domicili ) {
+
+retorna : 
+        - tipus domicili
+        - direcció del domicili
+        - [ id de persones que tenen aquest domicili]-> clientedetalle -> detalls de la persona
+                - [ d'on treiem un array de projectes on estan associats ]
+                - [ familia / es d'aquestes persones ]
+                - [ necessitats_especials de les persones]
+                - RISC 
+         
+}
