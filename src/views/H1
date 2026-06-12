@@ -6,40 +6,56 @@ i cada informe es mostrarà a sota.
 necessitem 
 - cada inform
 - la llista de taules a mostrar:
-
+(Haremos un controlador/ruta y repositorio especifico para los reportes)
+    GET /reports/projectes/generesEdats (sera un get enorme xd  o podria ser 1 get por proyecto agregando :idProject antes de generesEdats)
     -Projectes y filtro por genero y edad 
     ejm: canpa jove/ homes 0-3 anys,homes 4-6 anys,...,total homes, dones 0-3,...total dones,non binaris 0-3,...,total non binaris,total persones, baixes
 
+    GET /reports/genere
     -Genere y total anual
 
+    GET /reports/sitEco/
     -situacion económica y tipo (rol) de usuario
     ejm: autonom,aturat/ usuari fill,usuari adult
 
+    GET /reports/rolFam
     -Rol familiar y total anual
     
+    GET /reports/tipHab
     -Tipo de habitatge y cantidad
 
+    GET /reports/cont
+    GET /reports/cont/users
+    GET /reports/cont/families
+    GET /reports/cont/baixas
     -Contador por usuarios unicos, familias unicas y bajas /total y genero
     ejm: baixas/total,dones,homes,non binari
 
+    GET /reports/neses
     -Necesidades especiales/ total y genero
     ejm: amb diagnostic/total,dones,homes, non binari
 
+    GET /reports/sebasDev
     -Seguimiento de asistencia social (sebas) y total con seguimiento, con derivaciones
     ejm: sebas2.1./total amb seguiment,total derivacions
 
+    GET /reports/cursAny/:any (Aqui no se si haremos muchas por año,pero lo dudo)
     -Curso actual y total por año actual ,luego resultado academico por curso y un porcentaje de esto
     ejm: 3r ESO/totals any actual,promociona, percentatge promociona,repeteix,percentatge repeteix,abandona estudis,% abandona estudis, no obte plaça,% sense plaça, accedeix al mon laboral,% acces mon laboral
 
+    GET /reports/resAcad
     -Resultados academicos y total
     ejm: repeteix y total
 
+    GET /reports/motiusBaixa
     -Motivos de baja y total personas
     ejm:quotes impagades/total
 
+    GET /reports/riscos
     -Risc y total
     ejm: alt/total
 
+    GET /reports/països
     -Pais/total nacionalidad y total pais de nacimiento 
 
 
