@@ -2,4 +2,36 @@ Usuario detalle:
 Pagina con los datos de cada usuario
 En grande: Nombre y Apellidos
 Debajo: Correo,numero de movil y rol del proyecto
-Debajo de esto: Lista de proyectos a los que esta asociado (asignado o trabajando)
+Debajo de esto: Lista de proyectos a los que esta asociado (asignado o trabajando)Debajo de esto: Lista de proyectos a los que esta asociado (asignado o trabajando)
+
+
+
+FUNCIONES
+
+getUsuarioDetalle ( id de usuario ) {
+    retorna :
+
+    - nom i cognoms 
+    - rol ( treballador/responsable )
+
+    - [
+        - ID projectes en els que participa,
+            - getProjectebyID -> treurem la info   
+                - nom , participants, estat (ob/tanc act/inact)   
+    ]
+    -->    amb aquesta info podem omplir les dades: 
+        - num projectes
+            - oberts
+                - actius
+                - inactius
+            - tancats
+    
+} 
+
+serveix per mostrar a dades de la persona  :
+    - [#proj] [#oberts] [#actius]  [#inactius ] [#tancats] 
+    - nom i cognoms de la persona
+    - dades de contacte 
+    - llistar els projectes -> farà servir funció getbyID de projecte per la info
+
+
