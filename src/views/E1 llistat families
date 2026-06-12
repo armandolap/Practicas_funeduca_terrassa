@@ -1,0 +1,40 @@
+llista de families
+
+nom de la familia, membres de la familia ,
+ estructura_familiar,  direccio ppal de la familia 
+
+ .
+ tenim opcio de posar filtres - 
+    estructura familia
+    quant de membres
+    barris 
+    codi postal 
+    tipus de familia/estructura_familiar
+_________________________________________________
+
+FUNCIONES
+
+getAll()  que devuelve las 10/15 primeras 
+ORDEN ALPFABETICO
+filtros 
+   - cadena para nombres
+   - tipo familia ( estructura )
+   - barrio 
+   - centro coord
+
+
+
+filtroFamilia( cadena busqeda, filtros ) 
+{
+
+
+} 
+devuelve un array de fmailias que cumplen filtros
+   cantidad miembros 
+      menores/maayores de edad 
+   apellido/s
+   1 domicilio principal
+   (nombre responsable familia?)
+   idFamilia
+   centro coordinacion 
+

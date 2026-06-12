@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cercador de carrers</title>
+<link rel="stylesheet" href="/css/callejero.css">
+</head>
+<body>
+<h1>Cercador de carrers</h1>
+
+<div class="preview-bar" id="previewBar"></div>
+
+<label for="tipusVia">Tipus de via</label>
+<select id="tipusVia">
+    <option value="">-- Selecciona --</option>
+</select>
+
+<label for="nomCalle">Nom del carrer</label>
+<div class="autocomplete-wrap">
+    <input type="text" id="nomCalle" placeholder="Escriu almenys 3 caràcters..." autocomplete="off">
+    <div class="dropdown" id="dropdown"></div>
+</div>
+
+<label for="barri">Barri</label>
+<input type="text" id="barri" readonly>
+
+<label for="codiPostal">Codi postal</label>
+<input type="text" id="codiPostal" readonly>
+
+<script src="/js/callejero.js"></script>
+</body>
+</html>

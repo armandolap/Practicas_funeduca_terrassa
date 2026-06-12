@@ -1,0 +1,19 @@
+Projecte detalle
+Pagina de detalle de cada proyecto
+Tiene el nombre de proyecto en grande
+Un campo donde muestra:
+    Abierto/cerrado
+    Activo/inactivo(se calcula entre fecha inicio y fin)
+    fecha inicio/fecha fin
+    participantes
+    aforo
+Debajo del nombre del proyecto:
+    responsable del proyecto: nombre,telefono y mail
+Debajo del responsable del proyecto    
+    centre coordinació
+    centre activitat
+Otro campo con una descripción del proyecto
+
+Debajo:
+    Lista de participantes
+    Lista de familias

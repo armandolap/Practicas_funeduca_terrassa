@@ -1,0 +1,38 @@
+Centre coordinació
+Pagina donde mostraremos los centros de coordinacion registrados
+Primero tendra dos botones:
+    Tots(por si luego agregamos filtros)
+    Añadir: Para crear un nuevo centre coordinació
+Debajo una lista de centros de coordinacion
+Dentro de centros: 
+    Direccion
+    Responsable(averiguar)
+    Numero de proyectos asignados activos
+    Numero de proyectos asignados abiertos
+
+_________________________________
+
+FUNCIONES
+
+LISTADO
+
+    lista de todos los centros de coordiancio 
+    de cadascun :
+    PER ORDRE DE CANTIDAD DE GENTE EN PROJECTES ACTIUS
+    retorna  
+    [
+        [num proy abiertos]
+        [num de proyectos activos]
+        NOMBRE centro 
+        Telefono contacto/mail 
+        [quantitat de gnet en projectes acitus]
+        [quant de families en projectes actius]
+    ]
+
+filtroCentros(por query una cadena de busqueda que puede ser vacía y devuelve todos) {
+
+    esta devuelve lo mismo que la anterios, pero SOLO los que cumplen cadena de query 
+}
+
+( Es una sola funcion , con o sin filtro )
+

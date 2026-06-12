@@ -55,7 +55,7 @@ async function createProject(req, res) {
             Nom_projecte,
             Descripcio,
             responsable,
-            Centre_coordinacio,               // por defecto deberia ser la del centro de coord general , id = 1 ?? ( dnd fuimos )
+            Centre_coordinacio =1,               // por defecto deberia ser la del centro de coord general , id = 1 ?? ( dnd fuimos )
             fecha_inicio = fechaActual,         // Si viene undefined, toma la fecha de hoy
             fecha_fin = fechaActual,            // Si viene undefined, toma la fecha de hoy
             //ubicacion,   // por defecto deberia ser la del centro de coord 
