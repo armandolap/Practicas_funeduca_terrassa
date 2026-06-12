@@ -136,7 +136,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`tipus_domicili` (
   `idTipus_domicili` INT NOT NULL AUTO_INCREMENT,
-  `Nom_domicili` VARCHAR(45) NOT NULL,
+  `Nom_domicili` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idTipus_domicili`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -167,7 +167,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`genere` (
   `idGenere` INT NOT NULL AUTO_INCREMENT,
-  `Nom_genere` VARCHAR(45) NOT NULL,
+  `Nom_genere` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idGenere`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -189,7 +189,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`estructura_familiar` (
   `idEstructura_familiar` INT NOT NULL AUTO_INCREMENT,
-  `Nom_est_fam` VARCHAR(45) NOT NULL,
+  `Nom_est_fam` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idEstructura_familiar`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -216,7 +216,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`motiu_baixa` (
   `idMotiu_baixa` INT NOT NULL AUTO_INCREMENT,
-  `Nom_motiu_baixa` VARCHAR(45) NOT NULL,
+  `Nom_motiu_baixa` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idMotiu_baixa`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -227,7 +227,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`pais` (
   `idPais` INT NOT NULL AUTO_INCREMENT,
-  `Nom_pais` VARCHAR(120) NOT NULL,
+  `Nom_pais` VARCHAR(120) NOT NULL UNIQUE,
   PRIMARY KEY (`idPais`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -238,7 +238,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`resultat_academic` (
   `idResultat_academic` INT NOT NULL AUTO_INCREMENT,
-  `Nom_resultat_acad` VARCHAR(45) NOT NULL,
+  `Nom_resultat_acad` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idResultat_academic`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -249,7 +249,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`risc` (
   `idRisc` INT NOT NULL AUTO_INCREMENT,
-  `Nivel` VARCHAR(45) NOT NULL,
+  `Nivel` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idRisc`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -260,7 +260,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`rol` (
   `idRol` INT NOT NULL AUTO_INCREMENT,
-  `Nom_rol` VARCHAR(45) NOT NULL,
+  `Nom_rol` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idRol`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -271,7 +271,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`sebas` (
   `idSebas` INT NOT NULL AUTO_INCREMENT,
-  `Nom` VARCHAR(45) NOT NULL,
+  `Nom` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idSebas`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -282,7 +282,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`situacio_economica` (
   `idSituacio_economica` INT NOT NULL AUTO_INCREMENT,
-  `Nom` VARCHAR(45) NOT NULL,
+  `Nom` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idSituacio_economica`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
@@ -388,7 +388,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `mydb`.`necessitats_especials` (
   `idNecessitat_especial` INT NOT NULL AUTO_INCREMENT,
-  `Nom_necessitat` VARCHAR(45) NOT NULL,
+  `Nom_necessitat` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idNecessitat_especial`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
