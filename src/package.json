@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch server.js"
+    "AI_test": "node AI_test.js",
+    "dev": "node --watch server.js",
+    "config": "node ../setup.js"
   },
   "keywords": [],
   "author": "",

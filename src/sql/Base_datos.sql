@@ -7,520 +7,490 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema mydb
 -- -----------------------------------------------------
-DROP SCHEMA IF EXISTS `mydb` ;
 
 -- -----------------------------------------------------
 -- Schema mydb
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8 ;
+CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8mb3 ;
 USE `mydb` ;
 
 -- -----------------------------------------------------
--- Table `mydb`.`Usuario_APP`
+-- Table `mydb`.`barri`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Usuario_APP` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Usuario_APP` (
-  `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
-  `Rol_usuario` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idUsuario_APP`))
-ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `mydb`.`barri` (
+  `idBarri` INT NOT NULL AUTO_INCREMENT,
+  `Nom` VARCHAR(100) NOT NULL,
+  PRIMARY KEY (`idBarri`),
+  UNIQUE INDEX `Nom_UNIQUE` (`Nom` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Direccio`
+-- Table `mydb`.`codi_postal`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Direccio` ;
+CREATE TABLE IF NOT EXISTS `mydb`.`codi_postal` (
+  `idCodi_postal` INT NOT NULL AUTO_INCREMENT,
+  `Codi` VARCHAR(10) NOT NULL,
+  PRIMARY KEY (`idCodi_postal`),
+  UNIQUE INDEX `Codi_UNIQUE` (`Codi` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Direccio` (
+
+-- -----------------------------------------------------
+-- Table `mydb`.`tipus_via`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`tipus_via` (
+  `idTipus_via` INT NOT NULL AUTO_INCREMENT,
+  `Nom` VARCHAR(50) NOT NULL,
+  PRIMARY KEY (`idTipus_via`),
+  UNIQUE INDEX `Nom_UNIQUE` (`Nom` ASC) VISIBLE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`callejero`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`callejero` (
+  `idcallejero` INT NOT NULL AUTO_INCREMENT,
+  `idBarri` INT NOT NULL,
+  `idTipus_via` INT NOT NULL,
+  `idCodi_postal` INT NOT NULL,
+  `Nom_calle` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`idcallejero`),
+  INDEX `fk_callejero_barri1_idx` (`idBarri` ASC) VISIBLE,
+  INDEX `fk_callejero_tipus_via1_idx` (`idTipus_via` ASC) VISIBLE,
+  INDEX `fk_callejero_codi_postal1_idx` (`idCodi_postal` ASC) VISIBLE,
+  CONSTRAINT `fk_callejero_barri1`
+    FOREIGN KEY (`idBarri`)
+    REFERENCES `mydb`.`barri` (`idBarri`),
+  CONSTRAINT `fk_callejero_codi_postal1`
+    FOREIGN KEY (`idCodi_postal`)
+    REFERENCES `mydb`.`codi_postal` (`idCodi_postal`),
+  CONSTRAINT `fk_callejero_tipus_via1`
+    FOREIGN KEY (`idTipus_via`)
+    REFERENCES `mydb`.`tipus_via` (`idTipus_via`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`direccio`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`direccio` (
   `idDireccio` INT NOT NULL AUTO_INCREMENT,
-  `Calle` VARCHAR(45) NOT NULL,
-  `Nom_calle` VARCHAR(45) NOT NULL,
-  `Numero` INT NOT NULL,
-  `Piso` VARCHAR(45) NULL,
-  PRIMARY KEY (`idDireccio`))
-ENGINE = InnoDB;
+  `idcallejero` INT NOT NULL,
+  `Num_calle` VARCHAR(45) NOT NULL,
+  `Pis` VARCHAR(45) NULL DEFAULT NULL,
+  `Escala` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`idDireccio`),
+  INDEX `fk_direccio_callejero1_idx` (`idcallejero` ASC) VISIBLE,
+  CONSTRAINT `fk_direccio_callejero1`
+    FOREIGN KEY (`idcallejero`)
+    REFERENCES `mydb`.`callejero` (`idcallejero`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Centre_coordinacio`
+-- Table `mydb`.`centre_coordinacio`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Centre_coordinacio` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Centre_coordinacio` (
+CREATE TABLE IF NOT EXISTS `mydb`.`centre_coordinacio` (
   `idCentre_coord` INT NOT NULL AUTO_INCREMENT,
   `Nom_centre_coord` VARCHAR(45) NOT NULL,
   `idDireccio` INT NOT NULL,
-  PRIMARY KEY (`idCentre_coord`, `idDireccio`),
+  PRIMARY KEY (`idCentre_coord`),
+  INDEX `fk_Centros_coordinacion_Direcciones1_idx` (`idDireccio` ASC) VISIBLE,
   CONSTRAINT `fk_Centros_coordinacion_Direcciones1`
     FOREIGN KEY (`idDireccio`)
-    REFERENCES `mydb`.`Direccio` (`idDireccio`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE INDEX `fk_Centros_coordinacion_Direcciones1_idx` ON `mydb`.`Centre_coordinacio` (`idDireccio` ASC) VISIBLE;
+    REFERENCES `mydb`.`direccio` (`idDireccio`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Proyectos`
+-- Table `mydb`.`centre_activitats`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Proyectos`;
-CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos`
-    (
-        `idProyecto`         INT NOT NULL AUTO_INCREMENT,
-        `Nom_projecte`       VARCHAR(45) NOT NULL       ,
-        `Descripcio`         VARCHAR(512)               ,
-        `fecha_inicio`       DATE NOT NULL              ,
-        `fecha_fin`          DATE                       ,
-        `plazas`             INT NOT NULL DEFAULT 0     ,
-        `inscritos`          INT NOT NULL DEFAULT 0     ,
-        `fecha_inicio_act`   DATE                       ,
-        `fecha_fin_act`      DATE                       ,
-        `Centre_coordinacio` INT NOT NULL               ,
-        `responsable`        INT NOT NULL               ,
-        -- pendiente: Ubicacion donde se desarrolla la actividad
-        PRIMARY KEY (`idProyecto`),
-        -- Índices explícitos para las Foreign Keys (dentro de la tabla, más limpio)
-        INDEX `fk_Proyectos_Centros_coordinacion1_idx` (`Centre_coordinacio` ASC) VISIBLE,
-        INDEX `fk_Proyectos_Usuario_APP_idx` (`responsable` ASC) VISIBLE                 ,
-        -- Restricciones de Integridad Referencial
-        CONSTRAINT `fk_Proyectos_Usuario_APP` FOREIGN KEY (`responsable`) REFERENCES `mydb`.`Usuario_APP` (`idUsuario_APP`) ON
-        DELETE
-            NO ACTION ON
-        UPDATE
-            NO ACTION,
-            CONSTRAINT `fk_Proyectos_Centros_coordinacion1` FOREIGN KEY (`Centre_coordinacio`) REFERENCES `mydb`.`Centre_coordinacio` (`idCentre_coord`) ON
-        DELETE
-            NO ACTION ON
-        UPDATE
-            NO ACTION ) ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `mydb`.`centre_activitats` (
+  `idcentre_activitats` INT NOT NULL AUTO_INCREMENT,
+  `nom_centre_activitats` VARCHAR(45) NOT NULL,
+  `idCentre_coord` INT NOT NULL,
+  `direccio_idDireccio` INT NOT NULL,
+  PRIMARY KEY (`idcentre_activitats`),
+  INDEX `fk_centre_activitats_centre_coordinacio1_idx` (`idCentre_coord` ASC) VISIBLE,
+  INDEX `fk_centre_activitats_direccio1_idx` (`direccio_idDireccio` ASC) VISIBLE,
+  CONSTRAINT `fk_centre_activitats_centre_coordinacio1`
+    FOREIGN KEY (`idCentre_coord`)
+    REFERENCES `mydb`.`centre_coordinacio` (`idCentre_coord`),
+  CONSTRAINT `fk_centre_activitats_direccio1`
+    FOREIGN KEY (`direccio_idDireccio`)
+    REFERENCES `mydb`.`direccio` (`idDireccio`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
 
 -- -----------------------------------------------------
--- Table `mydb`.`Tipus_domicili`
+-- Table `mydb`.`tipus_domicili`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Tipus_domicili` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Tipus_domicili` (
+CREATE TABLE IF NOT EXISTS `mydb`.`tipus_domicili` (
   `idTipus_domicili` INT NOT NULL AUTO_INCREMENT,
-  `Nom_domicili` VARCHAR(45) NOT NULL,
+  `Nom_domicili` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idTipus_domicili`))
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Domicili`
+-- Table `mydb`.`domicili`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Domicili` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Domicili` (
+CREATE TABLE IF NOT EXISTS `mydb`.`domicili` (
   `idDomicili` INT NOT NULL AUTO_INCREMENT,
   `Tipus_domicili` INT NOT NULL,
   `Direccio` INT NOT NULL,
-  PRIMARY KEY (`idDomicili`, `Tipus_domicili`, `Direccio`),
-  CONSTRAINT `fk_Domicilio_Tipo_domicilio`
-    FOREIGN KEY (`Tipus_domicili`)
-    REFERENCES `mydb`.`Tipus_domicili` (`idTipus_domicili`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+  PRIMARY KEY (`idDomicili`),
+  INDEX `fk_Domicilio_Tipo_domicilio_idx` (`Tipus_domicili` ASC) VISIBLE,
+  INDEX `fk_Domicilio_Direcciones1_idx` (`Direccio` ASC) VISIBLE,
   CONSTRAINT `fk_Domicilio_Direcciones1`
     FOREIGN KEY (`Direccio`)
-    REFERENCES `mydb`.`Direccio` (`idDireccio`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE INDEX `fk_Domicilio_Tipo_domicilio_idx` ON `mydb`.`Domicili` (`Tipus_domicili` ASC) VISIBLE;
-
-CREATE INDEX `fk_Domicilio_Direcciones1_idx` ON `mydb`.`Domicili` (`Direccio` ASC) VISIBLE;
+    REFERENCES `mydb`.`direccio` (`idDireccio`),
+  CONSTRAINT `fk_Domicilio_Tipo_domicilio`
+    FOREIGN KEY (`Tipus_domicili`)
+    REFERENCES `mydb`.`tipus_domicili` (`idTipus_domicili`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Proyectos_has_Usuarios APP`
+-- Table `mydb`.`genere`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Proyectos_has_Usuarios APP` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Proyectos_has_Usuarios APP` (
-  `idProyecto` INT NOT NULL,
-  `idUsuario_APP` INT NOT NULL,
-  CONSTRAINT `fk_Proyectos_has_Usuarios APP_Proyectos1`
-    FOREIGN KEY (`idProyecto`)
-    REFERENCES `mydb`.`Proyectos` (`idProyecto`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Proyectos_has_Usuarios APP_Usuarios APP1`
-    FOREIGN KEY (`idUsuario_APP`)
-    REFERENCES `mydb`.`Usuario_APP` (`idUsuario_APP`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE INDEX `fk_Proyectos_has_Usuarios APP_Usuarios APP1_idx` ON `mydb`.`Proyectos_has_Usuarios APP` (`idUsuario_APP` ASC) VISIBLE;
-
-CREATE INDEX `fk_Proyectos_has_Usuarios APP_Proyectos1_idx` ON `mydb`.`Proyectos_has_Usuarios APP` (`idProyecto` ASC) VISIBLE;
+CREATE TABLE IF NOT EXISTS `mydb`.`genere` (
+  `idGenere` INT NOT NULL AUTO_INCREMENT,
+  `Nom_genere` VARCHAR(45) NOT NULL UNIQUE,
+  PRIMARY KEY (`idGenere`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Estructura_familiar`
+-- Table `mydb`.`curs_actual`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Estructura_familiar` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Estructura_familiar` (
-  `idEstructura_familiar` INT NOT NULL AUTO_INCREMENT,
-  `Nom_est_fam` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idEstructura_familiar`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`Familia`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Familia` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Familia` (
-  `idFamilia` INT NOT NULL AUTO_INCREMENT,
-  `Cognom_familiar` VARCHAR(45) NOT NULL,
-  `idDomicili` INT NOT NULL,
-  `Estructura_familiar` INT NOT NULL,
-  PRIMARY KEY (`idFamilia`, `idDomicili`, `Estructura_familiar`),
-  CONSTRAINT `fk_Familias_Domicilio1`
-    FOREIGN KEY (`idDomicili`)
-    REFERENCES `mydb`.`Domicili` (`idDomicili`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Familias_Estructura_familiar1`
-    FOREIGN KEY (`Estructura_familiar`)
-    REFERENCES `mydb`.`Estructura_familiar` (`idEstructura_familiar`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE INDEX `fk_Familias_Domicilio1_idx` ON `mydb`.`Familia` (`idDomicili` ASC) VISIBLE;
-
-CREATE INDEX `fk_Familias_Estructura_familiar1_idx` ON `mydb`.`Familia` (`Estructura_familiar` ASC) VISIBLE;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`Pais`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Pais` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Pais` (
-  `idPais` INT NOT NULL AUTO_INCREMENT,
-  `Nom_pais` VARCHAR(120) NOT NULL,
-  PRIMARY KEY (`idPais`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`Rol`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Rol` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Rol` (
-  `idRol` INT NOT NULL AUTO_INCREMENT,
-  `Nom_rol` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idRol`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`Risc`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Risc` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Risc` (
-  `idRisc` INT NOT NULL AUTO_INCREMENT,
-  `Nivel` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idRisc`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`Resultat_academic`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Resultat_academic` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Resultat_academic` (
-  `idResultat_academic` INT NOT NULL AUTO_INCREMENT,
-  `Nom_resultat_acad` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idResultat_academic`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`Motiu_baixa`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Motiu_baixa` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Motiu_baixa` (
-  `idMotiu_baixa` INT NOT NULL AUTO_INCREMENT,
-  `Nom_motiu_baixa` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idMotiu_baixa`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`Situacio_economica`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Situacio_economica` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Situacio_economica` (
-  `idSituacio_economica` INT NOT NULL AUTO_INCREMENT,
-  `Nom` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idSituacio_economica`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`Sebas`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Sebas` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Sebas` (
-  `idSebas` INT NOT NULL AUTO_INCREMENT,
-  `Nom` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idSebas`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`Curs_actual`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Curs_actual` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Curs_actual` (
+CREATE TABLE IF NOT EXISTS `mydb`.`curs_actual` (
   `idCurs_actual` INT NOT NULL AUTO_INCREMENT,
   `Nom` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idCurs_actual`))
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Genere`
+-- Table `mydb`.`estructura_familiar`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Genere` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Genere` (
-  `idGenere` INT NOT NULL AUTO_INCREMENT,
-  `Nom_genere` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idGenere`))
-ENGINE = InnoDB;
+CREATE TABLE IF NOT EXISTS `mydb`.`estructura_familiar` (
+  `idEstructura_familiar` INT NOT NULL AUTO_INCREMENT,
+  `Nom_est_fam` VARCHAR(45) NOT NULL UNIQUE,
+  PRIMARY KEY (`idEstructura_familiar`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Client`
+-- Table `mydb`.`familia`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Client` ;
+CREATE TABLE IF NOT EXISTS `mydb`.`familia` (
+  `idFamilia` INT NOT NULL AUTO_INCREMENT,
+  `Cognom_familiar` VARCHAR(45) NOT NULL,
+  `Estructura_familiar` INT NOT NULL,
+  PRIMARY KEY (`idFamilia`),
+  INDEX `fk_Familias_Estructura_familiar1_idx` (`Estructura_familiar` ASC) VISIBLE,
+  CONSTRAINT `fk_Familias_Estructura_familiar1`
+    FOREIGN KEY (`Estructura_familiar`)
+    REFERENCES `mydb`.`estructura_familiar` (`idEstructura_familiar`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Client` (
+
+-- -----------------------------------------------------
+-- Table `mydb`.`motiu_baixa`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`motiu_baixa` (
+  `idMotiu_baixa` INT NOT NULL AUTO_INCREMENT,
+  `Nom_motiu_baixa` VARCHAR(45) NOT NULL UNIQUE,
+  PRIMARY KEY (`idMotiu_baixa`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`pais`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`pais` (
+  `idPais` INT NOT NULL AUTO_INCREMENT,
+  `Nom_pais` VARCHAR(120) NOT NULL UNIQUE,
+  PRIMARY KEY (`idPais`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`resultat_academic`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`resultat_academic` (
+  `idResultat_academic` INT NOT NULL AUTO_INCREMENT,
+  `Nom_resultat_acad` VARCHAR(45) NOT NULL UNIQUE,
+  PRIMARY KEY (`idResultat_academic`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`risc`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`risc` (
+  `idRisc` INT NOT NULL AUTO_INCREMENT,
+  `Nivel` VARCHAR(45) NOT NULL UNIQUE,
+  PRIMARY KEY (`idRisc`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`rol`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`rol` (
+  `idRol` INT NOT NULL AUTO_INCREMENT,
+  `Nom_rol` VARCHAR(45) NOT NULL UNIQUE,
+  PRIMARY KEY (`idRol`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`sebas`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`sebas` (
+  `idSebas` INT NOT NULL AUTO_INCREMENT,
+  `Nom` VARCHAR(45) NOT NULL UNIQUE,
+  PRIMARY KEY (`idSebas`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`situacio_economica`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`situacio_economica` (
+  `idSituacio_economica` INT NOT NULL AUTO_INCREMENT,
+  `Nom` VARCHAR(45) NOT NULL UNIQUE,
+  PRIMARY KEY (`idSituacio_economica`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`client`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`client` (
   `idClient` INT NOT NULL AUTO_INCREMENT,
   `idFamilia` INT NOT NULL,
   `idRol` INT NOT NULL,
   `idGenere` INT NOT NULL,
   `Nom` VARCHAR(45) NOT NULL,
   `Cognoms` VARCHAR(60) NOT NULL,
-  `Telefon` VARCHAR(45) NULL,
-  `Correu_electronic` VARCHAR(45) NULL,
+  `Telefon` VARCHAR(45) NULL DEFAULT NULL,
+  `Correu_electronic` VARCHAR(45) NULL DEFAULT NULL,
   `Data_d_alta` DATE NOT NULL,
   `C_temps_a_lentitat` VARCHAR(45) NOT NULL,
   `Fecha_nacimiento` DATE NOT NULL,
   `C_edad` INT NOT NULL,
-  `Data_baixa` DATE NULL,
   `Pais_naixement` INT NOT NULL,
   `Risc` INT NOT NULL,
   `Resultat_academic` INT NOT NULL,
-  `Motiu_baixa` INT NULL,
   `idSituacio_economica` INT NOT NULL,
   `idSebas` INT NOT NULL,
   `derivacio_serveis_socials` TINYINT NOT NULL,
-  `Curs_actual` INT NULL,
-  PRIMARY KEY (`idClient`, `idFamilia`, `idRol`, `idGenere`, `Pais_naixement`, `Risc`, `idSituacio_economica`, `idSebas`),
-  CONSTRAINT `fk_Usuarios_Familias1`
-    FOREIGN KEY (`idFamilia`)
-    REFERENCES `mydb`.`Familia` (`idFamilia`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Usuarios_Paisos_nacionalitat1`
-    FOREIGN KEY (`Pais_naixement`)
-    REFERENCES `mydb`.`Pais` (`idPais`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Usuarios_Rols1`
-    FOREIGN KEY (`idRol`)
-    REFERENCES `mydb`.`Rol` (`idRol`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Usuarios_Risc1`
-    FOREIGN KEY (`Risc`)
-    REFERENCES `mydb`.`Risc` (`idRisc`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Usuarios_Resultats_academics1`
-    FOREIGN KEY (`Resultat_academic`)
-    REFERENCES `mydb`.`Resultat_academic` (`idResultat_academic`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Usuarios_Motiux_baixa1`
-    FOREIGN KEY (`Motiu_baixa`)
-    REFERENCES `mydb`.`Motiu_baixa` (`idMotiu_baixa`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Usuarios_Situacio_laboral1`
-    FOREIGN KEY (`idSituacio_economica`)
-    REFERENCES `mydb`.`Situacio_economica` (`idSituacio_economica`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Usuarios_Sebas1`
-    FOREIGN KEY (`idSebas`)
-    REFERENCES `mydb`.`Sebas` (`idSebas`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Usuarios_Curs_actual2`
-    FOREIGN KEY (`Curs_actual`)
-    REFERENCES `mydb`.`Curs_actual` (`idCurs_actual`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+  `Curs_actual` INT NULL DEFAULT NULL,
+  `idDomicili` INT NOT NULL,
+  `Baixa` TINYINT NOT NULL,
+  `Motiu_baixa` INT NULL DEFAULT NULL,
+  `Data_baixa` DATE NULL DEFAULT NULL,
+  PRIMARY KEY (`idClient`),
+  INDEX `fk_Usuarios_Familias1_idx` (`idFamilia` ASC) VISIBLE,
+  INDEX `fk_Usuarios_Paisos_nacionalitat1_idx` (`Pais_naixement` ASC) VISIBLE,
+  INDEX `fk_Usuarios_Rols1_idx` (`idRol` ASC) VISIBLE,
+  INDEX `fk_Usuarios_Risc1_idx` (`Risc` ASC) VISIBLE,
+  INDEX `fk_Usuarios_Resultats_academics1_idx` (`Resultat_academic` ASC) VISIBLE,
+  INDEX `fk_Usuarios_Motiux_baixa1_idx` (`Motiu_baixa` ASC) VISIBLE,
+  INDEX `fk_Usuarios_Situacio_laboral1_idx` (`idSituacio_economica` ASC) VISIBLE,
+  INDEX `fk_Usuarios_Sebas1_idx` (`idSebas` ASC) VISIBLE,
+  INDEX `fk_Usuarios_Curs_actual2_idx` (`Curs_actual` ASC) VISIBLE,
+  INDEX `fk_Client_Genere1_idx` (`idGenere` ASC) VISIBLE,
+  INDEX `fk_client_domicili1_idx` (`idDomicili` ASC) VISIBLE,
+  CONSTRAINT `fk_client_domicili1`
+    FOREIGN KEY (`idDomicili`)
+    REFERENCES `mydb`.`domicili` (`idDomicili`),
   CONSTRAINT `fk_Client_Genere1`
     FOREIGN KEY (`idGenere`)
-    REFERENCES `mydb`.`Genere` (`idGenere`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE INDEX `fk_Usuarios_Familias1_idx` ON `mydb`.`Client` (`idFamilia` ASC) VISIBLE;
-
-CREATE INDEX `fk_Usuarios_Paisos_nacionalitat1_idx` ON `mydb`.`Client` (`Pais_naixement` ASC) VISIBLE;
-
-CREATE INDEX `fk_Usuarios_Rols1_idx` ON `mydb`.`Client` (`idRol` ASC) VISIBLE;
-
-CREATE INDEX `fk_Usuarios_Risc1_idx` ON `mydb`.`Client` (`Risc` ASC) VISIBLE;
-
-CREATE INDEX `fk_Usuarios_Resultats_academics1_idx` ON `mydb`.`Client` (`Resultat_academic` ASC) VISIBLE;
-
-CREATE INDEX `fk_Usuarios_Motiux_baixa1_idx` ON `mydb`.`Client` (`Motiu_baixa` ASC) VISIBLE;
-
-CREATE INDEX `fk_Usuarios_Situacio_laboral1_idx` ON `mydb`.`Client` (`idSituacio_economica` ASC) VISIBLE;
-
-CREATE INDEX `fk_Usuarios_Sebas1_idx` ON `mydb`.`Client` (`idSebas` ASC) VISIBLE;
-
-CREATE INDEX `fk_Usuarios_Curs_actual2_idx` ON `mydb`.`Client` (`Curs_actual` ASC) VISIBLE;
-
-CREATE INDEX `fk_Client_Genere1_idx` ON `mydb`.`Client` (`idGenere` ASC) VISIBLE;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`Client_has_Domicili`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Client_has_Domicili` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Client_has_Domicili` (
-  `idClient` INT NOT NULL,
-  `idDomicili` INT NOT NULL,
-  CONSTRAINT `fk_Usuarios_has_Domicilio_Usuarios1`
-    FOREIGN KEY (`idClient`)
-    REFERENCES `mydb`.`Client` (`idClient`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Usuarios_has_Domicilio_Domicilio1`
-    FOREIGN KEY (`idDomicili`)
-    REFERENCES `mydb`.`Domicili` (`idDomicili`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE INDEX `fk_Usuarios_has_Domicilio_Domicilio1_idx` ON `mydb`.`Client_has_Domicili` (`idDomicili` ASC) VISIBLE;
-
-CREATE INDEX `fk_Usuarios_has_Domicilio_Usuarios1_idx` ON `mydb`.`Client_has_Domicili` (`idClient` ASC) VISIBLE;
+    REFERENCES `mydb`.`genere` (`idGenere`),
+  CONSTRAINT `fk_Usuarios_Curs_actual2`
+    FOREIGN KEY (`Curs_actual`)
+    REFERENCES `mydb`.`curs_actual` (`idCurs_actual`),
+  CONSTRAINT `fk_Usuarios_Familias1`
+    FOREIGN KEY (`idFamilia`)
+    REFERENCES `mydb`.`familia` (`idFamilia`),
+  CONSTRAINT `fk_Usuarios_Motiux_baixa1`
+    FOREIGN KEY (`Motiu_baixa`)
+    REFERENCES `mydb`.`motiu_baixa` (`idMotiu_baixa`),
+  CONSTRAINT `fk_Usuarios_Paisos_nacionalitat1`
+    FOREIGN KEY (`Pais_naixement`)
+    REFERENCES `mydb`.`pais` (`idPais`),
+  CONSTRAINT `fk_Usuarios_Resultats_academics1`
+    FOREIGN KEY (`Resultat_academic`)
+    REFERENCES `mydb`.`resultat_academic` (`idResultat_academic`),
+  CONSTRAINT `fk_Usuarios_Risc1`
+    FOREIGN KEY (`Risc`)
+    REFERENCES `mydb`.`risc` (`idRisc`),
+  CONSTRAINT `fk_Usuarios_Rols1`
+    FOREIGN KEY (`idRol`)
+    REFERENCES `mydb`.`rol` (`idRol`),
+  CONSTRAINT `fk_Usuarios_Sebas1`
+    FOREIGN KEY (`idSebas`)
+    REFERENCES `mydb`.`sebas` (`idSebas`),
+  CONSTRAINT `fk_Usuarios_Situacio_laboral1`
+    FOREIGN KEY (`idSituacio_economica`)
+    REFERENCES `mydb`.`situacio_economica` (`idSituacio_economica`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Nacionalitat`
+-- Table `mydb`.`nacionalitat`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Nacionalitat` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Nacionalitat` (
+CREATE TABLE IF NOT EXISTS `mydb`.`nacionalitat` (
   `idPais` INT NOT NULL,
   `idClient` INT NOT NULL,
   PRIMARY KEY (`idPais`, `idClient`),
+  INDEX `fk_Paisos_nacionalitat_has_Usuarios_Usuarios1_idx` (`idClient` ASC) VISIBLE,
+  INDEX `fk_Paisos_nacionalitat_has_Usuarios_Paisos_nacionalitat1_idx` (`idPais` ASC) VISIBLE,
   CONSTRAINT `fk_Paisos_nacionalitat_has_Usuarios_Paisos_nacionalitat1`
     FOREIGN KEY (`idPais`)
-    REFERENCES `mydb`.`Pais` (`idPais`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    REFERENCES `mydb`.`pais` (`idPais`),
   CONSTRAINT `fk_Paisos_nacionalitat_has_Usuarios_Usuarios1`
     FOREIGN KEY (`idClient`)
-    REFERENCES `mydb`.`Client` (`idClient`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE INDEX `fk_Paisos_nacionalitat_has_Usuarios_Usuarios1_idx` ON `mydb`.`Nacionalitat` (`idClient` ASC) VISIBLE;
-
-CREATE INDEX `fk_Paisos_nacionalitat_has_Usuarios_Paisos_nacionalitat1_idx` ON `mydb`.`Nacionalitat` (`idPais` ASC) VISIBLE;
+    REFERENCES `mydb`.`client` (`idClient`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Necessitats_especials`
+-- Table `mydb`.`necessitats_especials`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Necessitats_especials` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Necessitats_especials` (
+CREATE TABLE IF NOT EXISTS `mydb`.`necessitats_especials` (
   `idNecessitat_especial` INT NOT NULL AUTO_INCREMENT,
-  `Nom_necessitat` VARCHAR(45) NOT NULL,
+  `Nom_necessitat` VARCHAR(45) NOT NULL UNIQUE,
   PRIMARY KEY (`idNecessitat_especial`))
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Necessitats_especials_has_Client`
+-- Table `mydb`.`necessitats_especials_has_client`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Necessitats_especials_has_Client` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`Necessitats_especials_has_Client` (
+CREATE TABLE IF NOT EXISTS `mydb`.`necessitats_especials_has_client` (
   `idNecessitat_especial` INT NOT NULL,
   `idClient` INT NOT NULL,
   PRIMARY KEY (`idNecessitat_especial`, `idClient`),
+  INDEX `fk_Necessitats_especials_has_Usuarios_Usuarios1_idx` (`idClient` ASC) VISIBLE,
+  INDEX `fk_Necessitats_especials_has_Usuarios_Necessitats_especials_idx` (`idNecessitat_especial` ASC) VISIBLE,
   CONSTRAINT `fk_Necessitats_especials_has_Usuarios_Necessitats_especials1`
     FOREIGN KEY (`idNecessitat_especial`)
-    REFERENCES `mydb`.`Necessitats_especials` (`idNecessitat_especial`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION,
+    REFERENCES `mydb`.`necessitats_especials` (`idNecessitat_especial`),
   CONSTRAINT `fk_Necessitats_especials_has_Usuarios_Usuarios1`
     FOREIGN KEY (`idClient`)
-    REFERENCES `mydb`.`Client` (`idClient`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE INDEX `fk_Necessitats_especials_has_Usuarios_Usuarios1_idx` ON `mydb`.`Necessitats_especials_has_Client` (`idClient` ASC) VISIBLE;
-
-CREATE INDEX `fk_Necessitats_especials_has_Usuarios_Necessitats_especials_idx` ON `mydb`.`Necessitats_especials_has_Client` (`idNecessitat_especial` ASC) VISIBLE;
+    REFERENCES `mydb`.`client` (`idClient`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`Persona_relacionada`
+-- Table `mydb`.`usuario_app`
 -- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`Persona_relacionada` ;
+CREATE TABLE IF NOT EXISTS `mydb`.`usuario_app` (
+  `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
+  `Rol_usuario` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`idUsuario_APP`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
-CREATE TABLE IF NOT EXISTS `mydb`.`Persona_relacionada` (
-  `Client_idClient` INT NOT NULL,
-  `Client_idClient1` INT NOT NULL,
-  CONSTRAINT `fk_Client_has_Client_Client1`
-    FOREIGN KEY (`Client_idClient`)
-    REFERENCES `mydb`.`Client` (`idClient`)
+
+-- -----------------------------------------------------
+-- Table `mydb`.`proyectos`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`proyectos` (
+  `idProyecto` INT NOT NULL AUTO_INCREMENT,
+  `Nom_projecte` VARCHAR(45) NOT NULL,
+  `Descripcio` VARCHAR(512) NULL DEFAULT NULL,
+  `fecha_inicio` DATE NOT NULL,
+  `fecha_fin` DATE NULL DEFAULT NULL,
+  `plazas` INT NOT NULL DEFAULT '0',
+  `inscritos` INT NOT NULL DEFAULT '0',
+  `fecha_inicio_act` DATE NULL DEFAULT NULL,
+  `fecha_fin_act` DATE NULL DEFAULT NULL,
+  `Centre_coordinacio` INT NOT NULL,
+  `responsable` INT NOT NULL,
+  PRIMARY KEY (`idProyecto`),
+  INDEX `fk_Proyectos_Centros_coordinacion1_idx` (`Centre_coordinacio` ASC) VISIBLE,
+  INDEX `fk_Proyectos_Usuario_APP_idx` (`responsable` ASC) VISIBLE,
+  CONSTRAINT `fk_Proyectos_Centros_coordinacion1`
+    FOREIGN KEY (`Centre_coordinacio`)
+    REFERENCES `mydb`.`centre_coordinacio` (`idCentre_coord`),
+  CONSTRAINT `fk_Proyectos_Usuario_APP`
+    FOREIGN KEY (`responsable`)
+    REFERENCES `mydb`.`usuario_app` (`idUsuario_APP`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`proyectos_has_usuarios app`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`proyectos_has_usuarios app` (
+  `idProyecto` INT NOT NULL,
+  `idUsuario_APP` INT NOT NULL,
+  INDEX `fk_Proyectos_has_Usuarios APP_Usuarios APP1_idx` (`idUsuario_APP` ASC) VISIBLE,
+  INDEX `fk_Proyectos_has_Usuarios APP_Proyectos1_idx` (`idProyecto` ASC) VISIBLE,
+  CONSTRAINT `fk_Proyectos_has_Usuarios APP_Proyectos1`
+    FOREIGN KEY (`idProyecto`)
+    REFERENCES `mydb`.`proyectos` (`idProyecto`),
+  CONSTRAINT `fk_Proyectos_has_Usuarios APP_Usuarios APP1`
+    FOREIGN KEY (`idUsuario_APP`)
+    REFERENCES `mydb`.`usuario_app` (`idUsuario_APP`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`proyectos_has_client`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `mydb`.`proyectos_has_client` (
+  `idProyecto` INT NOT NULL,
+  `idClient` INT NOT NULL,
+  PRIMARY KEY (`idProyecto`, `idClient`),
+  INDEX `fk_proyectos_has_client_client1_idx` (`idClient` ASC) VISIBLE,
+  INDEX `fk_proyectos_has_client_proyectos1_idx` (`idProyecto` ASC) VISIBLE,
+  CONSTRAINT `fk_proyectos_has_client_proyectos1`
+    FOREIGN KEY (`idProyecto`)
+    REFERENCES `mydb`.`proyectos` (`idProyecto`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Client_has_Client_Client2`
-    FOREIGN KEY (`Client_idClient1`)
-    REFERENCES `mydb`.`Client` (`idClient`)
+  CONSTRAINT `fk_proyectos_has_client_client1`
+    FOREIGN KEY (`idClient`)
+    REFERENCES `mydb`.`client` (`idClient`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
-CREATE INDEX `fk_Client_has_Client_Client2_idx` ON `mydb`.`Persona_relacionada` (`Client_idClient1` ASC) VISIBLE;
-
-CREATE INDEX `fk_Client_has_Client_Client1_idx` ON `mydb`.`Persona_relacionada` (`Client_idClient` ASC) VISIBLE;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

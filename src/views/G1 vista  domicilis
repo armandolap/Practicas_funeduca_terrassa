@@ -1,0 +1,41 @@
+crear 
+tots
+filtre per tipus_domicili
+
+mostra el llistat de domicilis associats a l'entitat.
+
+quantotat de gent, tipus de domicili , familia1 ( per si hi ha més duna familia al mateix domicili )
+
+necesitem : FILTRE 
+taula domicilis
+
+_________________________________
+
+/*
+    Crec que aquesta vista no és necessària, xk mai creem domicilis per separat
+    sempre van associats a familia, centre coord, centre act... 
+    l'unic lloc on ens interessa serà a informes i seria redundant tenir la vista
+    en un lloc i l'informe que és on ens interessa.
+*/
+
+FUNCIONS:
+
+Filtres :
+    - barri
+    - centre coordinació
+    -  
+
+getDomiclioList( filtres ) {
+    retorna: 
+    - 10/15 ID de domicili ( segons veiem )
+
+
+}
+
+
+getDomiclioDetalle (id de domicilio) {
+    
+    Retorna:
+        { detalls del domicili }
+
+}

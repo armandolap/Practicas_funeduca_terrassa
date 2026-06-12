@@ -1,4 +1,6 @@
-const pool = require("../config/database");
+const { createPool } = require("../config/database");
+
+const pool = createPool();
 
 async function getAll() {
     const [rows] = await pool.query(`

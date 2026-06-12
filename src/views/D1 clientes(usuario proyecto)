@@ -1,0 +1,44 @@
+Vista de clientes (usuarios de los proyectos)
+Arriba un boton de crear nuevo
+Debajo un campo de filtos:
+    Por nombre
+    Por edad
+    Por familias
+    Por genero 
+    Por barri
+Luego una lista con los nombres y apellidos de los usuarios
+    Campos extra:
+                Edad 
+                Familia
+                Proyecto en el que participa
+_________________________________
+
+FUNCIONES 
+
+getAll pero solo devuelve los 10/15 ( segun espacio) primeros
+
+filtros : 
+    nombre / apellidos 
+    nombre de familia
+    barrio - depslegable de los barrios
+    centro coord
+    - 
+    edad por segmento ? --> desplegable ? 0-3, 4-6, 7-9, 10-12, 13-15, 16-18, 18-30, 30-65, +65
+
+
+filtroClientes (valores filtro ) {
+    filtra per cadena segons camps:  familia , nom , cognoms 
+    aplica altres filtres tb. 
+}
+
+devuelve : el array de personas que cumplen 
+[
+    array de objeto cliente que cumple filtros.
+        - edad
+        - nombre 
+        - familia 
+        - rol 
+
+
+]
+

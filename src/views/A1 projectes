@@ -1,0 +1,33 @@
+A1 es el landing page
+Muestra por defecto la pagina de proyectos
+Arriba tenemos 4 botones:
+    Crear proyectos
+    Filtrar: Activos, pasados y todos
+Hay una lista de todos los proyectos (desde el mas nuevo) y al darle click
+ te lleva a la pagina detalle de ese proyecto
+Los proyectos tienen campos:
+    Nombre proyecto
+    fecha_inicio
+    fecha_fin_act
+    aforo
+    responsable
+    centro coord
+
+    _________________________________
+
+los 4 botones son 3 filtros y el de CREAR ( vista apart ? )
+
+3 filtros 
+    - ACTIVO-INACTIVO 
+    - ABIERTO-CERRADO 
+
+    - Cadena nombre a buscar 
+
+ FUNCIONES : 
+ filtroProyectos() 
+
+     funcion filtro , coge los 2/4 criterios de los botones y  la cadena nos devuelve la lista de los que cumplen
+        (query del repo)
+    RECIBE:  
+        2 BOOL  ( activo y abierto )
+        1 cadena ( para busqueda detallada )

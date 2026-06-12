@@ -1,0 +1,45 @@
+Vista detalle de los clientes (usuarios de los proyectos)
+Primero: Datos de la persona
+    Nom i cognoms
+    edat
+    Genere
+    temps a la associatio
+    quant de activitats fetes
+A la derecha: 
+    Familia
+    Domicili
+    Telefon
+    Correo
+Debajo: Filtro de proyectos en los que estuvo esta persona
+    Actius/Inscrit-futur/ passats           Tots
+Lista de proyectos en los que participo esta persona
+
+_______________________________
+
+getClientebyId( id de persona ) {
+    retorna:
+    - nom
+    - cognoms 
+    - telefon ?
+    - edat
+    - genereID
+    - data alta a la asso
+    - data baixa + "idMotiu_baixa --> text"
+
+    - ID domicili   --> info del domicili  ( getDomicilibyID )
+    - ID familia    --> info de la familia ( getFamiliabyID )
+    - [
+        projectes by ID ( amb FILTRE  )
+    ] --> dades del projecte
+
+} 
+
+filtreProjectes ( idCliente , FILTRE) {
+    retorna:
+        - estat del projecte ( segons filtres, o tots )
+        - nom del projecte
+        - data final activitat 
+        - 
+}
+
+//// queda pendent el form d'edició de la persona /////
