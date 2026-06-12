@@ -11,3 +11,24 @@ llistat de membres amb la info important
 
     projectes als que participen els membres de la familia 
 // habria que modificar el layout para mostrar eso 
+
+FUNCIONS:
+
+getFamiliaDetalle ( id de familia ) {
+
+    retorna : 
+    
+    - identificadrior familia ( cognoms ) 
+    - estructura familiar 
+    - [ domicilis associats a la familia  - ( byId ) ]  -> es mostra de cada domicili dir, 
+    - [ centres de coordinació on estan apuntats , ho treiem de les activitats ]
+    - [ llistat de membres  ( byId  ) ] ->  amb nom , rol sit eco? , 
+    
+    - llistat de les activitats a les que estan associats ( byID )
+    [
+        array que es va omplint per cada membre, per després 
+        poder extreure per ID de les activitats la info necessària
+    ]
+
+
+}
