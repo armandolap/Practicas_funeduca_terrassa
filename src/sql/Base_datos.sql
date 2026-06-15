@@ -95,35 +95,14 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `crm_funeduca`.`centre_coordinacio`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `crm_funeduca`.`centre_coordinacio` (
-  `idCentre_coord` INT NOT NULL AUTO_INCREMENT,
-  `Nom_centre_coord` VARCHAR(45) NOT NULL,
-  `idDireccio` INT NOT NULL,
-  PRIMARY KEY (`idCentre_coord`),
-  INDEX `fk_Centros_coordinacion_Direcciones1_idx` (`idDireccio` ASC) VISIBLE,
-  CONSTRAINT `fk_Centros_coordinacion_Direcciones1`
-    FOREIGN KEY (`idDireccio`)
-    REFERENCES `crm_funeduca`.`direccio` (`idDireccio`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
-
-
--- -----------------------------------------------------
 -- Table `crm_funeduca`.`centre_activitats`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`centre_activitats` (
   `idcentre_activitats` INT NOT NULL AUTO_INCREMENT,
   `nom_centre_activitats` VARCHAR(45) NOT NULL,
-  `idCentre_coord` INT NOT NULL,
   `direccio_idDireccio` INT NOT NULL,
   PRIMARY KEY (`idcentre_activitats`),
-  INDEX `fk_centre_activitats_centre_coordinacio1_idx` (`idCentre_coord` ASC) VISIBLE,
   INDEX `fk_centre_activitats_direccio1_idx` (`direccio_idDireccio` ASC) VISIBLE,
-  CONSTRAINT `fk_centre_activitats_centre_coordinacio1`
-    FOREIGN KEY (`idCentre_coord`)
-    REFERENCES `crm_funeduca`.`centre_coordinacio` (`idCentre_coord`),
   CONSTRAINT `fk_centre_activitats_direccio1`
     FOREIGN KEY (`direccio_idDireccio`)
     REFERENCES `crm_funeduca`.`direccio` (`idDireccio`))
@@ -414,17 +393,6 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `crm_funeduca`.`usuario_app`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `crm_funeduca`.`usuario_app` (
-  `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
-  `Rol_usuario` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idUsuario_APP`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
-
-
--- -----------------------------------------------------
 -- Table `crm_funeduca`.`proyectos`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`proyectos` (
@@ -437,35 +405,45 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`proyectos` (
   `inscritos` INT NOT NULL DEFAULT '0',
   `fecha_inicio_act` DATE NULL DEFAULT NULL,
   `fecha_fin_act` DATE NULL DEFAULT NULL,
-  `Centre_coordinacio` INT NOT NULL,
-  `responsable` INT NOT NULL,
+  `idcentre_activitats` INT NOT NULL,
   PRIMARY KEY (`idProyecto`),
-  INDEX `fk_Proyectos_Centros_coordinacion1_idx` (`Centre_coordinacio` ASC) VISIBLE,
-  INDEX `fk_Proyectos_Usuario_APP_idx` (`responsable` ASC) VISIBLE,
-  CONSTRAINT `fk_Proyectos_Centros_coordinacion1`
-    FOREIGN KEY (`Centre_coordinacio`)
-    REFERENCES `crm_funeduca`.`centre_coordinacio` (`idCentre_coord`),
-  CONSTRAINT `fk_Proyectos_Usuario_APP`
-    FOREIGN KEY (`responsable`)
-    REFERENCES `crm_funeduca`.`usuario_app` (`idUsuario_APP`))
+  INDEX `fk_proyectos_centre_activitats1_idx` (`idcentre_activitats` ASC) VISIBLE,
+  CONSTRAINT `fk_proyectos_centre_activitats1`
+    FOREIGN KEY (`idcentre_activitats`)
+    REFERENCES `crm_funeduca`.`centre_activitats` (`idcentre_activitats`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `crm_funeduca`.`proyectos_has_usuarios app`
+-- Table `crm_funeduca`.`Nivel_acceso`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `crm_funeduca`.`proyectos_has_usuarios app` (
-  `idProyecto` INT NOT NULL,
-  `idUsuario_APP` INT NOT NULL,
-  INDEX `fk_Proyectos_has_Usuarios APP_Usuarios APP1_idx` (`idUsuario_APP` ASC) VISIBLE,
-  INDEX `fk_Proyectos_has_Usuarios APP_Proyectos1_idx` (`idProyecto` ASC) VISIBLE,
-  CONSTRAINT `fk_Proyectos_has_Usuarios APP_Proyectos1`
-    FOREIGN KEY (`idProyecto`)
-    REFERENCES `crm_funeduca`.`proyectos` (`idProyecto`),
-  CONSTRAINT `fk_Proyectos_has_Usuarios APP_Usuarios APP1`
-    FOREIGN KEY (`idUsuario_APP`)
-    REFERENCES `crm_funeduca`.`usuario_app` (`idUsuario_APP`))
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`Nivel_acceso` (
+  `idNivel_acceso` INT NOT NULL AUTO_INCREMENT,
+  `Nom` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`idNivel_acceso`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `crm_funeduca`.`usuario_app`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`usuario_app` (
+  `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
+  `idNivel_acceso` INT NOT NULL,
+  `Nom` VARCHAR(45) NOT NULL,
+  `Cognoms` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(45) NOT NULL,
+  `Telefon` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`idUsuario_APP`, `idNivel_acceso`),
+  INDEX `fk_usuario_app_Nivel_acceso1_idx` (`idNivel_acceso` ASC) VISIBLE,
+  CONSTRAINT `fk_usuario_app_Nivel_acceso1`
+    FOREIGN KEY (`idNivel_acceso`)
+    REFERENCES `crm_funeduca`.`Nivel_acceso` (`idNivel_acceso`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
@@ -487,6 +465,29 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`proyectos_has_client` (
   CONSTRAINT `fk_proyectos_has_client_client1`
     FOREIGN KEY (`idClient`)
     REFERENCES `crm_funeduca`.`client` (`idClient`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `crm_funeduca`.`Responsables`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`Responsables` (
+  `proyectos_idProyecto` INT NOT NULL,
+  `idUsuario_APP` INT NOT NULL,
+  PRIMARY KEY (`proyectos_idProyecto`, `idUsuario_APP`),
+  INDEX `fk_proyectos_has_usuario_app_usuario_app1_idx` (`idUsuario_APP` ASC) VISIBLE,
+  INDEX `fk_proyectos_has_usuario_app_proyectos1_idx` (`proyectos_idProyecto` ASC) VISIBLE,
+  CONSTRAINT `fk_proyectos_has_usuario_app_proyectos1`
+    FOREIGN KEY (`proyectos_idProyecto`)
+    REFERENCES `crm_funeduca`.`proyectos` (`idProyecto`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_proyectos_has_usuario_app_usuario_app1`
+    FOREIGN KEY (`idUsuario_APP`)
+    REFERENCES `crm_funeduca`.`usuario_app` (`idUsuario_APP`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
