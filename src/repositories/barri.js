@@ -11,6 +11,17 @@ async function getAll() {
     return rows;
 }
 
+async function getAllNom() {
+    const [rows] = await pool.query(`
+        SELECT idBarri, Nom
+        FROM barri
+        ORDER BY Nom
+    `);
+    return rows;
+}
+
+
+
 async function getById(id) {
     const [rows] = await pool.query(
         `SELECT * FROM barri WHERE idBarri = ?`,
