@@ -1,4 +1,4 @@
-use mydb;
+use crm_funeduca;
 INSERT INTO Resultat_academic (Nom_resultat_acad)
 VALUES ('Promociona'),
     ('Repeteix'),

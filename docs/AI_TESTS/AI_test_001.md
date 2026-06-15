@@ -40,7 +40,7 @@ node src/AI_test.js
 
 ## Requisits
 
-- Base de dades `mydb` accessible (configurada a `.env`)
+- Base de dades `crm_funeduca` accessible (configurada a `.env`)
 - Taules creades (des de `Base_datos.sql`)
 - Node.js 18+ (per `fetch` natiu)
 
