@@ -83,6 +83,11 @@ async function runSeed() {
         // Test data (FKs assume IDs from static inserts)
 
         await connection.query(`
+            INSERT INTO direccio (idcallejero, Num_calle, Pis, Escala)
+            VALUES (1, '1', NULL, NULL)
+        `);
+
+        await connection.query(`
             INSERT INTO Domicili (Tipus_domicili, Direccio)
             VALUES (1, 1)
         `);
