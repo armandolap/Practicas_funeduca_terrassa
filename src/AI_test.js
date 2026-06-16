@@ -95,15 +95,6 @@ function pickId(row) {
         || Object.values(row).find(v => typeof v === "number") || null;
 }
 
-function findDisplayField(row) {
-    if (!row) return null;
-    return row.Nom || row.Nom_pais || row.Nom_est_fam || row.Nom_motiu_baixa
-        || row.Nom_necessitat || row.Nom_resultat_acad || row.Nom_domicili
-        || row.Nom_rol || row.Nom_genere || row.Nom_projecte
-        || row.Cognom_familiar || row.Nom_calle || row.Codi
-        || row.Rol_usuario || Object.values(row).find(v => typeof v === "string") || null;
-}
-
 function endpointToKey(p) {
     const m = p.match(/^\/(\w+)/);
     if (!m) return null;
@@ -222,23 +213,59 @@ async function testEndpoint(ep) {
             return;
         }
 
-        // POST with invalid/empty body → 400 (for controllers with validation)
+        // POST with invalid/empty body → 400
         {
             const { status } = await fetchJson(fullPath, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({}),
             });
-            const key = endpointToKey(name);
-            if (key && ["neses", "curso", "usuario", "tipusVia", "barri", "codiPostal", "projectes"].includes(key)) {
-                assert(
-                    `POST ${name} {} → ${status} (validation)`,
-                    status === 400,
-                    `expected 400 for empty body, got ${status}`
-                );
-            } else {
-                warn(`POST ${name} {} → ${status}`, "endpoint sense validació 400 explícita");
-            }
+            assert(
+                `POST ${name} {} → ${status} (validation)`,
+                status === 400,
+                `expected 400 for empty body, got ${status}`
+            );
+        }
+
+        // POST with invalid FK (client only)
+        if (name === "/client") {
+            const invalidFK = { ...payload, idFamilia: 999999 };
+            const { status } = await fetchJson(fullPath, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(invalidFK),
+            });
+            assert(
+                `POST ${name} FK invalid (idFamilia: 999999) → ${status}`,
+                status >= 400,
+                `expected error status (400+), got ${status}`
+            );
+        }
+
+        // PUT to non-existent ID → 404
+        {
+            const { status } = await fetchJson(`${fullPath}/999999`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ test: true }),
+            });
+            assert(
+                `PUT ${name}/999999 (nonexistent) → ${status}`,
+                status === 404,
+                `expected 404, got ${status}`
+            );
+        }
+
+        // DELETE to non-existent ID → 404
+        {
+            const { status } = await fetchJson(`${fullPath}/999999`, {
+                method: "DELETE",
+            });
+            assert(
+                `DELETE ${name}/999999 (nonexistent) → ${status}`,
+                status === 404,
+                `expected 404, got ${status}`
+            );
         }
 
         // POST create
@@ -266,7 +293,7 @@ async function testEndpoint(ep) {
             if (getBody) {
                 const key = endpointToKey(name);
                 const field = key ? CONTROLLER_FIELDS[key] : null;
-                if (field && key !== "domicili" && key !== "familia" && key !== "client" && key !== "projectes") {
+                if (field && key !== "client" && key !== "projectes") {
                     const sentVal = typeof payload === "object" ? payload[field] : null;
                     const gotVal = getBody[field];
                     assert(
@@ -313,7 +340,7 @@ async function testEndpoint(ep) {
                     ? updatePayload.Nom_projecte
                     : updatePayload && typeof updatePayload === "object" ? updatePayload[field] : null;
                 const gotVal = key === "projectes" ? getBody2.Nom_projecte : getBody2[field];
-                if (field && originalVal && key !== "domicili" && key !== "familia" && key !== "client") {
+                if (field && originalVal && key !== "client") {
                     assert(
                         `GET ${name}/${id} after update: "${field}" = "${gotVal}"`,
                         gotVal === originalVal,
@@ -513,6 +540,16 @@ async function testCallejeroSearch() {
         }
     }
 
+    // Search without query parameter
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/callejero`);
+        assert(
+            `GET /callejero (sense query) → ${status}`,
+            status === 200 && Array.isArray(body),
+            `expected 200 + array, got ${status}`
+        );
+    }
+
     // GET /callejero/999999 (invalid)
     {
         const { status } = await fetchJson(`${BASE_URL}/callejero/999999`);
@@ -695,11 +732,13 @@ function generateSolutions() {
 }
 
 function suggestFix(label, detail) {
+    if (detail.includes("error status") || label.includes("FK invalid")) return "Verifica que el controlador valida les claus foranes. Revisa que les dades referenciades existeixen a la BD.";
     if (detail.includes("404")) return "Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.";
     if (detail.includes("201")) return "Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.";
     if (detail.includes("200")) return "Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.";
     if (detail.includes("id")) return "Assegura't que el payload de creació inclou totes les claus foranes necessàries i que existeixen a la BD.";
     if (detail.includes("Nom")) return "Comprova que el camp retornat pel GET /:id després del create conté el valor esperat. Revisa que el repositori retorna les dades correctes.";
+    if (detail.includes("validation") || detail.includes("400")) return "Verifica que el controlador valida les dades d'entrada i retorna 400 per payloads buits o invàlids.";
     return "Revisa el codi de l'endpoint: ruta → controlador → repositori. Comprova que el seeder insereix les dades necessàries.";
 }
 
