@@ -1,0 +1,39 @@
+import { runInThisContext } from "node:vm"
+
+J2 :
+link atras
+
+desplegables: (varios para seleccionar)
+    genero (obligatorio)
+    neses   (por defecto "no neses")
+    risc    (por defecto "no risc")
+    rol       (obligatorio)
+    curs actual (no obligatorio)
+    resultat academic (no obligatorio)
+    situacio economica (obligatorio)
+    sebas               (por defecto "no sebas")
+    derivacio serveis socials (por defecto "no")
+
+FUNCION: 
+seleccionador/filtro familias -- 
+    (obligatorio estructura familiar 
+        si NO se selecciona familia( se va a crear con datos del usuario ) )
+
+
+FUNCION : crear domicilio :
+CreaDomicili ( tipus via, nom via ,   {
+    infiere el codi postal y el barrio si se puede 
+    //"esta va  a ser fea de hacer XD "
+}
+
+FUNCION : seleccionaDireccio
+filtro 
+    tipus via
+    codi postal
+    barri
+// sacados de los campos del desplegable si se han seleccionado
+FUNCION - 
+retorna domicilio ( objeto ) 
+        comprueba que estan todos los datos de una direccion concreta 
+        y sin ambiguedad , luego retorna OK y lo manda al SQL , 
+        o devuelve no OK y los campos que faltan

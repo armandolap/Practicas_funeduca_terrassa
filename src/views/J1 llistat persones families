@@ -1,0 +1,13 @@
+VISTA J1 
+    link atrás,
+    link CREAR [+]
+
+Filtros:
+    Filtro por texto 
+    filtro genero (desplegable),
+    filtro por barrio,(desplegable)
+    filtro por tipo de familia(desplegable)
+FUNCIONES : 
+filtroFamPersona ( recibe criterios de filtro ) 
+retorna : { fam : [ id de familia] , per: [idPersona]  }
+con los Id de persona y familia pintamos la lista
