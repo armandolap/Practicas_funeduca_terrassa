@@ -5,19 +5,19 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
 
 -- -----------------------------------------------------
--- Schema mydb
+-- Schema crm_funeduca
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------
--- Schema mydb
+-- Schema crm_funeduca
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `mydb` DEFAULT CHARACTER SET utf8mb3 ;
-USE `mydb` ;
+CREATE SCHEMA IF NOT EXISTS `crm_funeduca` DEFAULT CHARACTER SET utf8mb3 ;
+USE `crm_funeduca` ;
 
 -- -----------------------------------------------------
--- Table `mydb`.`barri`
+-- Table `crm_funeduca`.`barri`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`barri` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`barri` (
   `idBarri` INT NOT NULL AUTO_INCREMENT,
   `Nom` VARCHAR(100) NOT NULL,
   PRIMARY KEY (`idBarri`),
@@ -27,9 +27,9 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`codi_postal`
+-- Table `crm_funeduca`.`codi_postal`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`codi_postal` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`codi_postal` (
   `idCodi_postal` INT NOT NULL AUTO_INCREMENT,
   `Codi` VARCHAR(10) NOT NULL,
   PRIMARY KEY (`idCodi_postal`),
@@ -39,9 +39,9 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`tipus_via`
+-- Table `crm_funeduca`.`tipus_via`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`tipus_via` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`tipus_via` (
   `idTipus_via` INT NOT NULL AUTO_INCREMENT,
   `Nom` VARCHAR(50) NOT NULL,
   PRIMARY KEY (`idTipus_via`),
@@ -51,9 +51,9 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`callejero`
+-- Table `crm_funeduca`.`callejero`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`callejero` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`callejero` (
   `idcallejero` INT NOT NULL AUTO_INCREMENT,
   `idBarri` INT NOT NULL,
   `idTipus_via` INT NOT NULL,
@@ -65,21 +65,21 @@ CREATE TABLE IF NOT EXISTS `mydb`.`callejero` (
   INDEX `fk_callejero_codi_postal1_idx` (`idCodi_postal` ASC) VISIBLE,
   CONSTRAINT `fk_callejero_barri1`
     FOREIGN KEY (`idBarri`)
-    REFERENCES `mydb`.`barri` (`idBarri`),
+    REFERENCES `crm_funeduca`.`barri` (`idBarri`),
   CONSTRAINT `fk_callejero_codi_postal1`
     FOREIGN KEY (`idCodi_postal`)
-    REFERENCES `mydb`.`codi_postal` (`idCodi_postal`),
+    REFERENCES `crm_funeduca`.`codi_postal` (`idCodi_postal`),
   CONSTRAINT `fk_callejero_tipus_via1`
     FOREIGN KEY (`idTipus_via`)
-    REFERENCES `mydb`.`tipus_via` (`idTipus_via`))
+    REFERENCES `crm_funeduca`.`tipus_via` (`idTipus_via`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`direccio`
+-- Table `crm_funeduca`.`direccio`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`direccio` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`direccio` (
   `idDireccio` INT NOT NULL AUTO_INCREMENT,
   `idcallejero` INT NOT NULL,
   `Num_calle` VARCHAR(45) NOT NULL,
@@ -89,63 +89,42 @@ CREATE TABLE IF NOT EXISTS `mydb`.`direccio` (
   INDEX `fk_direccio_callejero1_idx` (`idcallejero` ASC) VISIBLE,
   CONSTRAINT `fk_direccio_callejero1`
     FOREIGN KEY (`idcallejero`)
-    REFERENCES `mydb`.`callejero` (`idcallejero`))
+    REFERENCES `crm_funeduca`.`callejero` (`idcallejero`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`centre_coordinacio`
+-- Table `crm_funeduca`.`centre_activitats`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`centre_coordinacio` (
-  `idCentre_coord` INT NOT NULL AUTO_INCREMENT,
-  `Nom_centre_coord` VARCHAR(45) NOT NULL,
-  `idDireccio` INT NOT NULL,
-  PRIMARY KEY (`idCentre_coord`),
-  INDEX `fk_Centros_coordinacion_Direcciones1_idx` (`idDireccio` ASC) VISIBLE,
-  CONSTRAINT `fk_Centros_coordinacion_Direcciones1`
-    FOREIGN KEY (`idDireccio`)
-    REFERENCES `mydb`.`direccio` (`idDireccio`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`centre_activitats`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`centre_activitats` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`centre_activitats` (
   `idcentre_activitats` INT NOT NULL AUTO_INCREMENT,
   `nom_centre_activitats` VARCHAR(45) NOT NULL,
-  `idCentre_coord` INT NOT NULL,
   `direccio_idDireccio` INT NOT NULL,
   PRIMARY KEY (`idcentre_activitats`),
-  INDEX `fk_centre_activitats_centre_coordinacio1_idx` (`idCentre_coord` ASC) VISIBLE,
   INDEX `fk_centre_activitats_direccio1_idx` (`direccio_idDireccio` ASC) VISIBLE,
-  CONSTRAINT `fk_centre_activitats_centre_coordinacio1`
-    FOREIGN KEY (`idCentre_coord`)
-    REFERENCES `mydb`.`centre_coordinacio` (`idCentre_coord`),
   CONSTRAINT `fk_centre_activitats_direccio1`
     FOREIGN KEY (`direccio_idDireccio`)
-    REFERENCES `mydb`.`direccio` (`idDireccio`))
+    REFERENCES `crm_funeduca`.`direccio` (`idDireccio`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`tipus_domicili`
+-- Table `crm_funeduca`.`tipus_domicili`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`tipus_domicili` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`tipus_domicili` (
   `idTipus_domicili` INT NOT NULL AUTO_INCREMENT,
-  `Nom_domicili` VARCHAR(45) NOT NULL UNIQUE,
+  `Nom_domicili` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idTipus_domicili`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`domicili`
+-- Table `crm_funeduca`.`domicili`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`domicili` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`domicili` (
   `idDomicili` INT NOT NULL AUTO_INCREMENT,
   `Tipus_domicili` INT NOT NULL,
   `Direccio` INT NOT NULL,
@@ -154,29 +133,29 @@ CREATE TABLE IF NOT EXISTS `mydb`.`domicili` (
   INDEX `fk_Domicilio_Direcciones1_idx` (`Direccio` ASC) VISIBLE,
   CONSTRAINT `fk_Domicilio_Direcciones1`
     FOREIGN KEY (`Direccio`)
-    REFERENCES `mydb`.`direccio` (`idDireccio`),
+    REFERENCES `crm_funeduca`.`direccio` (`idDireccio`),
   CONSTRAINT `fk_Domicilio_Tipo_domicilio`
     FOREIGN KEY (`Tipus_domicili`)
-    REFERENCES `mydb`.`tipus_domicili` (`idTipus_domicili`))
+    REFERENCES `crm_funeduca`.`tipus_domicili` (`idTipus_domicili`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`genere`
+-- Table `crm_funeduca`.`genere`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`genere` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`genere` (
   `idGenere` INT NOT NULL AUTO_INCREMENT,
-  `Nom_genere` VARCHAR(45) NOT NULL UNIQUE,
+  `Nom_genere` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idGenere`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`curs_actual`
+-- Table `crm_funeduca`.`curs_actual`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`curs_actual` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`curs_actual` (
   `idCurs_actual` INT NOT NULL AUTO_INCREMENT,
   `Nom` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idCurs_actual`))
@@ -185,20 +164,20 @@ DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`estructura_familiar`
+-- Table `crm_funeduca`.`estructura_familiar`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`estructura_familiar` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`estructura_familiar` (
   `idEstructura_familiar` INT NOT NULL AUTO_INCREMENT,
-  `Nom_est_fam` VARCHAR(45) NOT NULL UNIQUE,
+  `Nom_est_fam` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idEstructura_familiar`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`familia`
+-- Table `crm_funeduca`.`familia`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`familia` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`familia` (
   `idFamilia` INT NOT NULL AUTO_INCREMENT,
   `Cognom_familiar` VARCHAR(45) NOT NULL,
   `Estructura_familiar` INT NOT NULL,
@@ -206,92 +185,92 @@ CREATE TABLE IF NOT EXISTS `mydb`.`familia` (
   INDEX `fk_Familias_Estructura_familiar1_idx` (`Estructura_familiar` ASC) VISIBLE,
   CONSTRAINT `fk_Familias_Estructura_familiar1`
     FOREIGN KEY (`Estructura_familiar`)
-    REFERENCES `mydb`.`estructura_familiar` (`idEstructura_familiar`))
+    REFERENCES `crm_funeduca`.`estructura_familiar` (`idEstructura_familiar`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`motiu_baixa`
+-- Table `crm_funeduca`.`motiu_baixa`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`motiu_baixa` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`motiu_baixa` (
   `idMotiu_baixa` INT NOT NULL AUTO_INCREMENT,
-  `Nom_motiu_baixa` VARCHAR(45) NOT NULL UNIQUE,
+  `Nom_motiu_baixa` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idMotiu_baixa`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`pais`
+-- Table `crm_funeduca`.`pais`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`pais` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`pais` (
   `idPais` INT NOT NULL AUTO_INCREMENT,
-  `Nom_pais` VARCHAR(120) NOT NULL UNIQUE,
+  `Nom_pais` VARCHAR(120) NOT NULL,
   PRIMARY KEY (`idPais`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`resultat_academic`
+-- Table `crm_funeduca`.`resultat_academic`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`resultat_academic` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`resultat_academic` (
   `idResultat_academic` INT NOT NULL AUTO_INCREMENT,
-  `Nom_resultat_acad` VARCHAR(45) NOT NULL UNIQUE,
+  `Nom_resultat_acad` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idResultat_academic`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`risc`
+-- Table `crm_funeduca`.`risc`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`risc` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`risc` (
   `idRisc` INT NOT NULL AUTO_INCREMENT,
-  `Nivel` VARCHAR(45) NOT NULL UNIQUE,
+  `Nivel` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idRisc`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`rol`
+-- Table `crm_funeduca`.`rol`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`rol` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`rol` (
   `idRol` INT NOT NULL AUTO_INCREMENT,
-  `Nom_rol` VARCHAR(45) NOT NULL UNIQUE,
+  `Nom_rol` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idRol`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`sebas`
+-- Table `crm_funeduca`.`sebas`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`sebas` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`sebas` (
   `idSebas` INT NOT NULL AUTO_INCREMENT,
-  `Nom` VARCHAR(45) NOT NULL UNIQUE,
+  `Nom` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idSebas`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`situacio_economica`
+-- Table `crm_funeduca`.`situacio_economica`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`situacio_economica` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`situacio_economica` (
   `idSituacio_economica` INT NOT NULL AUTO_INCREMENT,
-  `Nom` VARCHAR(45) NOT NULL UNIQUE,
+  `Nom` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idSituacio_economica`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`client`
+-- Table `crm_funeduca`.`client`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`client` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`client` (
   `idClient` INT NOT NULL AUTO_INCREMENT,
   `idFamilia` INT NOT NULL,
   `idRol` INT NOT NULL,
@@ -306,7 +285,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`client` (
   `C_edad` INT NOT NULL,
   `Pais_naixement` INT NOT NULL,
   `Risc` INT NOT NULL,
-  `Resultat_academic` INT NOT NULL,
+  `Resultat_academic` INT NULL,
   `idSituacio_economica` INT NOT NULL,
   `idSebas` INT NOT NULL,
   `derivacio_serveis_socials` TINYINT NOT NULL,
@@ -329,45 +308,45 @@ CREATE TABLE IF NOT EXISTS `mydb`.`client` (
   INDEX `fk_client_domicili1_idx` (`idDomicili` ASC) VISIBLE,
   CONSTRAINT `fk_client_domicili1`
     FOREIGN KEY (`idDomicili`)
-    REFERENCES `mydb`.`domicili` (`idDomicili`),
+    REFERENCES `crm_funeduca`.`domicili` (`idDomicili`),
   CONSTRAINT `fk_Client_Genere1`
     FOREIGN KEY (`idGenere`)
-    REFERENCES `mydb`.`genere` (`idGenere`),
+    REFERENCES `crm_funeduca`.`genere` (`idGenere`),
   CONSTRAINT `fk_Usuarios_Curs_actual2`
     FOREIGN KEY (`Curs_actual`)
-    REFERENCES `mydb`.`curs_actual` (`idCurs_actual`),
+    REFERENCES `crm_funeduca`.`curs_actual` (`idCurs_actual`),
   CONSTRAINT `fk_Usuarios_Familias1`
     FOREIGN KEY (`idFamilia`)
-    REFERENCES `mydb`.`familia` (`idFamilia`),
+    REFERENCES `crm_funeduca`.`familia` (`idFamilia`),
   CONSTRAINT `fk_Usuarios_Motiux_baixa1`
     FOREIGN KEY (`Motiu_baixa`)
-    REFERENCES `mydb`.`motiu_baixa` (`idMotiu_baixa`),
+    REFERENCES `crm_funeduca`.`motiu_baixa` (`idMotiu_baixa`),
   CONSTRAINT `fk_Usuarios_Paisos_nacionalitat1`
     FOREIGN KEY (`Pais_naixement`)
-    REFERENCES `mydb`.`pais` (`idPais`),
+    REFERENCES `crm_funeduca`.`pais` (`idPais`),
   CONSTRAINT `fk_Usuarios_Resultats_academics1`
     FOREIGN KEY (`Resultat_academic`)
-    REFERENCES `mydb`.`resultat_academic` (`idResultat_academic`),
+    REFERENCES `crm_funeduca`.`resultat_academic` (`idResultat_academic`),
   CONSTRAINT `fk_Usuarios_Risc1`
     FOREIGN KEY (`Risc`)
-    REFERENCES `mydb`.`risc` (`idRisc`),
+    REFERENCES `crm_funeduca`.`risc` (`idRisc`),
   CONSTRAINT `fk_Usuarios_Rols1`
     FOREIGN KEY (`idRol`)
-    REFERENCES `mydb`.`rol` (`idRol`),
+    REFERENCES `crm_funeduca`.`rol` (`idRol`),
   CONSTRAINT `fk_Usuarios_Sebas1`
     FOREIGN KEY (`idSebas`)
-    REFERENCES `mydb`.`sebas` (`idSebas`),
+    REFERENCES `crm_funeduca`.`sebas` (`idSebas`),
   CONSTRAINT `fk_Usuarios_Situacio_laboral1`
     FOREIGN KEY (`idSituacio_economica`)
-    REFERENCES `mydb`.`situacio_economica` (`idSituacio_economica`))
+    REFERENCES `crm_funeduca`.`situacio_economica` (`idSituacio_economica`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`nacionalitat`
+-- Table `crm_funeduca`.`nacionalitat`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`nacionalitat` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`nacionalitat` (
   `idPais` INT NOT NULL,
   `idClient` INT NOT NULL,
   PRIMARY KEY (`idPais`, `idClient`),
@@ -375,29 +354,29 @@ CREATE TABLE IF NOT EXISTS `mydb`.`nacionalitat` (
   INDEX `fk_Paisos_nacionalitat_has_Usuarios_Paisos_nacionalitat1_idx` (`idPais` ASC) VISIBLE,
   CONSTRAINT `fk_Paisos_nacionalitat_has_Usuarios_Paisos_nacionalitat1`
     FOREIGN KEY (`idPais`)
-    REFERENCES `mydb`.`pais` (`idPais`),
+    REFERENCES `crm_funeduca`.`pais` (`idPais`),
   CONSTRAINT `fk_Paisos_nacionalitat_has_Usuarios_Usuarios1`
     FOREIGN KEY (`idClient`)
-    REFERENCES `mydb`.`client` (`idClient`))
+    REFERENCES `crm_funeduca`.`client` (`idClient`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`necessitats_especials`
+-- Table `crm_funeduca`.`necessitats_especials`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`necessitats_especials` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`necessitats_especials` (
   `idNecessitat_especial` INT NOT NULL AUTO_INCREMENT,
-  `Nom_necessitat` VARCHAR(45) NOT NULL UNIQUE,
+  `Nom_necessitat` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idNecessitat_especial`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`necessitats_especials_has_client`
+-- Table `crm_funeduca`.`necessitats_especials_has_client`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`necessitats_especials_has_client` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`necessitats_especials_has_client` (
   `idNecessitat_especial` INT NOT NULL,
   `idClient` INT NOT NULL,
   PRIMARY KEY (`idNecessitat_especial`, `idClient`),
@@ -405,75 +384,72 @@ CREATE TABLE IF NOT EXISTS `mydb`.`necessitats_especials_has_client` (
   INDEX `fk_Necessitats_especials_has_Usuarios_Necessitats_especials_idx` (`idNecessitat_especial` ASC) VISIBLE,
   CONSTRAINT `fk_Necessitats_especials_has_Usuarios_Necessitats_especials1`
     FOREIGN KEY (`idNecessitat_especial`)
-    REFERENCES `mydb`.`necessitats_especials` (`idNecessitat_especial`),
+    REFERENCES `crm_funeduca`.`necessitats_especials` (`idNecessitat_especial`),
   CONSTRAINT `fk_Necessitats_especials_has_Usuarios_Usuarios1`
     FOREIGN KEY (`idClient`)
-    REFERENCES `mydb`.`client` (`idClient`))
+    REFERENCES `crm_funeduca`.`client` (`idClient`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`usuario_app`
+-- Table `crm_funeduca`.`proyectos`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`usuario_app` (
-  `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
-  `Rol_usuario` VARCHAR(45) NOT NULL,
-  PRIMARY KEY (`idUsuario_APP`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
-
-
--- -----------------------------------------------------
--- Table `mydb`.`proyectos`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`proyectos` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`proyectos` (
   `idProyecto` INT NOT NULL AUTO_INCREMENT,
   `Nom_projecte` VARCHAR(45) NOT NULL,
   `Descripcio` VARCHAR(512) NULL DEFAULT NULL,
-  `fecha_inicio` DATE NOT NULL,
-  `fecha_fin` DATE NULL DEFAULT NULL,
   `plazas` INT NOT NULL DEFAULT '0',
   `inscritos` INT NOT NULL DEFAULT '0',
   `fecha_inicio_act` DATE NULL DEFAULT NULL,
   `fecha_fin_act` DATE NULL DEFAULT NULL,
-  `Centre_coordinacio` INT NOT NULL,
-  `responsable` INT NOT NULL,
+  `idcentre_activitats` INT NOT NULL,
   PRIMARY KEY (`idProyecto`),
-  INDEX `fk_Proyectos_Centros_coordinacion1_idx` (`Centre_coordinacio` ASC) VISIBLE,
-  INDEX `fk_Proyectos_Usuario_APP_idx` (`responsable` ASC) VISIBLE,
-  CONSTRAINT `fk_Proyectos_Centros_coordinacion1`
-    FOREIGN KEY (`Centre_coordinacio`)
-    REFERENCES `mydb`.`centre_coordinacio` (`idCentre_coord`),
-  CONSTRAINT `fk_Proyectos_Usuario_APP`
-    FOREIGN KEY (`responsable`)
-    REFERENCES `mydb`.`usuario_app` (`idUsuario_APP`))
+  INDEX `fk_proyectos_centre_activitats1_idx` (`idcentre_activitats` ASC) VISIBLE,
+  CONSTRAINT `fk_proyectos_centre_activitats1`
+    FOREIGN KEY (`idcentre_activitats`)
+    REFERENCES `crm_funeduca`.`centre_activitats` (`idcentre_activitats`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`proyectos_has_usuarios app`
+-- Table `crm_funeduca`.`Nivel_acceso`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`proyectos_has_usuarios app` (
-  `idProyecto` INT NOT NULL,
-  `idUsuario_APP` INT NOT NULL,
-  INDEX `fk_Proyectos_has_Usuarios APP_Usuarios APP1_idx` (`idUsuario_APP` ASC) VISIBLE,
-  INDEX `fk_Proyectos_has_Usuarios APP_Proyectos1_idx` (`idProyecto` ASC) VISIBLE,
-  CONSTRAINT `fk_Proyectos_has_Usuarios APP_Proyectos1`
-    FOREIGN KEY (`idProyecto`)
-    REFERENCES `mydb`.`proyectos` (`idProyecto`),
-  CONSTRAINT `fk_Proyectos_has_Usuarios APP_Usuarios APP1`
-    FOREIGN KEY (`idUsuario_APP`)
-    REFERENCES `mydb`.`usuario_app` (`idUsuario_APP`))
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`Nivel_acceso` (
+  `idNivel_acceso` INT NOT NULL AUTO_INCREMENT,
+  `Nom` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`idNivel_acceso`))
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `crm_funeduca`.`usuario_app`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`usuario_app` (
+  `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
+  `idNivel_acceso` INT NOT NULL,
+  `Nom` VARCHAR(45) NOT NULL,
+  `Cognoms` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(45) NOT NULL,
+  `Telefon` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`idUsuario_APP`, `idNivel_acceso`),
+  INDEX `fk_usuario_app_Nivel_acceso1_idx` (`idNivel_acceso` ASC) VISIBLE,
+  CONSTRAINT `fk_usuario_app_Nivel_acceso1`
+    FOREIGN KEY (`idNivel_acceso`)
+    REFERENCES `crm_funeduca`.`Nivel_acceso` (`idNivel_acceso`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
 
 -- -----------------------------------------------------
--- Table `mydb`.`proyectos_has_client`
+-- Table `crm_funeduca`.`proyectos_has_client`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `mydb`.`proyectos_has_client` (
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`proyectos_has_client` (
   `idProyecto` INT NOT NULL,
   `idClient` INT NOT NULL,
   PRIMARY KEY (`idProyecto`, `idClient`),
@@ -481,12 +457,35 @@ CREATE TABLE IF NOT EXISTS `mydb`.`proyectos_has_client` (
   INDEX `fk_proyectos_has_client_proyectos1_idx` (`idProyecto` ASC) VISIBLE,
   CONSTRAINT `fk_proyectos_has_client_proyectos1`
     FOREIGN KEY (`idProyecto`)
-    REFERENCES `mydb`.`proyectos` (`idProyecto`)
+    REFERENCES `crm_funeduca`.`proyectos` (`idProyecto`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_proyectos_has_client_client1`
     FOREIGN KEY (`idClient`)
-    REFERENCES `mydb`.`client` (`idClient`)
+    REFERENCES `crm_funeduca`.`client` (`idClient`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `crm_funeduca`.`Responsables`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `crm_funeduca`.`Responsables` (
+  `proyectos_idProyecto` INT NOT NULL,
+  `idUsuario_APP` INT NOT NULL,
+  PRIMARY KEY (`proyectos_idProyecto`, `idUsuario_APP`),
+  INDEX `fk_proyectos_has_usuario_app_usuario_app1_idx` (`idUsuario_APP` ASC) VISIBLE,
+  INDEX `fk_proyectos_has_usuario_app_proyectos1_idx` (`proyectos_idProyecto` ASC) VISIBLE,
+  CONSTRAINT `fk_proyectos_has_usuario_app_proyectos1`
+    FOREIGN KEY (`proyectos_idProyecto`)
+    REFERENCES `crm_funeduca`.`proyectos` (`idProyecto`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_proyectos_has_usuario_app_usuario_app1`
+    FOREIGN KEY (`idUsuario_APP`)
+    REFERENCES `crm_funeduca`.`usuario_app` (`idUsuario_APP`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB

@@ -24,33 +24,34 @@ async function runSQLFile(filePath) {
 }
 
 const ORDERED_TABLES = [
-    "Persona_relacionada",
-    "Proyectos_has_Usuarios APP",
-    "Necessitats_especials_has_Client",
-    "Nacionalitat",
-    "Client_has_Domicili",
-    "Client",
-    "Familia",
-    "Proyectos",
-    "Domicili",
-    "Centre_coordinacio",
-    "Direccio",
-    "Tipus_domicili",
-    "Pais",
-    "Rol",
-    "Risc",
-    "Resultat_academic",
-    "Motiu_baixa",
-    "Situacio_economica",
-    "Sebas",
-    "Curs_actual",
-    "Genere",
-    "Estructura_familiar",
-    "Necessitats_especials",
-    "Usuario_APP",
+    "Responsables",
+    "proyectos_has_client",
+    "necessitats_especials_has_client",
+    "nacionalitat",
+    "client",
+    "proyectos",
+    "usuario_app",
+    "Nivel_acceso",
+    "familia",
+    "domicili",
+    "centre_activitats",
+    "direccio",
+    "callejero",
+    "tipus_domicili",
     "tipus_via",
     "barri",
-    "codi_postal"
+    "codi_postal",
+    "pais",
+    "rol",
+    "risc",
+    "resultat_academic",
+    "motiu_baixa",
+    "situacio_economica",
+    "sebas",
+    "curs_actual",
+    "genere",
+    "estructura_familiar",
+    "necessitats_especials"
 ];
 
 async function runSeed() {
@@ -80,10 +81,6 @@ async function runSeed() {
         await runSQLFile(dataPath);
 
         // Test data (FKs assume IDs from static inserts)
-        await connection.query(`
-            INSERT INTO Centre_coordinacio (Nom_centre_coord, idDireccio)
-            VALUES ('Centre Test', 1)
-        `);
 
         await connection.query(`
             INSERT INTO Domicili (Tipus_domicili, Direccio)
@@ -91,23 +88,44 @@ async function runSeed() {
         `);
 
         await connection.query(`
-            INSERT INTO Familia (Cognom_familiar, idDomicili, Estructura_familiar)
-            VALUES ('Garcia', 1, 1)
+            INSERT INTO Familia (Cognom_familiar, Estructura_familiar)
+            VALUES ('Garcia', 1)
         `);
 
         await connection.query(`
-            INSERT INTO Usuario_APP (Rol_usuario)
-            VALUES ('Test')
+            INSERT INTO Usuario_APP (idNivel_acceso, Nom, Cognoms, email, Telefon)
+            VALUES (1, 'Usuari', 'Test', 'test@test.com', '600000000')
+        `);
+        await connection.query(`
+            INSERT INTO centre_activitats(nom_centre_activitats,direccio_idDireccio)
+            VALUES ('Centre Test',1);
+        `);
+        await connection.query(`
+            INSERT INTO Proyectos (Nom_projecte,Descripcio,plazas,inscritos,fecha_inicio_act,fecha_fin_act,idcentre_activitats)
+            VALUES ('Projecte Test','Descripcio de prova',10,0,CURDATE(),CURDATE(),1)
         `);
 
         await connection.query(`
-            INSERT INTO Proyectos (Nom_projecte, Descripcio, responsable, Centre_coordinacio, fecha_inicio, fecha_fin, plazas, inscritos, fecha_inicio_act, fecha_fin_act)
-            VALUES ('Projecte Test', 'Descripcio de prova', 1, 1, CURDATE(), CURDATE(), 10, 0, CURDATE(), CURDATE())
-        `);
-
-        await connection.query(`
-            INSERT INTO Client (idFamilia, idRol, idGenere, Nom, Cognoms, Telefon, Correu_electronic, Data_d_alta, C_temps_a_lentitat, Fecha_nacimiento, C_edad, Pais_naixement, Risc, Resultat_academic, idSituacio_economica, idSebas, derivacio_serveis_socials)
-            VALUES (1, 3, 1, 'Joan', 'Garcia Lopez', NULL, NULL, CURDATE(), '1 any', '2010-05-15', 16, 1, 1, 1, 1, 1, 0)
+            INSERT INTO Client (    idFamilia,
+                idRol,
+                idGenere,
+                Nom,
+                Cognoms,
+                Telefon,
+                Correu_electronic,
+                Data_d_alta,
+                C_temps_a_lentitat,
+                Fecha_nacimiento,
+                C_edad,
+                Pais_naixement,
+                Risc,
+                Resultat_academic,
+                idSituacio_economica,
+                idSebas,
+                derivacio_serveis_socials,
+                idDomicili,
+                Baixa)
+            VALUES (1,3,1,'Joan','Garcia Lopez',NULL,NULL,CURDATE(),'1 any','2010-5-15',16,1,1,1,1,1,0,1,0)
         `);
 
         await connection.query("SET FOREIGN_KEY_CHECKS = 1");

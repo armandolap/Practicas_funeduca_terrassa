@@ -439,7 +439,7 @@ Tots els repositoris usen `pool.query(SQL, params)` amb placeholders `?`.
 
 ## 6. Base de Dades
 
-### 6.1 Esquema `mydb`
+### 6.1 Esquema `crm_funeduca`
 
 **Charset:** `utf8` (no utf8mb4). **Motor:** InnoDB. **FK:** totes amb `ON DELETE NO ACTION / ON UPDATE NO ACTION`.
 
@@ -637,7 +637,7 @@ DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
-DB_NAME=mydb
+DB_NAME=crm_funeduca
 SESSION_SECRET=canviame
 ```
 El fitxer ha d'estar a l'arrel del projecte (`../.env` des de `src/`).

@@ -43,6 +43,7 @@ const tipus_via = require("./routes/tipus_via");
 const barri = require("./routes/barri");
 const codi_postal = require("./routes/codi_postal");
 const callejero = require("./routes/callejero");
+const desplegables = require("./routes/desplegables");
 
 
 // Rutas
@@ -67,6 +68,7 @@ server.use("/tipusVia", tipus_via);
 server.use("/barri", barri);
 server.use("/codiPostal", codi_postal);
 server.use("/callejero", callejero);
+server.use("/desplegables", desplegables);
 server.use(express.static(path.join(__dirname, "public")));
 
 // Ejecutar SQL

@@ -5,8 +5,8 @@ const pool = createPool();
 async function getAll() {
     const [rows] = await pool.query(`
         SELECT *
-        FROM Usuario_APP
-        ORDER BY idUsuario_APP
+        FROM usuario_app
+        ORDER BY Nom, Cognoms
     `);
 
     return rows;
@@ -15,36 +15,80 @@ async function getAll() {
 async function getById(id) {
     const [rows] = await pool.query(`
         SELECT *
-        FROM Usuario_APP
+        FROM usuario_app
         WHERE idUsuario_APP = ?
     `, [id]);
 
-    return rows[0];
+    return rows[0] || null;
 }
 
-async function create(rol_usuario) {
+async function create(data) {
+
+    const {
+        idNivel_acceso,
+        Nom,
+        Cognoms,
+        email,
+        Telefon
+    } = data;
+
     const [result] = await pool.query(`
-        INSERT INTO Usuario_APP (Rol_usuario)
-        VALUES (?)
-    `, [rol_usuario]);
+        INSERT INTO usuario_app
+        (
+            idNivel_acceso,
+            Nom,
+            Cognoms,
+            email,
+            Telefon
+        )
+        VALUES (?, ?, ?, ?, ?)
+    `, [
+        idNivel_acceso,
+        Nom,
+        Cognoms,
+        email,
+        Telefon
+    ]);
 
     return result.insertId;
 }
 
-async function update(id, rol_usuario) {
+async function update(id, data) {
+
+    const {
+        idNivel_acceso,
+        Nom,
+        Cognoms,
+        email,
+        Telefon
+    } = data;
+
     const [result] = await pool.query(`
-        UPDATE Usuario_APP
-        SET Rol_usuario = ?
-        WHERE idUsuario_APP = ?
-    `, [rol_usuario, id]);
+        UPDATE usuario_app
+        SET
+            idNivel_acceso=?,
+            Nom=?,
+            Cognoms=?,
+            email=?,
+            Telefon=?
+        WHERE idUsuario_APP=?
+    `, [
+        idNivel_acceso,
+        Nom,
+        Cognoms,
+        email,
+        Telefon,
+        id
+    ]);
 
     return result.affectedRows;
 }
 
 async function remove(id) {
+
     const [result] = await pool.query(`
-        DELETE FROM Usuario_APP
-        WHERE idUsuario_APP = ?
+        DELETE FROM usuario_app
+        WHERE idUsuario_APP=?
     `, [id]);
 
     return result.affectedRows;
