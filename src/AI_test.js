@@ -43,7 +43,7 @@ const RESULTS = { pass: 0, fail: 0, warn: 0, tests: [], manual: [] };
 const CONTROLLER_FIELDS = {
     neses: "Nom_necessitat",
     curso: "Nom",
-    usuario: "Rol_usuario",
+    usuario: "Nom",
     tipusVia: "Nom",
     barri: "Nom",
     codiPostal: "Codi",
@@ -392,10 +392,14 @@ function buildPayload(name) {
             projecte: {
                 Nom_projecte: "Projecte Test 2",
                 Descripcio: "Descripcio test 2",
-                responsable: 1,
+                plazas: 10,
+                inscritos: 0,
+                fecha_inicio_act: "2026-06-16",
+                fecha_fin_act: "2026-12-31",
+                idcentre_activitats: 1
             }
         },
-        "/usuario": { Rol_usuario: "Test User" },
+        "/usuario": {idNivel_acceso: 1,Nom: "Test",Cognoms: "User",email: "test@test.com",Telefon: "600000000"},
         "/domicili": { Tipus_domicili: 1, Direccio: 1 },
         "/familia": { Cognom_familiar: "Test", idDomicili: 1, Estructura_familiar: 1 },
         "/tipusVia": { Nom: "TEST VIA" },
@@ -420,8 +424,13 @@ function buildUpdatePayload(name) {
     if (name === "/client") return { ...base, Nom: "Maria Actualitzada" };
     if (name === "/projectes") return {
         Nom_projecte: "Projecte Test 2 Actualitzat",
-        Descripcio: "Descripcio test 2",
-        responsable: 1,
+        Descripcio: "...",
+        plazas: 20,
+        inscritos: 3,
+        fecha_inicio_act: "2026-06-16",
+        fecha_fin_act: "2026-12-31",
+        idcentre_activitats: 1
+
     };
     if (name === "/domicili") return { ...base };
     if (name === "/familia") return { ...base };

@@ -1,38 +1,122 @@
 # Resultat dels tests
 
-**Data:** 2026-06-10T08:12:30.312Z
+**Data:** 2026-06-16T10:57:46.941Z
 
-❌ **5 test(s) han fallat** (de 234 totals)
+❌ **19 test(s) han fallat** (de 215 totals)
 
 ## Possibles problemes i solucions
 
-### PUT /projectes/2 → 404
+### POST /projectes → 500
 
-**Error:** expected 200, got 404 null
+**Error:** expected 201 + {id}, got 500 {"message":"Error creant projecte"}
 
-**Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
+**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
 
-### GET /projectes/2 after update: "Nom_projecte" = "Projecte Test 2"
+### PUT /usuario/999999 (nonexistent) → 500
 
-**Error:** expected "Projecte Test 2 Actualitzat", got "Projecte Test 2"
-
-**Possible solució:** Revisa el codi de l'endpoint: ruta → controlador → repositori. Comprova que el seeder insereix les dades necessàries.
-
-### GET /projectes/2 after update: "Nom_projecte" = "Projecte Test 2"
-
-**Error:** expected "Projecte Test 2 Actualitzat", got "Projecte Test 2"
-
-**Possible solució:** Revisa el codi de l'endpoint: ruta → controlador → repositori. Comprova que el seeder insereix les dades necessàries.
-
-### DELETE /projectes/2 → 404
-
-**Error:** expected 200, got 404
+**Error:** expected 404, got 500
 
 **Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
 
-### GET /projectes/2 (after delete) → 200
+### POST /usuario → 400
 
-**Error:** expected 404, got 200
+**Error:** expected 201 + {id}, got 400 {"error":"Rol usuari és obligatori"}
+
+**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
+
+### POST /domicili {} → 500 (validation)
+
+**Error:** expected 400 for empty body, got 500
+
+**Possible solució:** Verifica que el controlador valida les dades d'entrada i retorna 400 per payloads buits o invàlids.
+
+### POST /domicili → 500
+
+**Error:** expected 201 + {id}, got 500 {"message":"Error creant domicili"}
+
+**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
+
+### POST /familia {} → 500 (validation)
+
+**Error:** expected 400 for empty body, got 500
+
+**Possible solució:** Verifica que el controlador valida les dades d'entrada i retorna 400 per payloads buits o invàlids.
+
+### PUT /familia/999999 (nonexistent) → 500
+
+**Error:** expected 404, got 500
+
+**Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
+
+### POST /familia → 500
+
+**Error:** expected 201 + {id}, got 500 {"message":"Error creant família"}
+
+**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
+
+### POST /client {} → 500 (validation)
+
+**Error:** expected 400 for empty body, got 500
+
+**Possible solució:** Verifica que el controlador valida les dades d'entrada i retorna 400 per payloads buits o invàlids.
+
+### POST /client → 500
+
+**Error:** expected 201 + {id}, got 500 {"message":"Error creant client"}
+
+**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
+
+### GET /callejero → 500
+
+**Error:** expected 200 + array, got 500
+
+**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
+
+### GET /callejero/1 → 500
+
+**Error:** expected 200 + object, got 500
+
+**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
+
+### GET /callejero/999999 → 500
+
+**Error:** expected 404, got 500
+
+**Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
+
+### GET /callejero?q=ABAT → 500
+
+**Error:** expected 200 + array, got 500
+
+**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
+
+### GET /callejero?q=ABAT&tipus_via=1 → 500
+
+**Error:** expected 200 + array, got 500
+
+**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
+
+### GET /callejero?q=ZZZNOTHING → 500
+
+**Error:** expected 200 + array, got 500
+
+**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
+
+### GET /callejero?q=AB (min 3 chars) → 500
+
+**Error:** expected 200 + array, got 500
+
+**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
+
+### GET /callejero (sense query) → 500
+
+**Error:** expected 200 + array, got 500
+
+**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
+
+### GET /callejero/999999 → 500
+
+**Error:** expected 404, got 500
 
 **Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
 

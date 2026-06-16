@@ -1,7 +1,6 @@
 const projectesRepository = require("../repositories/projectes");
 
-// FALTEN PUT I POST per crear i modificar projectes
-
+// GET /projectes
 async function getAllProjectes(req, res) {
     try {
         const projecte = await projectesRepository.getAll();
@@ -16,6 +15,7 @@ async function getAllProjectes(req, res) {
     }
 }
 
+// GET /projectes/:id
 async function getProjectesById(req, res) {
     try {
         const { id } = req.params;
@@ -39,55 +39,52 @@ async function getProjectesById(req, res) {
     }
 }
 
-
+// POST /projectes
 async function createProject(req, res) {
     try {
-        console.log("Creant projecte, de moment no fa res");
 
-        const projecte = req.body.projecte || {}; // por si viene vacío no pete el server por ser "undefined" 
-        console.log(projecte);
-        // 1. Creamos una constante con la fecha actual en formato 'YYYY-MM-DD' (ideal para SQL)
-        const fechaActual = new Date().toISOString().split('T')[0];
-        // Resultado: "2026-06-08T13:30:00.000Z" <--- la T separa la data de la hora, la fem servir per guardar en un format que SQL entengui com a DATE
-        // OJO , guarda la data UTC ( no la "española" , però en teoria no afecta xk no hauria de ser buida ni fer-se entre les 21 i les 3 , aixi que no hi haurà problema)
-        // 2. Desestructuramos asignando esa fecha como valor por defecto
+        const projecte = req.body.projecte || {};
+
+        // Fecha actual en formato YYYY-MM-DD
+        const fechaActual = new Date().toISOString().split("T")[0];
+
         const {
             Nom_projecte,
-            Descripcio,
-            responsable,
-            Centre_coordinacio =1,               // por defecto deberia ser la del centro de coord general , id = 1 ?? ( dnd fuimos )
-            plazas = 0,                         // por defecto por ahora o està ok 
-            inscritos = 0,                      // por defecto por ahora o està ok 
-            fecha_inicio_act = fechaActual,   // Si viene undefined, toma la fecha de hoy
-            fecha_fin_act = fechaActual       // Si viene undefined, toma la fecha de hoy
-        } = projecte || {}; // El '|| {}' evita errors si projecte es null o undefined.
+            Descripcio = null,
+            plazas = 0,
+            inscritos = 0,
+            fecha_inicio_act = null,
+            fecha_fin_act = null,
+            idcentre_activitats
+        } = projecte;
 
-
-        // aseguramos que los datos están rellenados
-        if (!Nom_projecte?.trim() || !Descripcio?.trim() || !responsable) {
-            // tirem error 400 (Bad Request) al client
+        // Validaciones mínimas
+        if (!Nom_projecte?.trim()) {
             return res.status(400).json({
-                error: "Faltan campos obligatorios, REPASAR : nom_projecte, descripcio y responsable QUE SÓN NECESSARIS."
+                message: "El nom del projecte és obligatori."
+            });
+        }
+
+        if (!idcentre_activitats) {
+            return res.status(400).json({
+                message: "idcentre_activitats és obligatori."
             });
         }
 
         const nuevoProjecteId = await projectesRepository.create({
             Nom_projecte,
             Descripcio,
-            responsable,
-            Centre_coordinacio,
             plazas,
             inscritos,
             fecha_inicio_act,
-            fecha_fin_act
+            fecha_fin_act,
+            idcentre_activitats
         });
 
-        // 4. BUENA PRÁCTICA: Devolver 201 (Created) y el ID del recurso creado
         res.status(201).json({
-            message: `Projecte ID: ${nuevoProjecteId} --> ${Nom_projecte} \ncreat correctament`,
+            message: "Projecte creat correctament",
             id: nuevoProjecteId
         });
-
 
     } catch (error) {
         console.error(error);
@@ -97,8 +94,6 @@ async function createProject(req, res) {
         });
     }
 }
-
-
 
 module.exports = {
     getAllProjectes,
