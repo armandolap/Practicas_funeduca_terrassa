@@ -7,6 +7,8 @@ router.post("/", projectes.createProject);
 
 router.get("/:id", projectes.getProjectesById);
 
-// falten editar i actualizar ( put i post ) 
+router.put("/:id", projectes.updateProject);
+
+router.delete("/:id", projectes.deleteProject);
 
 module.exports = router;

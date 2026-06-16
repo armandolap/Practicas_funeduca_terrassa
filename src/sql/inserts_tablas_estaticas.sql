@@ -2074,3 +2074,26 @@ INSERT INTO Callejero (idTipus_via, Nom_calle, idBarri, idCodi_postal) VALUES (3
 INSERT INTO Callejero (idTipus_via, Nom_calle, idBarri, idCodi_postal) VALUES (3, 'ZAMORA, DE', 43, 5);
 INSERT INTO Callejero (idTipus_via, Nom_calle, idBarri, idCodi_postal) VALUES (3, 'ZAMORA, DE', 13, 5);
 INSERT INTO Callejero (idTipus_via, Nom_calle, idBarri, idCodi_postal) VALUES (3, 'ZULOAGA, DE', 17, 4);
+
+-- ============================================================
+-- Nivell d'accés (per usuaris de l'app)
+-- ============================================================
+INSERT INTO Nivel_acceso (Nom) VALUES ('Administrador'), ('Coordinador'), ('Educador');
+
+-- ============================================================
+-- Usuari de l'app (per responsbles de projectes)
+-- ============================================================
+INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, email, Telefon) VALUES
+    (1, 'Admin', 'Sistema', 'admin@test.com', '123456789'),
+    (2, 'Coordinador', 'Test', 'coord@test.com', '987654321'),
+    (3, 'Educador', 'Test', 'educa@test.com', '555555555');
+
+-- ============================================================
+-- Direccio (per al centre d'activitats)
+-- ============================================================
+INSERT INTO direccio (idcallejero, Num_calle, Pis, Escala) VALUES (1, '1', NULL, NULL);
+
+-- ============================================================
+-- Centre d'activitats (per als projectes)
+-- ============================================================
+INSERT INTO centre_activitats (nom_centre_activitats, direccio_idDireccio) VALUES ('Centre Test', 1);
