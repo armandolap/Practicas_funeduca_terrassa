@@ -28,7 +28,7 @@ Every entity has the same CRUD pattern: `getAll`, `getById`, `create`, `update`,
 
 ## Database
 
-- Schema: `src/sql/Base_datos.sql` (schema name `mydb` — rename before deploying)
+- Schema: `src/sql/Base_datos.sql` (schema name `crm_funeduca` — rename before deploying)
 - All FK constraints: `ON DELETE NO ACTION`
 - Charset: `utf8` (not utf8mb4)
 - ~11 catalog tables (see README) — not user-editable, admin-only

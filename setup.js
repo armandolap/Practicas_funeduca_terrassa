@@ -11,7 +11,7 @@ const HARDCODED_DEFAULTS = {
     DB_PORT: "3306",
     DB_USER: "root",
     DB_PASSWORD: "",
-    DB_NAME: "mydb",
+    DB_NAME: "crm_funeduca",
     NODE_ENV: "development",
     SESSION_SECRET: "cambiar_esto_por_un_secreto",
     SMTP_HOST: "smtp.gmail.com",
