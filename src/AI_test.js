@@ -606,6 +606,48 @@ async function testStaticFiles() {
     }
 }
 
+async function testDesplegables() {
+    console.log(`\n--- /desplegables (catàlegs dinàmics) ---`);
+
+    // GET existing desplegable
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/desplegables/barri`);
+        assert(
+            `GET /desplegables/barri → ${status}`,
+            status === 200 && Array.isArray(body) && body.length > 0,
+            `expected 200 + non-empty array, got ${status}`
+        );
+        if (Array.isArray(body) && body.length > 0) {
+            assert(
+                `GET /desplegables/barri[0] té "id" i "Nom"`,
+                body[0].id != null && body[0].Nom != null,
+                `expected { id, Nom }, got ${JSON.stringify(Object.keys(body[0]))}`
+            );
+        }
+    }
+
+    // GET non-existing desplegable → 404
+    {
+        const { status } = await fetchJson(`${BASE_URL}/desplegables/noexiste`);
+        assert(
+            `GET /desplegables/noexiste → ${status}`,
+            status === 404,
+            `expected 404, got ${status}`
+        );
+    }
+
+    // GET multiple catalogs
+    const catalogs = ["codi_postal", "curso", "tipus_via", "rol", "neses"];
+    for (const name of catalogs) {
+        const { status, body } = await fetchJson(`${BASE_URL}/desplegables/${name}`);
+        assert(
+            `GET /desplegables/${name} → ${status}`,
+            status === 200 && Array.isArray(body) && body.length > 0,
+            `expected 200 + non-empty array, got ${status}`
+        );
+    }
+}
+
 function declareManualTests() {
     manual("Obrir http://localhost:3000 al navegador", [
         "Comprovar que es mostra el títol «Cercador de carrers»",
@@ -807,6 +849,7 @@ async function main() {
         // Extra tests
         await testCallejeroSearch();
         await testStaticFiles();
+        await testDesplegables();
 
         // Declarar tests manuals
         declareManualTests();
