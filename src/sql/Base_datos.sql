@@ -285,7 +285,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`client` (
   `C_edad` INT NOT NULL,
   `Pais_naixement` INT NOT NULL,
   `Risc` INT NOT NULL,
-  `Resultat_academic` INT NOT NULL,
+  `Resultat_academic` INT NULL,
   `idSituacio_economica` INT NOT NULL,
   `idSebas` INT NOT NULL,
   `derivacio_serveis_socials` TINYINT NOT NULL,
