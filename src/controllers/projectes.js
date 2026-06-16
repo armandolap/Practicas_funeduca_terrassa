@@ -56,9 +56,6 @@ async function createProject(req, res) {
             Descripcio,
             responsable,
             Centre_coordinacio =1,               // por defecto deberia ser la del centro de coord general , id = 1 ?? ( dnd fuimos )
-            fecha_inicio = fechaActual,         // Si viene undefined, toma la fecha de hoy
-            fecha_fin = fechaActual,            // Si viene undefined, toma la fecha de hoy
-            //ubicacion,   // por defecto deberia ser la del centro de coord 
             plazas = 0,                         // por defecto por ahora o està ok 
             inscritos = 0,                      // por defecto por ahora o està ok 
             fecha_inicio_act = fechaActual,   // Si viene undefined, toma la fecha de hoy
@@ -79,9 +76,6 @@ async function createProject(req, res) {
             Descripcio,
             responsable,
             Centre_coordinacio,
-            fecha_inicio,
-            fecha_fin,
-            //ubicacion,
             plazas,
             inscritos,
             fecha_inicio_act,

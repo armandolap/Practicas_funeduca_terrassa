@@ -32,8 +32,6 @@ async function create(projecteData) {
     const {
         Nom_projecte,
         Descripcio,
-        fecha_inicio,
-        fecha_fin = null,
         plazas = 0,
         inscritos = 0,
         fecha_inicio_act = null,
@@ -45,8 +43,6 @@ async function create(projecteData) {
         INSERT INTO proyectos (
             Nom_projecte,
             Descripcio,
-            fecha_inicio,
-            fecha_fin,
             plazas,
             inscritos,
             fecha_inicio_act,
@@ -58,8 +54,6 @@ async function create(projecteData) {
     const values = [
         Nom_projecte,
         Descripcio,
-        fecha_inicio,
-        fecha_fin,
         plazas,
         inscritos,
         fecha_inicio_act,

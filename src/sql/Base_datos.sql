@@ -399,8 +399,6 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`proyectos` (
   `idProyecto` INT NOT NULL AUTO_INCREMENT,
   `Nom_projecte` VARCHAR(45) NOT NULL,
   `Descripcio` VARCHAR(512) NULL DEFAULT NULL,
-  `fecha_inicio` DATE NOT NULL,
-  `fecha_fin` DATE NULL DEFAULT NULL,
   `plazas` INT NOT NULL DEFAULT '0',
   `inscritos` INT NOT NULL DEFAULT '0',
   `fecha_inicio_act` DATE NULL DEFAULT NULL,
