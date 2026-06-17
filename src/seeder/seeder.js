@@ -61,10 +61,11 @@ async function insertTestData(conn) {
 
     // ── Usuaris ──
     const PWH = '$2b$10$b336vCzXwgbOQ8oxHiPJke0JCMtKZOHznhzIaYQ4AU45XLYpXQRR2';
-    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, email, Telefon, password) VALUES (1, 'Usuari', 'Test', 'test@test.com', '600000000', '${PWH}')`);
-    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, email, Telefon, password) VALUES (1, 'Admin', 'Sistema', 'admin@test.com', '600000001', '${PWH}')`);
-    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, email, Telefon, password) VALUES (2, 'Supervisor', 'CRM', 'supervisor@test.com', '600000002', '${PWH}')`);
-    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, email, Telefon, password) VALUES (3, 'Visitant', 'Anònim', 'visitant@test.com', '600000003', '${PWH}')`);
+    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (1, 'Usuari', 'Test', 'usuari', 'test@test.com', '600000000', '${PWH}')`);
+    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (1, 'Admin', 'Sistema', 'admin', 'admin@test.com', '600000001', '${PWH}')`);
+    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (2, 'Supervisor', 'CRM', 'supervisor', 'supervisor@test.com', '600000002', '${PWH}')`);
+    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (3, 'Visitant', 'Anònim', 'visitant', 'visitant@test.com', '600000003', '${PWH}')`);
+    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (4, 'Treballador', 'Test', 'treballador', 'treballador@test.com', '600000004', '${PWH}')`);
 
     // ── Centres d'activitats ──
     await conn.query(`INSERT INTO centre_activitats (nom_centre_activitats, direccio_idDireccio) VALUES ('Centre Test', 1)`);
@@ -77,6 +78,11 @@ async function insertTestData(conn) {
     await conn.query(`INSERT INTO proyectos (Nom_projecte, Descripcio, plazas, inscritos, fecha_inicio_act, fecha_fin_act, idcentre_activitats) VALUES ('Projecte Futur', 'Projecte que comença aviat', 15, 0, DATE_ADD(CURDATE(), INTERVAL 30 DAY), DATE_ADD(CURDATE(), INTERVAL 120 DAY), 2)`);
     await conn.query(`INSERT INTO proyectos (Nom_projecte, Descripcio, plazas, inscritos, fecha_inicio_act, fecha_fin_act, idcentre_activitats) VALUES ('Projecte Passat', 'Projecte ja finalitzat', 8, 0, DATE_SUB(CURDATE(), INTERVAL 90 DAY), DATE_SUB(CURDATE(), INTERVAL 10 DAY), 3)`);
     await conn.query(`INSERT INTO proyectos (Nom_projecte, Descripcio, plazas, inscritos, fecha_inicio_act, fecha_fin_act, idcentre_activitats) VALUES ('Projecte Complet', 'Projecte amb totes les places', 5, 0, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 30 DAY), 1)`);
+    // ── Projectes per al Supervisor ──
+    await conn.query(`INSERT INTO proyectos (Nom_projecte, Descripcio, plazas, inscritos, fecha_inicio_act, fecha_fin_act, idcentre_activitats) VALUES ('Supervisor Actiu', 'Projecte actiu del supervisor', 10, 0, DATE_SUB(CURDATE(), INTERVAL 15 DAY), DATE_ADD(CURDATE(), INTERVAL 45 DAY), 2)`);
+    await conn.query(`INSERT INTO proyectos (Nom_projecte, Descripcio, plazas, inscritos, fecha_inicio_act, fecha_fin_act, idcentre_activitats) VALUES ('Supervisor Futur', 'Projecte futur del supervisor', 12, 0, DATE_ADD(CURDATE(), INTERVAL 60 DAY), DATE_ADD(CURDATE(), INTERVAL 180 DAY), 1)`);
+    await conn.query(`INSERT INTO proyectos (Nom_projecte, Descripcio, plazas, inscritos, fecha_inicio_act, fecha_fin_act, idcentre_activitats) VALUES ('Supervisor Passat', 'Projecte finalitzat del supervisor', 8, 0, DATE_SUB(CURDATE(), INTERVAL 120 DAY), DATE_SUB(CURDATE(), INTERVAL 20 DAY), 3)`);
+    await conn.query(`INSERT INTO proyectos (Nom_projecte, Descripcio, plazas, inscritos, fecha_inicio_act, fecha_fin_act, idcentre_activitats) VALUES ('Supervisor Avui', 'Projecte que comença avui', 15, 0, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 90 DAY), 2)`);
 
     // ── Clients (existing + expanded edge cases) ──
     // Family 1: Garcia (biparental) — 2 children
@@ -145,6 +151,12 @@ async function insertTestData(conn) {
     // ── Responsables ──
     await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (2, 2)`);
     await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (3, 1)`);
+    // Supervisor (id 3) gets 4 projects in different states
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (5, 3)`);  // Projecte Complet (actiu)
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (6, 3)`);  // Supervisor Actiu
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (7, 3)`);  // Supervisor Futur
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (8, 3)`);  // Supervisor Passat
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (9, 3)`);  // Supervisor Avui
 
     await conn.query("SET FOREIGN_KEY_CHECKS = 1");
     console.log("Seed completat correctament");

@@ -94,8 +94,9 @@ async function loadProject() {
         const now = new Date();
         const start = p.fecha_inicio_act ? new Date(p.fecha_inicio_act) : null;
         const end = p.fecha_fin_act ? new Date(p.fecha_fin_act) : null;
-        const isActive = (!start || start <= now) && (!end || end >= now);
-        const isOpen = !end || end >= now;
+        let estatProjecte = 'actiu';
+        if (start && start > now) estatProjecte = 'futur';
+        if (end && end < now) estatProjecte = 'tancat';
         const role = getRole();
         const user = JSON.parse(localStorage.getItem('user') || '{}');
         const canEdit = role === 1 || role === 2 || (p.responsable === user.idUsuario_APP);
@@ -105,8 +106,7 @@ async function loadProject() {
             <div class="detail-header">
                 <h1>${p.Nom_projecte || ''}</h1>
                 <div class="subtitle" style="margin-top:8px">
-                    <span class="badge ${isOpen ? 'badge-green' : 'badge-red'}">${isOpen ? 'Obert' : 'Tancat'}</span>
-                    <span class="badge ${isActive ? 'badge-blue' : 'badge-gray'}">${isActive ? 'Actiu' : 'Inactiu'}</span>
+                    <span class="badge ${estatProjecte === 'actiu' ? 'badge-green' : estatProjecte === 'futur' ? 'badge-blue' : 'badge-gray'}">${estatProjecte === 'actiu' ? 'Actiu' : estatProjecte === 'futur' ? 'Futur' : 'Tancat'}</span>
                     ${canEdit ? `<button class="btn btn-sm btn-secondary" onclick="window.location.href='/projecte-crear.html?id=${projectId}'" style="float:right">Editar</button>` : ''}
                 </div>
             </div>

@@ -36,13 +36,13 @@ async function loadUser() {
             </div>
             <div class="info-row">
                 <div class="info-card"><div class="label">Projectes</div><div class="value">${s.num_projectes || 0}</div></div>
-                <div class="info-card"><div class="label">Oberts</div><div class="value">${s.num_oberts || 0}</div></div>
                 <div class="info-card"><div class="label">Actius</div><div class="value">${s.num_actius || 0}</div></div>
-                <div class="info-card"><div class="label">Inactius</div><div class="value">${s.num_inactius || 0}</div></div>
+                <div class="info-card"><div class="label">Futurs</div><div class="value">${s.num_futurs || 0}</div></div>
                 <div class="info-card"><div class="label">Tancats</div><div class="value">${s.num_tancats || 0}</div></div>
             </div>
             <div class="card">
                 <h3>Contacte</h3>
+                <p>👤 ${u.username || '-'}</p>
                 <p>📧 ${u.email || '-'}</p>
                 <p>📞 ${u.Telefon || '-'}</p>
             </div>
@@ -55,8 +55,7 @@ async function loadUser() {
                             <tr>
                                 <td><a href="/projecte.html?id=${p.idProyecto}">${p.Nom_projecte || ''}</a></td>
                                 <td>
-                                    <span class="badge ${p.estat_obert === 'obert' ? 'badge-green' : 'badge-red'}">${p.estat_obert === 'obert' ? 'Obert' : 'Tancat'}</span>
-                                    <span class="badge ${p.estat_actiu === 'actiu' ? 'badge-blue' : 'badge-gray'}">${p.estat_actiu === 'actiu' ? 'Actiu' : 'Inactiu'}</span>
+                                    <span class="badge ${p.estat_projecte === 'actiu' ? 'badge-green' : p.estat_projecte === 'futur' ? 'badge-blue' : 'badge-gray'}">${p.estat_projecte === 'actiu' ? 'Actiu' : p.estat_projecte === 'futur' ? 'Futur' : 'Tancat'}</span>
                                 </td>
                                 <td>${p.fecha_inicio_act ? new Date(p.fecha_inicio_act).toLocaleDateString() : '-'}</td>
                                 <td>${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</td>

@@ -19,7 +19,7 @@
   </div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Nom</th><th>Cognoms</th><th>Rol</th><th>Telèfon</th><th>Email</th><th>Proj. Actius</th><th>Proj. Oberts</th></tr></thead>
+      <thead><tr><th>Nom</th><th>Cognoms</th><th>Usuari</th><th>Rol</th><th>Telèfon</th><th>Email</th><th>Proj. Actius</th></tr></thead>
       <tbody id="userList"></tbody>
     </table>
   </div>
@@ -58,11 +58,11 @@ async function loadUsers() {
             <tr class="clickable" onclick="window.location.href='/usuari.html?id=${u.idUsuario_APP}'">
                 <td>${u.Nom || ''}</td>
                 <td>${u.Cognoms || ''}</td>
+                <td>${u.username || '-'}</td>
                 <td><span class="badge badge-blue">${u.nivel_acceso_nom || ''}</span></td>
                 <td>${u.Telefon || '-'}</td>
                 <td>${u.email || '-'}</td>
                 <td>${u.num_projectes_actius || 0}</td>
-                <td>${u.num_projectes_oberts || 0}</td>
             </tr>
         `).join('');
     } catch (err) { console.error(err); }

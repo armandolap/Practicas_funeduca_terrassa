@@ -18,10 +18,9 @@ async function getUsuarioById(req, res) {
         const projectes = await repo.getProjectsByUser(req.params.id);
         const stats = {
             num_projectes: projectes.length,
-            num_oberts: projectes.filter(p => p.estat_obert === 'obert').length,
-            num_tancats: projectes.filter(p => p.estat_obert === 'tancat').length,
-            num_actius: projectes.filter(p => p.estat_actiu === 'actiu').length,
-            num_inactius: projectes.filter(p => p.estat_actiu === 'inactiu').length,
+            num_actius: projectes.filter(p => p.estat_projecte === 'actiu').length,
+            num_futurs: projectes.filter(p => p.estat_projecte === 'futur').length,
+            num_tancats: projectes.filter(p => p.estat_projecte === 'tancat').length,
         };
         res.json({ ...usuario, projectes, stats });
     } catch (error) {
@@ -32,15 +31,15 @@ async function getUsuarioById(req, res) {
 
 async function createUsuario(req, res) {
     try {
-        const { idNivel_acceso, Nom, Cognoms, email, Telefon, password } = req.body;
+        const { idNivel_acceso, Nom, Cognoms, username, email, Telefon, password } = req.body;
         if (!idNivel_acceso) return res.status(400).json({ error: "Nivell d'accés obligatori" });
         if (!Nom?.trim()) return res.status(400).json({ error: "Nom obligatori" });
         if (!Cognoms?.trim()) return res.status(400).json({ error: "Cognoms obligatoris" });
-        if (!email?.trim()) return res.status(400).json({ error: "Email obligatori" });
+        if (!username?.trim()) return res.status(400).json({ error: "Nom d'usuari obligatori" });
         if (!password?.trim()) return res.status(400).json({ error: "Contrasenya obligatòria" });
-        const existing = await repo.findByEmail(email.trim());
-        if (existing) return res.status(409).json({ error: "Aquest email ja està registrat" });
-        const id = await repo.create({ idNivel_acceso, Nom, Cognoms, email, Telefon, password });
+        const existing = await repo.findByUsername(username.trim());
+        if (existing) return res.status(409).json({ error: "Aquest nom d'usuari ja existeix" });
+        const id = await repo.create({ idNivel_acceso, Nom, Cognoms, username: username.trim(), email, Telefon, password });
         res.status(201).json({ message: "Usuari creat", id });
     } catch (error) {
         console.error(error);

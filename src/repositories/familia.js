@@ -3,7 +3,10 @@ const pool = createPool();
 
 async function getAll() {
     const [rows] = await pool.query(`
-        SELECT f.*, ef.Nom_est_fam AS estructura_familiar_nom
+        SELECT f.*, ef.Nom_est_fam AS estructura_familiar_nom,
+               (SELECT COUNT(*) FROM client cl WHERE cl.idFamilia = f.idFamilia) AS num_membres,
+               (SELECT COUNT(*) FROM client cl WHERE cl.idFamilia = f.idFamilia AND cl.C_edad >= 18) AS num_majors,
+               (SELECT COUNT(*) FROM client cl WHERE cl.idFamilia = f.idFamilia AND cl.C_edad < 18) AS num_menors
         FROM familia f
         JOIN estructura_familiar ef ON f.Estructura_familiar = ef.idEstructura_familiar
         ORDER BY f.Cognom_familiar

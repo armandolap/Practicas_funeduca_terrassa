@@ -1,12 +1,23 @@
 # Resultat dels tests
 
-**Data:** 2026-06-17T15:22:52.740Z
+**Data:** 2026-06-17T18:20:16.297Z
 
-✅ Tots els tests han passat correctament.
+❌ **2 test(s) han fallat** (de 292 totals)
 
 ## Possibles problemes i solucions
 
-No s'han detectat problemes.
+### POST /usuario → 400
+
+**Error:** expected 201 + {id}, got 400 {"error":"Nom d'usuari obligatori"}
+
+**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
+
+### GET / → 200
+
+**Error:** expected 200 + login page, got 200
+
+**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
+
 
 ## Tests manuals pendents
 

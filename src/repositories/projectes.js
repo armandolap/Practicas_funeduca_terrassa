@@ -27,6 +27,8 @@ async function getAll(filter = "todos", q = "", responsable_id) {
     if (filter === "activos") {
         sql += ` AND (p.fecha_inicio_act IS NULL OR p.fecha_inicio_act <= CURDATE())
                  AND (p.fecha_fin_act IS NULL OR p.fecha_fin_act >= CURDATE())`;
+    } else if (filter === "futuros") {
+        sql += ` AND p.fecha_inicio_act IS NOT NULL AND p.fecha_inicio_act > CURDATE()`;
     } else if (filter === "pasados") {
         sql += ` AND p.fecha_fin_act IS NOT NULL AND p.fecha_fin_act < CURDATE()`;
     }

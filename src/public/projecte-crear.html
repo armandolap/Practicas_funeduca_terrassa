@@ -91,6 +91,12 @@ let centreSearchTimeout;
 
 async function initForm() {
     if (!requireAuth()) return;
+    const role = getRole();
+    if (role !== 1 && role !== 2) {
+        alert('No tens permís per crear projectes');
+        window.location.href = '/projectes.html';
+        return;
+    }
     renderSidebar('projectes');
     if (isEdit) {
         document.getElementById('formTitle').textContent = 'Editar Projecte';

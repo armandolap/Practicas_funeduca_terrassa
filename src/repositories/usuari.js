@@ -11,10 +11,6 @@ async function getAll(filter = "tots", q = "") {
                 WHERE r.idUsuario_APP = u.idUsuario_APP
                   AND (p.fecha_inicio_act IS NULL OR p.fecha_inicio_act <= CURDATE())
                   AND (p.fecha_fin_act IS NULL OR p.fecha_fin_act >= CURDATE())) AS num_projectes_actius,
-               (SELECT COUNT(*) FROM Responsables r
-                JOIN proyectos p ON r.proyectos_idProyecto = p.idProyecto
-                WHERE r.idUsuario_APP = u.idUsuario_APP
-                  AND (p.fecha_inicio_act IS NULL OR p.fecha_inicio_act >= CURDATE())) AS num_projectes_oberts,
                (SELECT COUNT(*) FROM Responsables r WHERE r.idUsuario_APP = u.idUsuario_APP) AS num_projectes_total
         FROM usuario_app u
         JOIN Nivel_acceso na ON u.idNivel_acceso = na.idNivel_acceso
@@ -29,9 +25,9 @@ async function getAll(filter = "tots", q = "") {
     }
 
     if (q && q.trim()) {
-        sql += ` AND (u.Nom LIKE ? OR u.Cognoms LIKE ?)`;
+        sql += ` AND (u.Nom LIKE ? OR u.Cognoms LIKE ? OR u.username LIKE ?)`;
         const like = `%${q.trim()}%`;
-        params.push(like, like);
+        params.push(like, like, like);
     }
 
     sql += ` ORDER BY num_projectes_actius DESC, u.Nom, u.Cognoms`;
@@ -53,12 +49,10 @@ async function getProjectsByUser(id) {
     const [rows] = await pool.query(`
         SELECT p.*,
                (SELECT COUNT(*) FROM proyectos_has_client phc WHERE phc.idProyecto = p.idProyecto) AS inscritos,
-               CASE WHEN p.fecha_fin_act IS NOT NULL AND p.fecha_fin_act < CURDATE() THEN 'tancat'
-                    ELSE 'obert' END AS estat_obert,
                CASE WHEN p.fecha_inicio_act IS NOT NULL AND p.fecha_inicio_act <= CURDATE()
                      AND (p.fecha_fin_act IS NULL OR p.fecha_fin_act >= CURDATE()) THEN 'actiu'
-                    WHEN p.fecha_inicio_act IS NULL OR p.fecha_inicio_act > CURDATE() THEN 'inactiu'
-                    ELSE 'inactiu' END AS estat_actiu
+                    WHEN p.fecha_inicio_act IS NOT NULL AND p.fecha_inicio_act > CURDATE() THEN 'futur'
+                    ELSE 'tancat' END AS estat_projecte
         FROM Responsables r
         JOIN proyectos p ON r.proyectos_idProyecto = p.idProyecto
         WHERE r.idUsuario_APP = ?
@@ -68,19 +62,19 @@ async function getProjectsByUser(id) {
 }
 
 async function create(data) {
-    const { idNivel_acceso, Nom, Cognoms, email, Telefon, password } = data;
+    const { idNivel_acceso, Nom, Cognoms, username, email, Telefon, password } = data;
     const hashedPassword = await bcrypt.hash(password, 10);
     const [result] = await pool.query(`
-        INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, email, Telefon, password)
-        VALUES (?, ?, ?, ?, ?, ?)
-    `, [idNivel_acceso, Nom, Cognoms, email, Telefon, hashedPassword]);
+        INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `, [idNivel_acceso, Nom, Cognoms, username, email || null, Telefon, hashedPassword]);
     return result.insertId;
 }
 
 async function update(id, data) {
-    const { idNivel_acceso, Nom, Cognoms, email, Telefon, password } = data;
-    let sql = `UPDATE usuario_app SET idNivel_acceso=?, Nom=?, Cognoms=?, email=?, Telefon=?`;
-    const params = [idNivel_acceso, Nom, Cognoms, email, Telefon];
+    const { idNivel_acceso, Nom, Cognoms, username, email, Telefon, password } = data;
+    let sql = `UPDATE usuario_app SET idNivel_acceso=?, Nom=?, Cognoms=?, username=?, email=?, Telefon=?`;
+    const params = [idNivel_acceso, Nom, Cognoms, username, email || null, Telefon];
     if (password && password.trim()) {
         const hashed = await bcrypt.hash(password, 10);
         sql += `, password=?`;
@@ -103,4 +97,9 @@ async function findByEmail(email) {
     return rows[0] || null;
 }
 
-module.exports = { getAll, getById, getProjectsByUser, findByEmail, create, update, remove };
+async function findByUsername(username) {
+    const [rows] = await pool.query(`SELECT * FROM usuario_app WHERE username = ?`, [username]);
+    return rows[0] || null;
+}
+
+module.exports = { getAll, getById, getProjectsByUser, findByEmail, findByUsername, create, update, remove };

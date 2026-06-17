@@ -306,11 +306,14 @@ async function loadFamilyDomiciles(idFamilia) {
 
 familyDomicilis.addEventListener("change", () => {
   const val = familyDomicilis.value;
-  if (!val) return;
+  if (!val) {
+    selectedDomiciliId = null;
+    return;
+  }
   const dom = familyDomiciles.find(d => d.idDomicili == val);
   if (dom) {
-    domiciliSearch.value = dom.Nom_complet;
-    triggerDomiciliSearch();
+    dom._type = "domicili";
+    selectDomiciliResult(dom);
   }
 });
 

@@ -111,12 +111,10 @@ async function getDetailById(id) {
 async function getProjectsByClient(id, filter = "tots") {
     let sql = `
         SELECT p.*,
-               CASE WHEN p.fecha_fin_act IS NOT NULL AND p.fecha_fin_act < CURDATE() THEN 'tancat'
-                    ELSE 'obert' END AS estat_obert,
                CASE WHEN p.fecha_inicio_act IS NOT NULL AND p.fecha_inicio_act <= CURDATE()
                      AND (p.fecha_fin_act IS NULL OR p.fecha_fin_act >= CURDATE()) THEN 'actiu'
-                    WHEN p.fecha_inicio_act IS NULL OR p.fecha_inicio_act > CURDATE() THEN 'futur'
-                    ELSE 'passat' END AS estat_actiu
+                    WHEN p.fecha_inicio_act IS NOT NULL AND p.fecha_inicio_act > CURDATE() THEN 'futur'
+                    ELSE 'tancat' END AS estat_projecte
         FROM proyectos_has_client phc
         JOIN proyectos p ON phc.idProyecto = p.idProyecto
         WHERE phc.idClient = ?

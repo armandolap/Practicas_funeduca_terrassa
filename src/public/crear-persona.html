@@ -189,7 +189,15 @@
 <div id="toast" class="toast"></div>
 
 <script src="/js/sidebar.js"></script>
-<script>requireAuth(); renderSidebar('clients');</script>
+<script>
+requireAuth();
+const role = getRole();
+if (role !== 1 && role !== 2) {
+    alert('No tens permís per crear persones');
+    window.location.href = '/clients.html';
+}
+renderSidebar('clients');
+</script>
 <script src="/js/client-create.js"></script>
 </body>
 </html>

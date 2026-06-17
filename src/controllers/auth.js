@@ -7,16 +7,16 @@ const pool = createPool();
 
 async function login(req, res) {
     try {
-        const { email, password } = req.body;
+        const { username, password } = req.body;
 
-        if (!email?.trim() || !password?.trim()) {
-            return res.status(400).json({ message: "Email i contrasenya obligatoris" });
+        if (!username?.trim() || !password?.trim()) {
+            return res.status(400).json({ message: "Usuari i contrasenya obligatoris" });
         }
 
         const [rows] = await pool.query(
-            `SELECT idUsuario_APP, idNivel_acceso, Nom, Cognoms, email, password
-             FROM usuario_app WHERE email = ?`,
-            [email.trim()]
+            `SELECT idUsuario_APP, idNivel_acceso, Nom, Cognoms, username, email, password
+             FROM usuario_app WHERE username = ?`,
+            [username.trim()]
         );
 
         if (rows.length === 0) {
@@ -36,6 +36,7 @@ async function login(req, res) {
                 idNivel_acceso: user.idNivel_acceso,
                 Nom: user.Nom,
                 Cognoms: user.Cognoms,
+                username: user.username,
                 email: user.email
             },
             JWT_SECRET,
@@ -49,6 +50,7 @@ async function login(req, res) {
                 idNivel_acceso: user.idNivel_acceso,
                 Nom: user.Nom,
                 Cognoms: user.Cognoms,
+                username: user.username,
                 email: user.email
             }
         });
@@ -61,7 +63,7 @@ async function login(req, res) {
 async function me(req, res) {
     try {
         const [rows] = await pool.query(
-            `SELECT idUsuario_APP, idNivel_acceso, Nom, Cognoms, email, Telefon
+            `SELECT idUsuario_APP, idNivel_acceso, Nom, Cognoms, username, email, Telefon
              FROM usuario_app WHERE idUsuario_APP = ?`,
             [req.user.idUsuario_APP]
         );

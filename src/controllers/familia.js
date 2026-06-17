@@ -7,6 +7,10 @@ async function getAllFamilias(req, res) {
             const result = await repo.getFiltered({ q, estructura, barri, offset, limit });
             return res.json(result);
         }
+        if (offset !== undefined || limit !== undefined) {
+            const result = await repo.getFiltered({ offset, limit });
+            return res.json(result);
+        }
         const familias = await repo.getAll();
         res.json(familias);
     } catch (error) {

@@ -1,9 +1,9 @@
 async function login() {
-    const email = document.getElementById('email').value.trim();
+    const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     const errorEl = document.getElementById('errorMsg');
-    if (!email || !password) {
-        errorEl.textContent = 'Email i contrasenya obligatoris';
+    if (!username || !password) {
+        errorEl.textContent = 'Usuari i contrasenya obligatoris';
         errorEl.style.display = 'block';
         return;
     }
@@ -11,7 +11,7 @@ async function login() {
         const res = await fetch('/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify({ username, password })
         });
         const data = await res.json();
         if (!res.ok) {

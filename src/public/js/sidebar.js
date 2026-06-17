@@ -29,6 +29,7 @@ function renderSidebar(activePage) {
         { label: 'Persones', href: '/clients.html', id: 'clients', roles: [1, 2, 3, 4] },
         { label: 'Families', href: '/families.html', id: 'families', roles: [1, 2, 3, 4] },
         { label: 'Projectes', href: '/projectes.html', id: 'projectes', roles: [1, 2, 3, 4] },
+        { label: 'Centres activitats', href: '/centres.html', id: 'centres', roles: [1, 2] },
         { label: 'Usuaris App', href: '/usuaris.html', id: 'usuaris', roles: [1] },
         { label: 'Els meus projectes', href: '/meus-projectes.html', id: 'meus-projectes', roles: [2] },
     ];

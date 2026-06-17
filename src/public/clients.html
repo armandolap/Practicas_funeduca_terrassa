@@ -31,7 +31,7 @@
     <select id="familiaFilter" onchange="loadClients()"><option value="">Totes</option></select>
     <label>Barri</label>
     <select id="barriFilter" onchange="loadClients()"><option value="">Tots</option></select>
-    <button class="btn btn-success btn-sm" onclick="window.location.href='/crear-persona.html'">+ Nou client</button>
+    <button class="btn btn-success btn-sm" id="btnCrearClient" onclick="window.location.href='/crear-persona.html'" style="display:none">+ Nou client</button>
   </div>
   <div class="table-wrap">
     <table>
@@ -129,7 +129,15 @@ function goPage(page) {
     loadClients();
 }
 
+function checkCreateRole() {
+    const role = getRole();
+    if (role === 1 || role === 2) {
+        document.getElementById('btnCrearClient').style.display = 'inline-flex';
+    }
+}
+
 renderSidebar('clients');
+checkCreateRole();
 loadFilterOptions();
 loadClients();
 </script>

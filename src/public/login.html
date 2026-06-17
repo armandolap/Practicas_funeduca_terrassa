@@ -22,8 +22,8 @@ body { display: flex; align-items: center; justify-content: center; min-height: 
   <h1>FunEduca CRM</h1>
   <div class="error" id="errorMsg"></div>
   <div class="form-group">
-    <label for="email">Email</label>
-    <input type="email" id="email" placeholder="test@test.com" autofocus>
+    <label for="username">Usuari</label>
+    <input type="text" id="username" placeholder="usuari" autofocus>
   </div>
   <div class="form-group">
     <label for="password">Contrasenya</label>
@@ -33,11 +33,11 @@ body { display: flex; align-items: center; justify-content: center; min-height: 
 </div>
 <script>
 async function login() {
-  const email = document.getElementById('email').value.trim();
+  const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
   const errorEl = document.getElementById('errorMsg');
-  if (!email || !password) {
-    errorEl.textContent = 'Email i contrasenya obligatoris';
+  if (!username || !password) {
+    errorEl.textContent = 'Usuari i contrasenya obligatoris';
     errorEl.style.display = 'block';
     return;
   }
@@ -45,7 +45,7 @@ async function login() {
     const res = await fetch('/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ username, password })
     });
     const data = await res.json();
     if (!res.ok) {

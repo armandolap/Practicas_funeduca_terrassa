@@ -89,7 +89,7 @@ function renderProjects(projects, canRemove) {
     tbody.innerHTML = projects.map(p => `
         <tr>
             <td><a href="/projecte.html?id=${p.idProyecto}">${p.Nom_projecte || ''}</a></td>
-            <td><span class="badge ${p.estat_actiu === 'actiu' ? 'badge-green' : 'badge-gray'}">${p.estat_obert === 'obert' ? 'Obert' : 'Tancat'} / ${p.estat_actiu === 'actiu' ? 'Actiu' : p.estat_actiu === 'futur' ? 'Futur' : 'Passat'}</span></td>
+            <td><span class="badge ${p.estat_projecte === 'actiu' ? 'badge-green' : p.estat_projecte === 'futur' ? 'badge-blue' : 'badge-gray'}">${p.estat_projecte === 'actiu' ? 'Actiu' : p.estat_projecte === 'futur' ? 'Futur' : 'Tancat'}</span></td>
             <td>${p.fecha_inicio_act ? new Date(p.fecha_inicio_act).toLocaleDateString() : '-'}</td>
             <td>${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</td>
             ${canRemove ? `<td><button class="btn btn-sm btn-danger" onclick="removeFromProj(${p.idProyecto})">Treure</button></td>` : ''}
