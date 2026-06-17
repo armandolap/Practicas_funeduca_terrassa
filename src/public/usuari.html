@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usuari — FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <div id="userContent"></div>
+</main>
+<script src="/js/sidebar.js"></script>
+<script>
+const userId = new URLSearchParams(location.search).get('id');
+
+async function loadUser() {
+    if (!requireAuth()) return;
+    try {
+        const res = await fetch(`/usuario/${userId}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const u = await res.json();
+        if (!u || !u.idUsuario_APP) {
+            document.getElementById('userContent').innerHTML = '<p>Usuari no trobat</p>';
+            return;
+        }
+        const s = u.stats || {};
+
+        document.getElementById('userContent').innerHTML = `
+            <a class="back-link" href="/usuaris.html">← Tornar</a>
+            <div class="detail-header">
+                <h1>${u.Nom || ''} ${u.Cognoms || ''}</h1>
+                <div class="subtitle">${u.nivel_acceso_nom || ''}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-card"><div class="label">Projectes</div><div class="value">${s.num_projectes || 0}</div></div>
+                <div class="info-card"><div class="label">Oberts</div><div class="value">${s.num_oberts || 0}</div></div>
+                <div class="info-card"><div class="label">Actius</div><div class="value">${s.num_actius || 0}</div></div>
+                <div class="info-card"><div class="label">Inactius</div><div class="value">${s.num_inactius || 0}</div></div>
+                <div class="info-card"><div class="label">Tancats</div><div class="value">${s.num_tancats || 0}</div></div>
+            </div>
+            <div class="card">
+                <h3>Contacte</h3>
+                <p>📧 ${u.email || '-'}</p>
+                <p>📞 ${u.Telefon || '-'}</p>
+            </div>
+            <div class="card">
+                <h3>Projectes (${(u.projectes || []).length})</h3>
+                <table>
+                    <thead><tr><th>Projecte</th><th>Estat</th><th>Inici</th><th>Fi</th><th>Inscrits</th></tr></thead>
+                    <tbody>
+                        ${(u.projectes || []).map(p => `
+                            <tr>
+                                <td><a href="/projecte.html?id=${p.idProyecto}">${p.Nom_projecte || ''}</a></td>
+                                <td>
+                                    <span class="badge ${p.estat_obert === 'obert' ? 'badge-green' : 'badge-red'}">${p.estat_obert === 'obert' ? 'Obert' : 'Tancat'}</span>
+                                    <span class="badge ${p.estat_actiu === 'actiu' ? 'badge-blue' : 'badge-gray'}">${p.estat_actiu === 'actiu' ? 'Actiu' : 'Inactiu'}</span>
+                                </td>
+                                <td>${p.fecha_inicio_act ? new Date(p.fecha_inicio_act).toLocaleDateString() : '-'}</td>
+                                <td>${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</td>
+                                <td>${p.inscritos || 0}</td>
+                            </tr>
+                        `).join('') || '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">Cap projecte</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } catch (err) { console.error(err); document.getElementById('userContent').innerHTML = '<p>Error carregant usuari</p>'; }
+}
+
+renderSidebar('usuaris');
+if (!userId) document.getElementById('userContent').innerHTML = '<p>ID d\'usuari no proporcionat</p>';
+else loadUser();
+</script>
+</body>
+</html>

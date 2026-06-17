@@ -5,8 +5,8 @@ const pool = createPool();
 async function getAll() {
     const [rows] = await pool.query(`
     SELECT *
-    FROM Curs_actual
-    ORDER BY idCurs_actual
+    FROM curs_actual
+    ORDER BY idcurs_actual
   `);
 
     return rows;
@@ -16,8 +16,8 @@ async function getById(id) {
     const [rows] = await pool.query(
         `
     SELECT *
-    FROM Curs_actual
-    WHERE idCurs_actual = ?
+    FROM curs_actual
+    WHERE idcurs_actual = ?
     `,
         [id]
     );
@@ -28,7 +28,7 @@ async function getById(id) {
 async function create(nom) {
     const [result] = await pool.query(
         `
-        INSERT INTO Curs_actual (Nom)
+        INSERT INTO curs_actual (Nom)
         VALUES (?)
         `,
         [nom]
@@ -39,9 +39,9 @@ async function create(nom) {
 async function update(id, nom) {
     const [result] = await pool.query(
         `
-        UPDATE Curs_actual
+        UPDATE curs_actual
         SET Nom = ?
-        WHERE idCurs_actual = ?
+        WHERE idcurs_actual = ?
         `,
         [nom, id]
     );
@@ -52,8 +52,8 @@ async function update(id, nom) {
 async function remove(id) {
     const [result] = await pool.query(
         `
-        DELETE FROM Curs_actual
-        WHERE idCurs_actual = ?
+        DELETE FROM curs_actual
+        WHERE idcurs_actual = ?
         `,
         [id]
     );

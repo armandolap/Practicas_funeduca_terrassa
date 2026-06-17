@@ -1,125 +1,12 @@
 # Resultat dels tests
 
-**Data:** 2026-06-16T11:52:52.811Z
+**Data:** 2026-06-17T15:22:52.740Z
 
-❌ **19 test(s) han fallat** (de 238 totals)
+✅ Tots els tests han passat correctament.
 
 ## Possibles problemes i solucions
 
-### PUT /projectes/999999 (nonexistent) → 400
-
-**Error:** expected 404, got 400
-
-**Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
-
-### PUT /projectes/2 → 500
-
-**Error:** expected 200, got 500 {"message":"Error actualitzant projecte"}
-
-**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
-
-### PUT /usuario/999999 (nonexistent) → 500
-
-**Error:** expected 404, got 500
-
-**Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
-
-### POST /usuario → 400
-
-**Error:** expected 201 + {id}, got 400 {"error":"Rol usuari és obligatori"}
-
-**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
-
-### POST /domicili {} → 500 (validation)
-
-**Error:** expected 400 for empty body, got 500
-
-**Possible solució:** Verifica que el controlador valida les dades d'entrada i retorna 400 per payloads buits o invàlids.
-
-### POST /familia {} → 500 (validation)
-
-**Error:** expected 400 for empty body, got 500
-
-**Possible solució:** Verifica que el controlador valida les dades d'entrada i retorna 400 per payloads buits o invàlids.
-
-### PUT /familia/999999 (nonexistent) → 500
-
-**Error:** expected 404, got 500
-
-**Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
-
-### POST /familia → 500
-
-**Error:** expected 201 + {id}, got 500 {"message":"Error creant família"}
-
-**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
-
-### POST /client {} → 500 (validation)
-
-**Error:** expected 400 for empty body, got 500
-
-**Possible solució:** Verifica que el controlador valida les dades d'entrada i retorna 400 per payloads buits o invàlids.
-
-### POST /client → 500
-
-**Error:** expected 201 + {id}, got 500 {"message":"Error creant client"}
-
-**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
-
-### GET /callejero → 500
-
-**Error:** expected 200 + array, got 500
-
-**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
-
-### GET /callejero/1 → 500
-
-**Error:** expected 200 + object, got 500
-
-**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
-
-### GET /callejero/999999 → 500
-
-**Error:** expected 404, got 500
-
-**Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
-
-### GET /callejero?q=ABAT → 500
-
-**Error:** expected 200 + array, got 500
-
-**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
-
-### GET /callejero?q=ABAT&tipus_via=1 → 500
-
-**Error:** expected 200 + array, got 500
-
-**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
-
-### GET /callejero?q=ZZZNOTHING → 500
-
-**Error:** expected 200 + array, got 500
-
-**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
-
-### GET /callejero?q=AB (min 3 chars) → 500
-
-**Error:** expected 200 + array, got 500
-
-**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
-
-### GET /callejero (sense query) → 500
-
-**Error:** expected 200 + array, got 500
-
-**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
-
-### GET /callejero/999999 → 500
-
-**Error:** expected 404, got 500
-
-**Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
-
+No s'han detectat problemes.
 
 ## Tests manuals pendents
 

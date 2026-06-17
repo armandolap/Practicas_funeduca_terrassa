@@ -153,12 +153,40 @@ fechaNaixement.addEventListener("change", () => {
 dataAlta.value = new Date().toISOString().split("T")[0];
 
 // ============ FAMILY NAME (integrated search + custom name) ============
-// Sync familiaName from Cognoms on blur
-cognoms.addEventListener("blur", () => {
+// Sync familiaName from Cognoms on blur + auto-suggest family
+cognoms.addEventListener("blur", async () => {
   if (selectedFamilyId) return;
   const c = cognoms.value.trim();
-  if (c.length >= 2) familiaName.value = c;
-  if (c.length >= 2) triggerFamilySearch(c);
+  if (c.length < 2) return;
+  familiaName.value = c;
+  // Auto-suggest: search and select if exact match
+  try {
+    const res = await fetch(`/familia/search?q=${encodeURIComponent(c)}`);
+    if (res.ok) {
+      const items = await res.json();
+      const exact = items.find(item =>
+        item.Cognom_familiar.toLowerCase() === c.toLowerCase()
+      );
+      if (exact) {
+        selectFamily(exact);
+        showToast(`Família suggerida: ${exact.Cognom_familiar}`, "success");
+        return;
+      }
+      // If no exact match but first surname matches, show dropdown
+      const firstSur = c.split(" ")[0];
+      const partial = items.find(item =>
+        item.Cognom_familiar.toLowerCase() === firstSur.toLowerCase()
+      );
+      if (partial) {
+        showFamilyDropdown(items.filter(item =>
+          item.Cognom_familiar.toLowerCase() === firstSur.toLowerCase()
+        ));
+        return;
+      }
+    }
+  } catch {}
+  // If no match at all, just show all search results
+  triggerFamilySearch(c);
 });
 
 // Pre-fill when user types Cognoms

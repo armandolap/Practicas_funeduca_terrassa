@@ -1,103 +1,106 @@
 const { createPool } = require("../config/database");
+const bcrypt = require("bcrypt");
 
 const pool = createPool();
 
-async function getAll() {
-    const [rows] = await pool.query(`
-        SELECT *
-        FROM usuario_app
-        ORDER BY Nom, Cognoms
-    `);
+async function getAll(filter = "tots", q = "") {
+    let sql = `
+        SELECT u.*, na.Nom AS nivel_acceso_nom,
+               (SELECT COUNT(*) FROM Responsables r
+                JOIN proyectos p ON r.proyectos_idProyecto = p.idProyecto
+                WHERE r.idUsuario_APP = u.idUsuario_APP
+                  AND (p.fecha_inicio_act IS NULL OR p.fecha_inicio_act <= CURDATE())
+                  AND (p.fecha_fin_act IS NULL OR p.fecha_fin_act >= CURDATE())) AS num_projectes_actius,
+               (SELECT COUNT(*) FROM Responsables r
+                JOIN proyectos p ON r.proyectos_idProyecto = p.idProyecto
+                WHERE r.idUsuario_APP = u.idUsuario_APP
+                  AND (p.fecha_inicio_act IS NULL OR p.fecha_inicio_act >= CURDATE())) AS num_projectes_oberts,
+               (SELECT COUNT(*) FROM Responsables r WHERE r.idUsuario_APP = u.idUsuario_APP) AS num_projectes_total
+        FROM usuario_app u
+        JOIN Nivel_acceso na ON u.idNivel_acceso = na.idNivel_acceso
+        WHERE 1=1
+    `;
+    const params = [];
 
+    if (filter === "responsables") {
+        sql += ` AND u.idNivel_acceso IN (1, 2, 4)`;
+    } else if (filter === "trabajadores") {
+        sql += ` AND u.idNivel_acceso = 4`;
+    }
+
+    if (q && q.trim()) {
+        sql += ` AND (u.Nom LIKE ? OR u.Cognoms LIKE ?)`;
+        const like = `%${q.trim()}%`;
+        params.push(like, like);
+    }
+
+    sql += ` ORDER BY num_projectes_actius DESC, u.Nom, u.Cognoms`;
+    const [rows] = await pool.query(sql, params);
     return rows;
 }
 
 async function getById(id) {
     const [rows] = await pool.query(`
-        SELECT *
-        FROM usuario_app
-        WHERE idUsuario_APP = ?
+        SELECT u.*, na.Nom AS nivel_acceso_nom
+        FROM usuario_app u
+        JOIN Nivel_acceso na ON u.idNivel_acceso = na.idNivel_acceso
+        WHERE u.idUsuario_APP = ?
     `, [id]);
-
     return rows[0] || null;
 }
 
+async function getProjectsByUser(id) {
+    const [rows] = await pool.query(`
+        SELECT p.*,
+               (SELECT COUNT(*) FROM proyectos_has_client phc WHERE phc.idProyecto = p.idProyecto) AS inscritos,
+               CASE WHEN p.fecha_fin_act IS NOT NULL AND p.fecha_fin_act < CURDATE() THEN 'tancat'
+                    ELSE 'obert' END AS estat_obert,
+               CASE WHEN p.fecha_inicio_act IS NOT NULL AND p.fecha_inicio_act <= CURDATE()
+                     AND (p.fecha_fin_act IS NULL OR p.fecha_fin_act >= CURDATE()) THEN 'actiu'
+                    WHEN p.fecha_inicio_act IS NULL OR p.fecha_inicio_act > CURDATE() THEN 'inactiu'
+                    ELSE 'inactiu' END AS estat_actiu
+        FROM Responsables r
+        JOIN proyectos p ON r.proyectos_idProyecto = p.idProyecto
+        WHERE r.idUsuario_APP = ?
+        ORDER BY p.fecha_inicio_act DESC
+    `, [id]);
+    return rows;
+}
+
 async function create(data) {
-
-    const {
-        idNivel_acceso,
-        Nom,
-        Cognoms,
-        email,
-        Telefon
-    } = data;
-
+    const { idNivel_acceso, Nom, Cognoms, email, Telefon, password } = data;
+    const hashedPassword = await bcrypt.hash(password, 10);
     const [result] = await pool.query(`
-        INSERT INTO usuario_app
-        (
-            idNivel_acceso,
-            Nom,
-            Cognoms,
-            email,
-            Telefon
-        )
-        VALUES (?, ?, ?, ?, ?)
-    `, [
-        idNivel_acceso,
-        Nom,
-        Cognoms,
-        email,
-        Telefon
-    ]);
-
+        INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, email, Telefon, password)
+        VALUES (?, ?, ?, ?, ?, ?)
+    `, [idNivel_acceso, Nom, Cognoms, email, Telefon, hashedPassword]);
     return result.insertId;
 }
 
 async function update(id, data) {
-
-    const {
-        idNivel_acceso,
-        Nom,
-        Cognoms,
-        email,
-        Telefon
-    } = data;
-
-    const [result] = await pool.query(`
-        UPDATE usuario_app
-        SET
-            idNivel_acceso=?,
-            Nom=?,
-            Cognoms=?,
-            email=?,
-            Telefon=?
-        WHERE idUsuario_APP=?
-    `, [
-        idNivel_acceso,
-        Nom,
-        Cognoms,
-        email,
-        Telefon,
-        id
-    ]);
-
+    const { idNivel_acceso, Nom, Cognoms, email, Telefon, password } = data;
+    let sql = `UPDATE usuario_app SET idNivel_acceso=?, Nom=?, Cognoms=?, email=?, Telefon=?`;
+    const params = [idNivel_acceso, Nom, Cognoms, email, Telefon];
+    if (password && password.trim()) {
+        const hashed = await bcrypt.hash(password, 10);
+        sql += `, password=?`;
+        params.push(hashed);
+    }
+    sql += ` WHERE idUsuario_APP=?`;
+    params.push(id);
+    const [result] = await pool.query(sql, params);
     return result.affectedRows;
 }
 
 async function remove(id) {
-
-    const [result] = await pool.query(`
-        DELETE FROM usuario_app
-        WHERE idUsuario_APP=?
-    `, [id]);
-
+    await pool.query(`DELETE FROM Responsables WHERE idUsuario_APP = ?`, [id]);
+    const [result] = await pool.query(`DELETE FROM usuario_app WHERE idUsuario_APP = ?`, [id]);
     return result.affectedRows;
 }
 
-module.exports = {
-    getAll,
-    getById,
-    create,
-    update,
-    remove
-};
+async function findByEmail(email) {
+    const [rows] = await pool.query(`SELECT * FROM usuario_app WHERE email = ?`, [email]);
+    return rows[0] || null;
+}
+
+module.exports = { getAll, getById, getProjectsByUser, findByEmail, create, update, remove };

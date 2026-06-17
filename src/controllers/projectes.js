@@ -1,199 +1,100 @@
-const projectesRepository = require("../repositories/projectes");
+const repo = require("../repositories/projectes");
 
-// GET /projectes
 async function getAllProjectes(req, res) {
     try {
-        const projecte = await projectesRepository.getAll();
-
-        res.status(200).json(projecte);
+        const { filter = "todos", q = "", responsable_id } = req.query;
+        const items = await repo.getAll(filter, q, responsable_id);
+        res.json(items);
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error obtenint llistat de projectes"
-        });
+        res.status(500).json({ message: "Error obtenint projectes" });
     }
 }
 
-// GET /projectes/:id
 async function getProjectesById(req, res) {
     try {
-        const { id } = req.params;
-
-        const projecte = await projectesRepository.getById(id);
-
-        if (!projecte) {
-            return res.status(404).json({
-                message: "Projecte no trobat"
-            });
-        }
-
-        res.status(200).json(projecte);
-
+        const projecte = await repo.getById(req.params.id);
+        if (!projecte) return res.status(404).json({ message: "Projecte no trobat" });
+        const participants = await repo.getParticipants(req.params.id);
+        projecte.participants = participants;
+        res.json(projecte);
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error obtenint projecte"
-        });
+        res.status(500).json({ message: "Error obtenint projecte" });
     }
 }
 
-// POST /projectes
 async function createProject(req, res) {
     try {
-
         const projecte = req.body.projecte || {};
+        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, responsable } = projecte;
 
-        // Fecha actual en formato YYYY-MM-DD
-        const fechaActual = new Date().toISOString().split("T")[0];
+        if (!Nom_projecte?.trim()) return res.status(400).json({ message: "El nom del projecte és obligatori." });
+        if (!idcentre_activitats) return res.status(400).json({ message: "idcentre_activitats és obligatori." });
 
-        const {
-            Nom_projecte,
-            Descripcio = null,
-            plazas = 0,
-            inscritos = 0,
-            fecha_inicio_act = null,
-            fecha_fin_act = null,
-            idcentre_activitats,
-            responsable
-        } = projecte;
+        const newId = await repo.create({ Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
+        if (responsable) await repo.setResponsable(newId, responsable);
 
-        // Validaciones mínimas
-        if (!Nom_projecte?.trim()) {
-            return res.status(400).json({
-                message: "El nom del projecte és obligatori."
-            });
-        }
-
-        if (!idcentre_activitats) {
-            return res.status(400).json({
-                message: "idcentre_activitats és obligatori."
-            });
-        }
-
-        if (!responsable) {
-            return res.status(400).json({
-                message: "El responsable del projecte és obligatori."
-            });
-        }
-
-        const nuevoProjecteId = await projectesRepository.create({
-            Nom_projecte,
-            Descripcio,
-            plazas,
-            inscritos,
-            fecha_inicio_act,
-            fecha_fin_act,
-            idcentre_activitats
-        });
-
-        await projectesRepository.setResponsable(nuevoProjecteId, responsable);
-
-        res.status(201).json({
-            message: "Projecte creat correctament",
-            id: nuevoProjecteId
-        });
-
+        res.status(201).json({ message: "Projecte creat correctament", id: newId });
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error creant projecte"
-        });
+        res.status(500).json({ message: "Error creant projecte" });
     }
 }
 
-// PUT /projectes/:id
 async function updateProject(req, res) {
     try {
-        const { id } = req.params;
         const projecte = req.body.projecte || {};
+        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, responsable } = projecte;
 
-        const {
-            Nom_projecte,
-            Descripcio = null,
-            plazas = 0,
-            inscritos = 0,
-            fecha_inicio_act = null,
-            fecha_fin_act = null,
-            idcentre_activitats,
-            responsable
-        } = projecte;
+        const existing = await repo.getById(req.params.id);
+        if (!existing) return res.status(404).json({ message: "Projecte no trobat" });
 
-        if (!Nom_projecte?.trim()) {
-            return res.status(400).json({
-                message: "El nom del projecte és obligatori."
-            });
-        }
+        if (!Nom_projecte?.trim()) return res.status(400).json({ message: "El nom del projecte és obligatori." });
+        if (!idcentre_activitats) return res.status(400).json({ message: "idcentre_activitats és obligatori." });
 
-        if (!idcentre_activitats) {
-            return res.status(400).json({
-                message: "idcentre_activitats és obligatori."
-            });
-        }
+        await repo.update(req.params.id, { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
 
-        const affectedRows = await projectesRepository.update(id, {
-            Nom_projecte,
-            Descripcio,
-            plazas,
-            inscritos,
-            fecha_inicio_act,
-            fecha_fin_act,
-            idcentre_activitats
-        });
+        if (responsable) await repo.setResponsable(req.params.id, responsable);
 
-        if (affectedRows === 0) {
-            return res.status(404).json({
-                message: "Projecte no trobat"
-            });
-        }
-
-        if (responsable) {
-            await projectesRepository.setResponsable(id, responsable);
-        }
-
-        res.status(200).json({
-            message: "Projecte actualitzat correctament"
-        });
-
+        res.json({ message: "Projecte actualitzat correctament" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
-            message: "Error actualitzant projecte"
-        });
+        res.status(500).json({ message: "Error actualitzant projecte" });
     }
 }
 
-// DELETE /projectes/:id
 async function deleteProject(req, res) {
     try {
-        const { id } = req.params;
-
-        const affectedRows = await projectesRepository.remove(id);
-
-        if (affectedRows === 0) {
-            return res.status(404).json({
-                message: "Projecte no trobat"
-            });
-        }
-
-        res.status(200).json({
-            message: "Projecte eliminat correctament"
-        });
-
+        const affected = await repo.remove(req.params.id);
+        if (affected === 0) return res.status(404).json({ message: "Projecte no trobat" });
+        res.json({ message: "Projecte eliminat correctament" });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
-            message: "Error eliminant projecte"
-        });
+        res.status(500).json({ message: "Error eliminant projecte" });
     }
 }
 
-module.exports = {
-    getAllProjectes,
-    getProjectesById,
-    createProject,
-    updateProject,
-    deleteProject
-};
+async function addClients(req, res) {
+    try {
+        const { clientIds } = req.body;
+        const affected = await repo.addClients(req.params.id, clientIds);
+        res.json({ message: `${affected} clients afegits` });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error afegint clients" });
+    }
+}
+
+async function removeClient(req, res) {
+    try {
+        const affected = await repo.removeClient(req.params.id, req.params.idClient);
+        if (affected === 0) return res.status(404).json({ message: "Client no trobat al projecte" });
+        res.json({ message: "Client eliminat del projecte" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error eliminant client del projecte" });
+    }
+}
+
+module.exports = { getAllProjectes, getProjectesById, createProject, updateProject, deleteProject, addClients, removeClient };

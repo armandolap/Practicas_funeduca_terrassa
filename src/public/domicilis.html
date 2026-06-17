@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domicilis — FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1>Domicilis</h1>
+  <div class="filters">
+    <label>Tipus</label>
+    <select id="tipusFilter" onchange="loadDomicilis()"><option value="">Tots</option></select>
+    <label>Barri</label>
+    <select id="barriFilter" onchange="loadDomicilis()"><option value="">Tots</option></select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Adreça</th><th>Tipus</th><th>Persones</th><th>Família principal</th></tr></thead>
+      <tbody id="domiciliList"></tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</main>
+<script src="/js/sidebar.js"></script>
+<script>
+let currentPage = 0;
+const PAGE_SIZE = 15;
+
+async function loadFilterOptions() {
+    try {
+        const [tipRes, barriRes] = await Promise.all([
+            fetch('/tipusDom', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+            fetch('/barri', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+        ]);
+        const tipus = await tipRes.json();
+        const barris = await barriRes.json();
+        document.getElementById('tipusFilter').innerHTML = '<option value="">Tots</option>' + tipus.map(t => `<option value="${t.idTipus_domicili}">${t.Nom_domicili}</option>`).join('');
+        document.getElementById('barriFilter').innerHTML = '<option value="">Tots</option>' + barris.map(b => `<option value="${b.idBarri}">${b.Nom}</option>`).join('');
+    } catch (e) { console.error(e); }
+}
+
+async function loadDomicilis() {
+    if (!requireAuth()) return;
+    const tipus = document.getElementById('tipusFilter').value;
+    const barri = document.getElementById('barriFilter').value;
+    const params = new URLSearchParams({ offset: currentPage * PAGE_SIZE, limit: PAGE_SIZE });
+    if (tipus) params.set('tipus', tipus);
+    if (barri) params.set('barri', barri);
+
+    try {
+        const res = await fetch(`/domicili?${params}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const data = await res.json();
+        const rows = data.rows || data || [];
+        const total = data.total || rows.length;
+        const tbody = document.getElementById('domiciliList');
+        if (!rows.length) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha domicilis</td></tr>';
+            document.getElementById('pagination').innerHTML = '';
+            return;
+        }
+        tbody.innerHTML = rows.map(d => `
+            <tr class="clickable" onclick="window.location.href='/domicili.html?id=${d.idDomicili}'">
+                <td>${d.tipus_via || ''} ${d.Nom_calle || ''}, ${d.Num_calle || ''}${d.Pis ? `, ${d.Pis}${d.Escala ? ` ${d.Escala}` : ''}` : ''}</td>
+                <td>${d.tipus_domicili_nom || ''}</td>
+                <td>${d.quantitat_gent || 0}</td>
+                <td>${d.familia_principal || ''}</td>
+            </tr>
+        `).join('');
+        const totalPages = Math.ceil(total / PAGE_SIZE);
+        document.getElementById('pagination').innerHTML = `
+            <button onclick="goPage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>Anterior</button>
+            <span>Pàg ${currentPage + 1} de ${totalPages || 1}</span>
+            <button onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Següent</button>
+        `;
+    } catch (err) { console.error(err); }
+}
+
+function goPage(page) { if (page < 0) return; currentPage = page; loadDomicilis(); }
+
+renderSidebar('domicilis');
+loadFilterOptions();
+loadDomicilis();
+</script>
+</body>
+</html>

@@ -1,12 +1,11 @@
 const router = require("express").Router();
-const client = require("../controllers/client");
+const ctrl = require("../controllers/client");
 
-router.get("/", client.getAllClients);
-router.post("/", client.createClient);
-router.post("/full", client.createFullClient);
-
-router.get("/:id", client.getClientById);
-router.put("/:id", client.updateClient);
-router.delete("/:id", client.deleteClient);
+router.get("/", ctrl.getAllClients);
+router.post("/", ctrl.createClient);
+router.post("/full", ctrl.createFullClient);
+router.get("/:id", ctrl.getClientById);
+router.put("/:id", ctrl.updateClient);
+router.delete("/:id", ctrl.deleteClient);
 
 module.exports = router;

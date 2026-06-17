@@ -5,7 +5,7 @@ const pool = createPool();
 async function getAll() {
     const [rows] = await pool.query(`
     SELECT *
-    FROM Pais
+    FROM pais
     ORDER BY Nom_pais
   `);
 
@@ -16,7 +16,7 @@ async function getById(id) {
     const [rows] = await pool.query(
         `
     SELECT *
-    FROM Pais
+    FROM pais
     WHERE idPais = ?
     `,
         [id]

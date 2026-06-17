@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Usuaris App — FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1>Usuaris de l'App</h1>
+  <div class="filters">
+    <button class="btn btn-sm btn-primary" data-filter="tots" onclick="setFilter('tots')">Tots</button>
+    <button class="btn btn-sm btn-secondary" data-filter="responsables" onclick="setFilter('responsables')">Responsables</button>
+    <button class="btn btn-sm btn-secondary" data-filter="trabajadores" onclick="setFilter('trabajadores')">Treballadors</button>
+    <input type="text" id="searchQ" placeholder="Cerca per nom o cognoms..." oninput="debounceSearch()">
+    <button class="btn btn-success btn-sm" id="btnCrear" onclick="window.location.href='/usuari-crear.html'" style="display:none">+ Nou usuari</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Nom</th><th>Cognoms</th><th>Rol</th><th>Telèfon</th><th>Email</th><th>Proj. Actius</th><th>Proj. Oberts</th></tr></thead>
+      <tbody id="userList"></tbody>
+    </table>
+  </div>
+</main>
+<script src="/js/sidebar.js"></script>
+<script>
+let currentFilter = 'tots';
+let searchTimeout;
+
+function debounceSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(loadUsers, 300);
+}
+
+function setFilter(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('[data-filter]').forEach(b => b.className = 'btn btn-sm btn-secondary');
+    document.querySelector(`[data-filter="${filter}"]`).className = 'btn btn-sm btn-primary';
+    loadUsers();
+}
+
+async function loadUsers() {
+    if (!requireAuth()) return;
+    const q = document.getElementById('searchQ').value.trim();
+    const params = new URLSearchParams({ filter: currentFilter });
+    if (q) params.set('q', q);
+    try {
+        const res = await fetch(`/usuario?${params}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const users = await res.json();
+        const tbody = document.getElementById('userList');
+        if (!users.length) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha usuaris</td></tr>';
+            return;
+        }
+        tbody.innerHTML = users.map(u => `
+            <tr class="clickable" onclick="window.location.href='/usuari.html?id=${u.idUsuario_APP}'">
+                <td>${u.Nom || ''}</td>
+                <td>${u.Cognoms || ''}</td>
+                <td><span class="badge badge-blue">${u.nivel_acceso_nom || ''}</span></td>
+                <td>${u.Telefon || '-'}</td>
+                <td>${u.email || '-'}</td>
+                <td>${u.num_projectes_actius || 0}</td>
+                <td>${u.num_projectes_oberts || 0}</td>
+            </tr>
+        `).join('');
+    } catch (err) { console.error(err); }
+}
+
+const role = getRole();
+if (role === 1) document.getElementById('btnCrear').style.display = 'inline-flex';
+
+renderSidebar('usuaris');
+setFilter('tots');
+</script>
+</body>
+</html>

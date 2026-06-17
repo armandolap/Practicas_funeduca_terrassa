@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creació de Client</title>
+<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/client-create.css">
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+
+<main class="main-content">
+  <h1>Creació de Client</h1>
+
+  <!-- PERSONA SECTION -->
+  <section class="form-section" id="section-persona">
+    <h2>Persona</h2>
+    <div class="form-row">
+      <div class="form-group required">
+        <label for="nom">Nom</label>
+        <input type="text" id="nom" required>
+      </div>
+      <div class="form-group required">
+        <label for="cognoms">Cognoms</label>
+        <input type="text" id="cognoms" required>
+      </div>
+      <div class="form-group">
+        <label for="telefon">Telèfon</label>
+        <input type="text" id="telefon">
+      </div>
+      <div class="form-group">
+        <label for="correu">Correu electrònic</label>
+        <input type="email" id="correu">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group required">
+        <label for="fechaNaixement">Data naixement</label>
+        <input type="date" id="fechaNaixement" required>
+      </div>
+      <div class="form-group">
+        <label for="edad">Edat</label>
+        <input type="text" id="edad" readonly>
+      </div>
+      <div class="form-group required">
+        <label for="genere">Gènere</label>
+        <select id="genere" required><option value="">-- Selecciona --</option></select>
+      </div>
+      <div class="form-group required">
+        <label for="rol">Rol</label>
+        <select id="rol" required><option value="">-- Selecciona --</option></select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group required">
+        <label for="situacioEconomica">Situació econòmica</label>
+        <select id="situacioEconomica" required><option value="">-- Selecciona --</option></select>
+      </div>
+      <div class="form-group required">
+        <label for="paisNaixement">País naixement</label>
+        <select id="paisNaixement" required><option value="">-- Selecciona --</option></select>
+      </div>
+      <div class="form-group">
+        <label for="neses">NESE</label>
+        <select id="neses"></select>
+      </div>
+      <div class="form-group">
+        <label for="cursActual">Curs actual</label>
+        <select id="cursActual"></select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="risc">Risc</label>
+        <select id="risc"></select>
+      </div>
+      <div class="form-group">
+        <label for="resulAcad">Resultat acadèmic</label>
+        <select id="resulAcad"></select>
+      </div>
+      <div class="form-group">
+        <label for="sebas">SEBAS</label>
+        <select id="sebas"></select>
+      </div>
+      <div class="form-group">
+        <label for="derivacio">Derivació serveis socials</label>
+        <input type="checkbox" id="derivacio">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="dataAlta">Data d'alta</label>
+        <input type="date" id="dataAlta">
+      </div>
+    </div>
+  </section>
+
+  <!-- FAMILIA SECTION -->
+  <section class="form-section" id="section-familia">
+    <h2>Família</h2>
+    <div class="form-row">
+      <div class="form-group familia-search-wrap">
+        <label for="familiaName">Nom de la família</label>
+        <input type="text" id="familiaName" placeholder="Es posa el cognom automàticament" autocomplete="off">
+        <div class="dropdown" id="familiaDropdown"></div>
+      </div>
+      <div class="form-group">
+        <label for="estructuraFamiliar">Estructura familiar</label>
+        <select id="estructuraFamiliar"><option value="">-- Selecciona --</option></select>
+      </div>
+    </div>
+    <div id="selectedFamilyInfo" class="selected-info" style="display:none">
+      Família seleccionada: <span id="selectedFamilyName"></span>
+      <button type="button" id="clearFamilyBtn">X</button>
+    </div>
+  </section>
+
+  <!-- DOMICILI SECTION -->
+  <section class="form-section" id="section-domicili">
+    <h2>Domicili</h2>
+    <div class="form-row">
+      <div class="form-group domicili-search-wrap">
+        <label for="domiciliSearch">Cercar carrer o domicili</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="domiciliSearch" placeholder="Escriu almenys 3 caràcters..." autocomplete="off">
+          <div class="dropdown" id="domiciliDropdown"></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="tipusVia">Tipus de via</label>
+        <select id="tipusVia"><option value="">-- Selecciona --</option></select>
+      </div>
+      <div class="form-group">
+        <label for="nomCalle">Nom del carrer</label>
+        <input type="text" id="nomCalle" readonly>
+      </div>
+      <div class="form-group">
+        <label for="numCalle">Número</label>
+        <input type="text" id="numCalle">
+      </div>
+      <div class="form-group">
+        <label for="pis">Pis</label>
+        <input type="text" id="pis">
+      </div>
+      <div class="form-group">
+        <label for="escala">Escala</label>
+        <input type="text" id="escala">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="barri">Barri</label>
+        <input type="text" id="barri" readonly>
+        <select id="barriSelect" style="display:none"></select>
+      </div>
+      <div class="form-group">
+        <label for="codiPostal">Codi postal</label>
+        <input type="text" id="codiPostal" readonly>
+        <select id="codiPostalSelect" style="display:none"></select>
+      </div>
+      <div class="form-group">
+        <label for="tipusDomicili">Tipus de domicili</label>
+        <select id="tipusDomicili"><option value="">-- Selecciona --</option></select>
+      </div>
+    </div>
+    <div id="familyDomicilisGroup" style="display:none">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="familyDomicilis">Domicilis de la família</label>
+          <select id="familyDomicilis"><option value="">Domicilis de la família</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="preview-bar" id="previewBar"></div>
+  </section>
+
+  <div class="form-actions">
+    <button type="button" id="btnCrear">CREAR</button>
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script src="/js/sidebar.js"></script>
+<script>requireAuth(); renderSidebar('clients');</script>
+<script src="/js/client-create.js"></script>
+</body>
+</html>

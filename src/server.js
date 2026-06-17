@@ -1,8 +1,6 @@
 const path = require("path");
 const fs = require("fs");
 const mysql = require("mysql2/promise");
-
-// Cargar .env
 const dotenvPath = path.resolve(__dirname, "..", ".env");
 
 if (!fs.existsSync(dotenvPath)) {
@@ -12,17 +10,20 @@ if (!fs.existsSync(dotenvPath)) {
 
 require("dotenv").config({ path: dotenvPath });
 
-// Express
-
 const express = require("express");
 const server = express();
-
 const PORT = process.env.PORT || 3000;
 
 server.use(express.json());
+
+// Root → login page
+server.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "login.html"));
+});
+
 server.use(express.static(path.join(__dirname, "public")));
 
-// Consts
+// Routes
 const paisos = require("./routes/paisos");
 const estFamiliar = require("./routes/estructura_familiar");
 const motiuBaixa = require("./routes/motiu_baixa");
@@ -32,7 +33,7 @@ const risc = require("./routes/risc");
 const rol = require("./routes/rol");
 const sebas = require("./routes/SEBAS");
 const sitEco = require("./routes/situacio_eco");
-const tipusDomicili = require("./routes/tipus_domicili")
+const tipusDomicili = require("./routes/tipus_domicili");
 const curso = require("./routes/curso");
 const projectes = require("./routes/projectes");
 const usuari = require("./routes/usuari");
@@ -44,9 +45,12 @@ const barri = require("./routes/barri");
 const codi_postal = require("./routes/codi_postal");
 const callejero = require("./routes/callejero");
 const desplegables = require("./routes/desplegables");
+const auth = require("./routes/auth");
+const centreActivitats = require("./routes/centre_activitats");
+const reports = require("./routes/reports");
+const genere = require("./routes/genere");
+const nivelAcceso = require("./routes/nivel_acceso");
 
-
-// Rutas
 server.use(express.json());
 server.use("/paisos", paisos);
 server.use("/estFamilia", estFamiliar);
@@ -69,23 +73,24 @@ server.use("/barri", barri);
 server.use("/codiPostal", codi_postal);
 server.use("/callejero", callejero);
 server.use("/desplegables", desplegables);
+server.use("/auth", auth);
+server.use("/centre-activitats", centreActivitats);
+server.use("/reports", reports);
+server.use("/genere", genere);
+server.use("/nivell-acces", nivelAcceso);
 server.use(express.static(path.join(__dirname, "public")));
 
-// Ejecutar SQL
 async function runSQLFile(connection, filePath) {
     const sql = fs.readFileSync(filePath, "utf8");
-
     const statements = sql
         .replace(/^USE\s+`?\w+`?\s*;/gim, "")
         .split(";")
         .map(s => s.trim())
         .filter(Boolean);
-
     for (const stmt of statements) {
         try {
             await connection.query(stmt);
         } catch (err) {
-            // Ignorar errores típicos de "ya existe"
             if (![1050, 1060, 1061, 1062].includes(err.errno)) {
                 console.warn(`SQL warning: ${err.message}`);
             }
@@ -93,63 +98,35 @@ async function runSQLFile(connection, filePath) {
     }
 }
 
-// Inicio
 async function startServer() {
     try {
-        // 1. Conexión inicial SIN database
         const bootstrap = await mysql.createConnection({
             host: process.env.DB_HOST,
             port: process.env.DB_PORT,
             user: process.env.DB_USER,
             password: process.env.DB_PASSWORD,
         });
-
         console.log("MySQL conectado");
-        // 2. Crear BD si no existe
-        await bootstrap.query(
-            `CREATE DATABASE IF NOT EXISTS \`${process.env.DB_NAME}\``
-        );
-        // 3. Seleccionar BD
-        await bootstrap.query(
-            `USE \`${process.env.DB_NAME}\``
-        );
-        // 4. Ejecutar estructura
+        await bootstrap.query(`DROP DATABASE IF EXISTS \`${process.env.DB_NAME}\``);
+        await bootstrap.query(`CREATE DATABASE \`${process.env.DB_NAME}\``);
+        await bootstrap.query(`USE \`${process.env.DB_NAME}\``);
         console.log("Ejecutando Base_datos.sql...");
-
-        await runSQLFile(
-            bootstrap,
-            path.join(__dirname, "sql", "Base_datos.sql")
-        );
-        // 5. Ejecutar datos estáticos
+        await runSQLFile(bootstrap, path.join(__dirname, "sql", "Base_datos.sql"));
         console.log("Ejecutando inserts_tablas_estaticas.sql...");
-
-        await runSQLFile(
-            bootstrap,
-            path.join(__dirname, "sql", "inserts_tablas_estaticas.sql")
-        );
-
-        // 6. Cargar datos de prueba (clients, famílies, domicilis)
+        await runSQLFile(bootstrap, path.join(__dirname, "sql", "inserts_tablas_estaticas.sql"));
         console.log("Insertant dades de prova...");
-
         const { insertTestData } = require("./seeder/seeder");
         await insertTestData(bootstrap);
-
         await bootstrap.end();
-
         console.log("Base de datos preparada");
-
-        // 7. Crear pool para el resto de la aplicación
         const { createPool } = require("./config/database");
         createPool();
-        // 8. Arrancar servidor
         server.listen(PORT, () => {
             console.log(`Servidor en http://localhost:${PORT}`);
-
             if (process.env.MOTD) {
                 console.log(`\x1b[33m${process.env.MOTD}\x1b[0m`);
             }
         });
-
     } catch (err) {
         console.error("Error en iniciar:", err.message);
         process.exit(1);

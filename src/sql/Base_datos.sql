@@ -179,7 +179,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`familia` (
   `idFamilia` INT NOT NULL AUTO_INCREMENT,
-  `Cognom_familiar` VARCHAR(45) NOT NULL,
+  `Cognom_familiar` VARCHAR(120) NOT NULL,
   `Estructura_familiar` INT NOT NULL,
   PRIMARY KEY (`idFamilia`),
   UNIQUE INDEX `Cognom_familiar_UNIQUE` (`Cognom_familiar` ASC) VISIBLE,
@@ -435,12 +435,15 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`usuario_app` (
   `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
-  `idNivel_acceso` INT NOT NULL UNIQUE,
+  `idNivel_acceso` INT NOT NULL,
   `Nom` VARCHAR(45) NOT NULL,
   `Cognoms` VARCHAR(45) NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
+  `username` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(45) NULL DEFAULT NULL,
   `Telefon` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`idUsuario_APP`, `idNivel_acceso`),
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE,
   INDEX `fk_usuario_app_Nivel_acceso1_idx` (`idNivel_acceso` ASC) VISIBLE,
   CONSTRAINT `fk_usuario_app_Nivel_acceso1`
     FOREIGN KEY (`idNivel_acceso`)
