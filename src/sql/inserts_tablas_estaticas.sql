@@ -4,7 +4,8 @@ VALUES ('Promociona'),
     ('Repeteix'),
     ('Abandona estudis'),
     ('No opta plaça'),
-    ('Accés al món laboral');
+    ('Accés al món laboral'),
+    ('No aplica');
 INSERT INTO Motiu_baixa (Nom_motiu_baixa)
 VALUES ('Quotes impagades'),
     ('Fan altres activitats'),
@@ -273,7 +274,8 @@ VALUES ('SEBAS 1'),
     ('SEBAS 6.1 i 6.3'),
     ('SEBAS 6.2'),
     ('SEBAS 7'),
-    ('Model SIS');
+    ('Model SIS'),
+    ('No SEBAS');
 INSERT INTO Necessitats_especials (Nom_necessitat)
 VALUES ('Amb diagnòstic'),
     ('En procés de diagnòstic'),
@@ -304,7 +306,8 @@ VALUES ('I3'),
     ('3r Grau'),
     ('4t Grau'),
     ('PFI'),
-    ('Altres');
+    ('Altres'),
+    ('No aplica');
 INSERT INTO Tipus_domicili (Nom_domicili)
 VALUES ('Lloguer'),
     ('Hipoteca'),
