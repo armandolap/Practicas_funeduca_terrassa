@@ -19,13 +19,12 @@ const sebas = $("sebas");
 const derivacio = $("derivacio");
 const dataAlta = $("dataAlta");
 
-const familiaSearch = $("familiaSearch");
+const familiaName = $("familiaName");
 const familiaDropdown = $("familiaDropdown");
 const estructuraFamiliar = $("estructuraFamiliar");
 const selectedFamilyInfo = $("selectedFamilyInfo");
 const selectedFamilyName = $("selectedFamilyName");
 const clearFamilyBtn = $("clearFamilyBtn");
-const familiaWarning = $("familiaWarning");
 
 const domiciliSearch = $("domiciliSearch");
 const domiciliDropdown = $("domiciliDropdown");
@@ -153,20 +152,42 @@ fechaNaixement.addEventListener("change", () => {
 // ============ DEFAULT DATE ============
 dataAlta.value = new Date().toISOString().split("T")[0];
 
-// ============ FAMILY SEARCH ============
-familiaSearch.addEventListener("input", () => {
-  const q = familiaSearch.value.trim();
+// ============ FAMILY NAME (integrated search + custom name) ============
+// Sync familiaName from Cognoms on blur
+cognoms.addEventListener("blur", () => {
+  if (selectedFamilyId) return;
+  const c = cognoms.value.trim();
+  if (c.length >= 2) familiaName.value = c;
+  if (c.length >= 2) triggerFamilySearch(c);
+});
+
+// Pre-fill when user types Cognoms
+cognoms.addEventListener("input", () => {
+  if (selectedFamilyId) return;
+  familiaName.value = cognoms.value.trim();
+});
+
+familiaName.addEventListener("input", () => {
+  if (selectedFamilyId) {
+    clearFamily();
+  }
+  const q = familiaName.value.trim();
   if (q.length < 2) {
     familiaDropdown.style.display = "none";
     return;
   }
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(async () => {
+  debounceTimer = setTimeout(() => {
     if (q === lastFamilyQuery) return;
     lastFamilyQuery = q;
-    await searchFamilies(q);
+    triggerFamilySearch(q);
   }, 400);
 });
+
+function triggerFamilySearch(q) {
+  if (q.length < 2) return;
+  searchFamilies(q);
+}
 
 async function searchFamilies(q) {
   try {
@@ -185,6 +206,7 @@ function showFamilyDropdown(items) {
   }
   for (const item of items) {
     const div = document.createElement("div");
+    div.dataset.id = item.idFamilia;
     div.textContent = `${item.Cognom_familiar} (ID: ${item.idFamilia})`;
     div.addEventListener("click", () => selectFamily(item));
     familiaDropdown.appendChild(div);
@@ -196,12 +218,10 @@ function selectFamily(item) {
   selectedFamilyId = item.idFamilia;
   selectedFamilyName.textContent = `${item.Cognom_familiar} (ID: ${item.idFamilia})`;
   selectedFamilyInfo.style.display = "flex";
-  familiaSearch.value = item.Cognom_familiar;
+  familiaName.value = item.Cognom_familiar;
   familiaDropdown.style.display = "none";
   estructuraFamiliar.value = item.Estructura_familiar || "";
   estructuraFamiliar.disabled = true;
-  familiaWarning.style.display = "none";
-  // Load family domiciles and auto-fill domicile search
   loadFamilyDomiciles(item.idFamilia);
 }
 
@@ -211,10 +231,9 @@ function clearFamily() {
   selectedFamilyId = null;
   selectedFamilyInfo.style.display = "none";
   selectedFamilyName.textContent = "";
-  familiaSearch.value = "";
+  familiaName.value = "";
   estructuraFamiliar.disabled = false;
   estructuraFamiliar.value = "";
-  familiaWarning.style.display = "none";
   familyDomicilisGroup.style.display = "none";
   familyDomicilis.innerHTML = '<option value="">Domicilis de la família</option>';
   familyDomiciles = [];
@@ -231,34 +250,6 @@ document.addEventListener("click", (e) => {
     domiciliDropdown.style.display = "none";
   }
 });
-
-// ============ FAMILY NAME DUPLICATE CHECK ============
-cognoms.addEventListener("blur", () => {
-  if (selectedFamilyId) return;
-  const name = cognoms.value.trim();
-  if (name.length < 2) return;
-  checkFamilyNameExists(name);
-});
-
-async function checkFamilyNameExists(name) {
-  if (name === lastFamiliaNameCheck) return;
-  lastFamiliaNameCheck = name;
-  try {
-    const res = await fetch(`/familia/checkName?name=${encodeURIComponent(name)}`);
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data.exists) {
-      cognoms.style.borderColor = "#e94560";
-      cognoms.style.boxShadow = "0 0 0 2px rgba(233,69,96,0.25)";
-      familiaWarning.style.display = "block";
-      familiaWarning.textContent = `Ja existeix una família amb aquest nom: "${data.family.Cognom_familiar}". Modifica'l per desambiguar.`;
-    } else {
-      cognoms.style.borderColor = "";
-      cognoms.style.boxShadow = "";
-      familiaWarning.style.display = "none";
-    }
-  } catch {}
-}
 
 // ============ FAMILY DOMICILES ============
 async function loadFamilyDomiciles(idFamilia) {
@@ -575,7 +566,10 @@ async function submitForm() {
     },
     familia: selectedFamilyId
       ? { idFamilia: selectedFamilyId }
-      : { Estructura_familiar: parseInt(estructuraFamiliar.value) },
+      : {
+          Cognom_familiar: familiaName.value.trim() || cognoms.value.trim(),
+          Estructura_familiar: parseInt(estructuraFamiliar.value)
+        },
     domicili: domiciliPayload,
   };
 
