@@ -125,6 +125,17 @@ async function deleteClient(req, res) {
     }
 }
 
+function calcTempsEntitat(altaDateStr) {
+    const alta = new Date(altaDateStr);
+    const avui = new Date();
+    let anys = avui.getFullYear() - alta.getFullYear();
+    let mesos = avui.getMonth() - alta.getMonth();
+    if (mesos < 0) { anys--; mesos += 12; }
+    if (anys > 0) return anys === 1 ? "1 any" : `${anys} anys`;
+    if (mesos > 0) return mesos === 1 ? "1 mes" : `${mesos} mesos`;
+    return "0";
+}
+
 // POST /client/full
 async function createFullClient(req, res) {
     try {
@@ -138,6 +149,7 @@ async function createFullClient(req, res) {
             Nom,
             Cognoms,
             Fecha_nacimiento,
+            Data_d_alta,
             idGenere,
             Telefon,
             Correu_electronic,
@@ -183,6 +195,9 @@ async function createFullClient(req, res) {
         const SEBAS_NO_SEBAS = 12;
         const CURS_NO_APLICA = 26;
 
+        const altaDate = Data_d_alta || new Date().toISOString().split("T")[0];
+        const temps = calcTempsEntitat(altaDate);
+
         const payload = {
             domicili: domicili || {},
             familia: {
@@ -195,8 +210,8 @@ async function createFullClient(req, res) {
                 Cognoms,
                 Telefon: Telefon || null,
                 Correu_electronic: Correu_electronic || null,
-                Data_d_alta: new Date().toISOString().split("T")[0],
-                C_temps_a_lentitat: "0",
+                Data_d_alta: altaDate,
+                C_temps_a_lentitat: temps,
                 Fecha_nacimiento,
                 C_edad,
                 idGenere,

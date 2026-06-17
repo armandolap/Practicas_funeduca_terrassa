@@ -561,6 +561,7 @@ async function submitForm() {
       Telefon: telefon.value.trim() || null,
       Correu_electronic: correu.value.trim() || null,
       Fecha_nacimiento: fechaNaixement.value,
+      Data_d_alta: dataAlta.value || new Date().toISOString().split("T")[0],
       idGenere: parseInt(genere.value),
       idRol: parseInt(rol.value),
       idSituacio_economica: parseInt(situacioEconomica.value),
