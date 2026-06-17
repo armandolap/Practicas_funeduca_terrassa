@@ -396,8 +396,7 @@ function buildPayload(name) {
                 inscritos: 0,
                 fecha_inicio_act: "2026-06-16",
                 fecha_fin_act: "2026-12-31",
-                idcentre_activitats: 1,
-                responsable: 1
+                idcentre_activitats: 1
             }
         },
         "/usuario": {idNivel_acceso: 1,Nom: "Test",Cognoms: "User",email: "test@test.com",Telefon: "600000000"},
@@ -424,16 +423,14 @@ function buildUpdatePayload(name) {
     if (!base) return null;
     if (name === "/client") return { ...base, Nom: "Maria Actualitzada" };
     if (name === "/projectes") return {
-        projecte: {
-            Nom_projecte: "Projecte Test 2 Actualitzat",
-            Descripcio: "...",
-            plazas: 20,
-            inscritos: 3,
-            fecha_inicio_act: "2026-06-16",
-            fecha_fin_act: "2026-12-31",
-            idcentre_activitats: 1,
-            responsable: 2
-        }
+        Nom_projecte: "Projecte Test 2 Actualitzat",
+        Descripcio: "...",
+        plazas: 20,
+        inscritos: 3,
+        fecha_inicio_act: "2026-06-16",
+        fecha_fin_act: "2026-12-31",
+        idcentre_activitats: 1
+
     };
     if (name === "/domicili") return { ...base };
     if (name === "/familia") return { ...base };

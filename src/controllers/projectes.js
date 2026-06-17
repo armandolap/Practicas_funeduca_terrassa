@@ -55,8 +55,7 @@ async function createProject(req, res) {
             inscritos = 0,
             fecha_inicio_act = null,
             fecha_fin_act = null,
-            idcentre_activitats,
-            responsable
+            idcentre_activitats
         } = projecte;
 
         // Validaciones mínimas
@@ -72,12 +71,6 @@ async function createProject(req, res) {
             });
         }
 
-        if (!responsable) {
-            return res.status(400).json({
-                message: "El responsable del projecte és obligatori."
-            });
-        }
-
         const nuevoProjecteId = await projectesRepository.create({
             Nom_projecte,
             Descripcio,
@@ -87,8 +80,6 @@ async function createProject(req, res) {
             fecha_fin_act,
             idcentre_activitats
         });
-
-        await projectesRepository.setResponsable(nuevoProjecteId, responsable);
 
         res.status(201).json({
             message: "Projecte creat correctament",
