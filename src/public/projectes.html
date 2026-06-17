@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projectes - FunEduca CRM</title>
+<link rel="stylesheet" href="/css/projectes.css">
+</head>
+<body data-page="projectes">
+<aside class="sidebar">
+  <div class="sidebar-header" style="padding:0.75rem 1.5rem;font-size:1.1rem;font-weight:700;color:#e94560;">FunEduca CRM</div>
+  <div class="sidebar-item" data-page="projectes">Projectes</div>
+  <div class="sidebar-item" data-page="clients">Clients</div>
+  <div class="sidebar-item" data-page="families">Famílies</div>
+  <div class="sidebar-item" data-page="usuaris">Responsables/Treballadors</div>
+  <div class="sidebar-item" data-page="domicilis">Domicilis</div>
+  <div class="sidebar-item" data-page="informes">Informes</div>
+  <div class="sidebar-item" data-page="config" id="sidebarConfig" style="display:none">Configuració</div>
+  <div class="sidebar-item" data-page="persones">Persones/Famílies</div>
+  <hr>
+  <div class="sidebar-item" id="sidebarLogout">Tancar sessió</div>
+</aside>
+<main class="main-content">
+  <div class="top-bar">
+    <h1>Projectes</h1>
+    <button class="btn btn-primary" id="btnCrearProjecte">Crear projecte</button>
+    <div class="filter-group">
+      <button class="btn btn-outline active" data-filter="activos">Actius</button>
+      <button class="btn btn-outline" data-filter="pasados">Passats</button>
+      <button class="btn btn-outline" data-filter="">Tots</button>
+    </div>
+    <input type="text" class="search-bar" id="searchProjectes" placeholder="Cercar projectes...">
+  </div>
+  <div class="project-grid" id="projectGrid"></div>
+</main>
+<div id="toast" class="toast"></div>
+<script>
+(function() {
+  const token = localStorage.getItem("token");
+  if (!token) { window.location.href = "/login.html"; return; }
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.idNivel_acceso;
+    const configEl = document.getElementById("sidebarConfig");
+    if (configEl) configEl.style.display = role === 1 ? "block" : "none";
+    const page = document.querySelector(`[data-page="${document.body.dataset.page}"]`);
+    if (page) page.classList.add("active");
+  } catch(e) { window.location.href = "/login.html"; }
+  document.addEventListener("click", function(e) {
+    if (e.target.id === "sidebarLogout") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login.html";
+    }
+    if (e.target.closest(".sidebar-item:not([data-page])")) return;
+    const item = e.target.closest(".sidebar-item[data-page]");
+    if (item) {
+      const map = { projectes: "/projectes.html", clients: "/clients.html", families: "/families.html", usuaris: "/usuaris.html", domicilis: "/domicilis.html", informes: "/informes.html", config: "/config.html", persones: "/persones-families.html" };
+      if (map[item.dataset.page]) window.location.href = map[item.dataset.page];
+    }
+  });
+})();
+</script>
+<script src="/js/projectes.js"></script>
+</body>
+</html>

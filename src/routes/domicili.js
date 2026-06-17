@@ -5,7 +5,6 @@ router.get("/", domicili.getAllDomicilis);
 router.get("/search", domicili.searchDomicilisCarrer);
 router.get("/byFamily/:idFamilia", domicili.getDomicilisByFamily);
 router.post("/", domicili.createDomicili);
-
 router.get("/:id", domicili.getDomiciliById);
 router.put("/:id", domicili.updateDomicili);
 router.delete("/:id", domicili.deleteDomicili);

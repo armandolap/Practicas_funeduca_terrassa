@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Informes</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+.report-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.report-buttons .btn { flex: 0 0 auto; }
+.action-buttons { display: flex; gap: 12px; margin-bottom: 20px; }
+</style>
+</head>
+<body data-page="informes">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1>Informes</h1>
+  <div class="report-buttons" id="reportButtons"></div>
+  <div class="action-buttons">
+    <button class="btn btn-primary btn-sm" id="btnExportCsv">Exportar informe actual CSV</button>
+    <button class="btn btn-success btn-sm" id="btnExportTots">Exportar tots CSV</button>
+  </div>
+  <div class="card" style="overflow-x:auto">
+    <div class="card-header" id="reportTitle">Selecciona un informe</div>
+    <table class="table" id="taulaInforme">
+      <thead id="theadInforme"></thead>
+      <tbody id="tbodyInforme"></tbody>
+    </table>
+  </div>
+</main>
+<div id="toast" class="toast"></div>
+<script src="/js/auth-sidebar.js"></script>
+<script src="/js/informes.js"></script>
+</body>
+</html>

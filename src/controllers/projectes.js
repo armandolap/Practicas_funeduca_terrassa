@@ -1,25 +1,21 @@
 const projectesRepository = require("../repositories/projectes");
 
-// GET /projectes
 async function getAllProjectes(req, res) {
     try {
-        const projecte = await projectesRepository.getAll();
-
-        res.status(200).json(projecte);
+        const { filter, q } = req.query;
+        const projectes = await projectesRepository.getAll({ filter, q });
+        res.status(200).json(projectes);
     } catch (error) {
         console.error(error);
-
         res.status(500).json({
             message: "Error obtenint llistat de projectes"
         });
     }
 }
 
-// GET /projectes/:id
 async function getProjectesById(req, res) {
     try {
         const { id } = req.params;
-
         const projecte = await projectesRepository.getById(id);
 
         if (!projecte) {
@@ -29,36 +25,27 @@ async function getProjectesById(req, res) {
         }
 
         res.status(200).json(projecte);
-
     } catch (error) {
         console.error(error);
-
         res.status(500).json({
             message: "Error obtenint projecte"
         });
     }
 }
 
-// POST /projectes
 async function createProject(req, res) {
     try {
-
         const projecte = req.body.projecte || {};
-
-        // Fecha actual en formato YYYY-MM-DD
-        const fechaActual = new Date().toISOString().split("T")[0];
 
         const {
             Nom_projecte,
             Descripcio = null,
             plazas = 0,
-            inscritos = 0,
             fecha_inicio_act = null,
             fecha_fin_act = null,
             idcentre_activitats
         } = projecte;
 
-        // Validaciones mínimas
         if (!Nom_projecte?.trim()) {
             return res.status(400).json({
                 message: "El nom del projecte és obligatori."
@@ -75,7 +62,6 @@ async function createProject(req, res) {
             Nom_projecte,
             Descripcio,
             plazas,
-            inscritos,
             fecha_inicio_act,
             fecha_fin_act,
             idcentre_activitats
@@ -85,17 +71,14 @@ async function createProject(req, res) {
             message: "Projecte creat correctament",
             id: nuevoProjecteId
         });
-
     } catch (error) {
         console.error(error);
-
         res.status(500).json({
             message: "Error creant projecte"
         });
     }
 }
 
-// PUT /projectes/:id
 async function updateProject(req, res) {
     try {
         const { id } = req.params;
@@ -105,7 +88,6 @@ async function updateProject(req, res) {
             Nom_projecte,
             Descripcio = null,
             plazas = 0,
-            inscritos = 0,
             fecha_inicio_act = null,
             fecha_fin_act = null,
             idcentre_activitats,
@@ -128,7 +110,6 @@ async function updateProject(req, res) {
             Nom_projecte,
             Descripcio,
             plazas,
-            inscritos,
             fecha_inicio_act,
             fecha_fin_act,
             idcentre_activitats
@@ -147,7 +128,6 @@ async function updateProject(req, res) {
         res.status(200).json({
             message: "Projecte actualitzat correctament"
         });
-
     } catch (error) {
         console.error(error);
         res.status(500).json({
@@ -156,11 +136,9 @@ async function updateProject(req, res) {
     }
 }
 
-// DELETE /projectes/:id
 async function deleteProject(req, res) {
     try {
         const { id } = req.params;
-
         const affectedRows = await projectesRepository.remove(id);
 
         if (affectedRows === 0) {
@@ -172,11 +150,50 @@ async function deleteProject(req, res) {
         res.status(200).json({
             message: "Projecte eliminat correctament"
         });
-
     } catch (error) {
         console.error(error);
         res.status(500).json({
             message: "Error eliminant projecte"
+        });
+    }
+}
+
+async function addClientsToProject(req, res) {
+    try {
+        const { id } = req.params;
+        const { clientIds } = req.body;
+
+        if (!clientIds || !Array.isArray(clientIds) || clientIds.length === 0) {
+            return res.status(400).json({
+                message: "clientIds és obligatori i ha de ser un array."
+            });
+        }
+
+        await projectesRepository.addClients(id, clientIds);
+
+        res.status(200).json({
+            message: "Clients afegits correctament al projecte"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Error afegint clients al projecte"
+        });
+    }
+}
+
+async function removeClientFromProject(req, res) {
+    try {
+        const { id, idClient } = req.params;
+        await projectesRepository.removeClient(id, idClient);
+
+        res.status(200).json({
+            message: "Client eliminat del projecte correctament"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Error eliminant client del projecte"
         });
     }
 }
@@ -186,5 +203,7 @@ module.exports = {
     getProjectesById,
     createProject,
     updateProject,
-    deleteProject
+    deleteProject,
+    addClientsToProject,
+    removeClientFromProject
 };

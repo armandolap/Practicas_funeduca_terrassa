@@ -1,45 +1,36 @@
 const domiciliRepository = require("../repositories/domicili");
 
-// GET /domicili
 async function getAllDomicilis(req, res) {
     try {
-        const domicilis = await domiciliRepository.getAll();
-
+        const { barri, tipus, offset, limit } = req.query;
+        const domicilis = await domiciliRepository.getAll({ barri, tipus, offset, limit });
         res.status(200).json(domicilis);
     } catch (error) {
         console.error(error);
-
         res.status(500).json({
             message: "Error obtenint domicilis"
         });
     }
 }
 
-// GET /domicili/:id
 async function getDomiciliById(req, res) {
     try {
         const { id } = req.params;
-
-        const domicili = await domiciliRepository.getById(id);
-
+        const domicili = await domiciliRepository.getByIdEnhanced(id);
         if (!domicili) {
             return res.status(404).json({
                 message: "Domicili no trobat"
             });
         }
-
         res.status(200).json(domicili);
-
     } catch (error) {
         console.error(error);
-
         res.status(500).json({
             message: "Error obtenint domicili"
         });
     }
 }
 
-// POST /domicili
 async function createDomicili(req, res) {
     try {
         const {
@@ -66,7 +57,6 @@ async function createDomicili(req, res) {
     }
 }
 
-// PUT /domicili/:id
 async function updateDomicili(req, res) {
     try {
         const { id } = req.params;
@@ -102,7 +92,6 @@ async function updateDomicili(req, res) {
     }
 }
 
-//DELETE /domicili/:id
 async function deleteDomicili(req, res) {
     try {
         const { id } = req.params;
@@ -129,7 +118,6 @@ async function deleteDomicili(req, res) {
     }
 }
 
-// GET /domicili/byFamily/:idFamilia
 async function getDomicilisByFamily(req, res) {
     try {
         const { idFamilia } = req.params;
@@ -147,7 +135,6 @@ async function getDomicilisByFamily(req, res) {
     }
 }
 
-// GET /domicili/search
 async function searchDomicilisCarrer(req, res) {
     try {
         const { q, tipus_via, idFamilia } = req.query;

@@ -1,9 +1,10 @@
+const bcrypt = require("bcrypt");
 const usuarioRepository = require("../repositories/usuari");
 
-//GET /usuario
 async function getAllUsuarios(req, res) {
     try {
-        const usuarios = await usuarioRepository.getAll();
+        const { filter, q } = req.query;
+        const usuarios = await usuarioRepository.getAll({ filter, q });
         res.json(usuarios);
     } catch (error) {
         res.status(500).json({
@@ -12,7 +13,6 @@ async function getAllUsuarios(req, res) {
     }
 }
 
-//GET /usuario/:id
 async function getUsuarioById(req, res) {
     try {
         const usuario = await usuarioRepository.getById(req.params.id);
@@ -24,7 +24,6 @@ async function getUsuarioById(req, res) {
         }
 
         res.json(usuario);
-
     } catch (error) {
         res.status(500).json({
             error: error.message
@@ -32,25 +31,31 @@ async function getUsuarioById(req, res) {
     }
 }
 
-//Post /usuario
 async function createUsuario(req, res) {
     try {
+        const { Nom, Cognoms, email, Telefon, idNivel_acceso, password } = req.body;
 
-        const { Rol_usuario } = req.body;
-
-        if (!Rol_usuario) {
+        if (!Nom || !Cognoms || !email || !Telefon || !idNivel_acceso || !password) {
             return res.status(400).json({
-                error: "Rol usuari és obligatori"
+                error: "Tots els camps són obligatoris: Nom, Cognoms, email, Telefon, idNivel_acceso, password"
             });
         }
 
-        const id = await usuarioRepository.create(Rol_usuario);
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const id = await usuarioRepository.create({
+            Nom,
+            Cognoms,
+            email,
+            Telefon,
+            idNivel_acceso,
+            password: hashedPassword
+        });
 
         res.status(201).json({
             message: "Usuari creat",
             id
         });
-
     } catch (error) {
         res.status(500).json({
             error: error.message
@@ -58,16 +63,16 @@ async function createUsuario(req, res) {
     }
 }
 
-//PUT /usuario/:id
 async function updateUsuario(req, res) {
     try {
+        const { Nom, Cognoms, email, Telefon, idNivel_acceso, password } = req.body;
+        const data = { Nom, Cognoms, email, Telefon, idNivel_acceso };
 
-        const { Rol_usuario } = req.body;
+        if (password) {
+            data.password = await bcrypt.hash(password, 10);
+        }
 
-        const affectedRows = await usuarioRepository.update(
-            req.params.id,
-            Rol_usuario
-        );
+        const affectedRows = await usuarioRepository.update(req.params.id, data);
 
         if (affectedRows === 0) {
             return res.status(404).json({
@@ -78,7 +83,6 @@ async function updateUsuario(req, res) {
         res.json({
             message: "Usuari actualitzat"
         });
-
     } catch (error) {
         res.status(500).json({
             error: error.message
@@ -86,13 +90,17 @@ async function updateUsuario(req, res) {
     }
 }
 
-//DELETE /usuario/:id
 async function removeUsuario(req, res) {
     try {
+        const result = await usuarioRepository.remove(req.params.id);
 
-        const affectedRows = await usuarioRepository.remove(req.params.id);
+        if (result === false) {
+            return res.status(400).json({
+                error: "No es pot eliminar un usuari amb projectes assignats"
+            });
+        }
 
-        if (affectedRows === 0) {
+        if (!result) {
             return res.status(404).json({
                 error: "Usuari no trobat"
             });
@@ -101,7 +109,6 @@ async function removeUsuario(req, res) {
         res.json({
             message: "Usuari eliminat"
         });
-
     } catch (error) {
         res.status(500).json({
             error: error.message

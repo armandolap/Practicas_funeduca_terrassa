@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client - FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .detail-card { background: var(--card-bg); border-radius: var(--radius); padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .detail-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--danger); }
+  .detail-row { display: flex; padding: 6px 0; }
+  .detail-label { width: 140px; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; flex-shrink: 0; }
+  .detail-value { font-size: 14px; color: var(--text); }
+  .detail-value a { color: var(--primary); text-decoration: none; }
+  .detail-value a:hover { text-decoration: underline; }
+  .project-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .project-tab { padding: 8px 20px; border: 1px solid var(--border); background: var(--card-bg); border-radius: var(--radius); cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.15s; }
+  .project-tab:hover { background: var(--bg); }
+  .project-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .detail-actions { display: flex; gap: 12px; margin-bottom: 24px; }
+  .back-link { display: inline-flex; align-items: center; gap: 4px; color: var(--primary); text-decoration: none; font-size: 14px; margin-bottom: 16px; font-weight: 600; }
+  .back-link:hover { text-decoration: underline; }
+  .project-actions { display: flex; gap: 4px; }
+  @media (max-width: 768px) { .detail-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body data-page="clients">
+<aside class="sidebar">
+  <div class="sidebar-header"><span class="logo-icon">📋</span> FunEduca CRM</div>
+  <div class="sidebar-item" data-page="projectes">Projectes</div>
+  <div class="sidebar-item active" data-page="clients">Clients</div>
+  <div class="sidebar-item" data-page="families">Famílies</div>
+  <div class="sidebar-item" data-page="domicilis">Domicilis</div>
+  <hr>
+  <div class="sidebar-item" data-page="config">Configuració</div>
+  <div class="sidebar-item" data-page="informes">Informes</div>
+</aside>
+<main class="main-content">
+  <a href="/clients.html" class="back-link">&larr; Tornar al llistat</a>
+
+  <div class="detail-actions">
+    <button class="btn btn-primary" id="btnEdit" style="display:none">Editar</button>
+    <button class="btn btn-success" id="btnAssign">Assignar a projecte</button>
+  </div>
+
+  <div class="detail-grid">
+    <div class="detail-card">
+      <h2>Dades personals</h2>
+      <h1 id="clientName" style="font-size:22px;margin-bottom:16px"></h1>
+      <div class="detail-row"><span class="detail-label">Edat</span><span class="detail-value" id="clientAge"></span></div>
+      <div class="detail-row"><span class="detail-label">Gènere</span><span class="detail-value" id="clientGender"></span></div>
+      <div class="detail-row"><span class="detail-label">Temps a l'associació</span><span class="detail-value" id="clientTemps"></span></div>
+      <div class="detail-row"><span class="detail-label">Activitats fetes</span><span class="detail-value" id="clientActivitats"></span></div>
+    </div>
+    <div class="detail-card">
+      <h2>Contacte</h2>
+      <div class="detail-row"><span class="detail-label">Família</span><span class="detail-value"><a id="clientFamilia" href="#"></a></span></div>
+      <div class="detail-row"><span class="detail-label">Domicili</span><span class="detail-value" id="clientAddress"></span></div>
+      <div class="detail-row"><span class="detail-label">Telèfon</span><span class="detail-value" id="clientPhone"></span></div>
+      <div class="detail-row"><span class="detail-label">Correu</span><span class="detail-value" id="clientEmail"></span></div>
+    </div>
+  </div>
+
+  <div class="detail-card">
+    <h2>Projectes</h2>
+    <div class="project-tabs">
+      <button class="project-tab active" data-filter="actius">Actius</button>
+      <button class="project-tab" data-filter="futurs">Futurs</button>
+      <button class="project-tab" data-filter="passats">Passats</button>
+      <button class="project-tab" data-filter="tots">Tots</button>
+    </div>
+    <table class="table">
+      <thead><tr><th>Nom projecte</th><th>Estat</th><th>Data fi</th><th></th></tr></thead>
+      <tbody id="projectsBody"></tbody>
+    </table>
+  </div>
+</main>
+
+<div class="modal-overlay" id="assignModal" style="display:none">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Assignar a projecte</h2>
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <div class="form-group">
+      <label>Cercar projecte</label>
+      <input type="text" id="projectSearch" placeholder="Escriu el nom del projecte...">
+    </div>
+    <div style="margin-top:12px;max-height:300px;overflow-y:auto">
+      <table class="table">
+        <thead><tr><th>Nom</th><th>Places</th><th></th></tr></thead>
+        <tbody id="projectSearchBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="/js/sidebar.js"></script>
+<script src="/js/client.js"></script>
+</body>
+</html>

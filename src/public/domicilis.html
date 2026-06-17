@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domicilis</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body data-page="domicilis">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1>Domicilis</h1>
+  <div class="filters">
+    <div class="filter-group">
+      <label for="filtreBarri">Barri</label>
+      <select id="filtreBarri"><option value="">Tots</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="filtreTipus">Tipus domicili</label>
+      <select id="filtreTipus"><option value="">Tots</option></select>
+    </div>
+    <button class="btn btn-primary" id="btnFiltrar">Filtrar</button>
+  </div>
+  <table class="table" id="taulaDomicilis">
+    <thead>
+      <tr>
+        <th>Adreça completa</th>
+        <th>Tipus domicili</th>
+        <th>Quantitat persones</th>
+        <th>Família principal</th>
+      </tr>
+    </thead>
+    <tbody id="tbodyDomicilis"></tbody>
+  </table>
+  <div class="flex flex-between mt-20">
+    <button class="btn btn-outline btn-sm" id="btnAnterior">← Anterior</button>
+    <span id="paginacioInfo"></span>
+    <button class="btn btn-outline btn-sm" id="btnSegüent">Següent →</button>
+  </div>
+</main>
+<div id="toast" class="toast"></div>
+<script src="/js/auth-sidebar.js"></script>
+<script src="/js/domicilis.js"></script>
+</body>
+</html>

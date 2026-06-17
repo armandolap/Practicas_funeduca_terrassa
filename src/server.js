@@ -44,10 +44,14 @@ const barri = require("./routes/barri");
 const codi_postal = require("./routes/codi_postal");
 const callejero = require("./routes/callejero");
 const desplegables = require("./routes/desplegables");
+const auth = require("./routes/auth");
+const centreActivitats = require("./routes/centre_activitats");
+const reports = require("./routes/reports");
 
 
 // Rutas
 server.use(express.json());
+server.use("/auth", auth);
 server.use("/paisos", paisos);
 server.use("/estFamilia", estFamiliar);
 server.use("/motiuBaixa", motiuBaixa);
@@ -69,6 +73,8 @@ server.use("/barri", barri);
 server.use("/codiPostal", codi_postal);
 server.use("/callejero", callejero);
 server.use("/desplegables", desplegables);
+server.use("/centreActivitats", centreActivitats);
+server.use("/reports", reports);
 server.use(express.static(path.join(__dirname, "public")));
 
 // Ejecutar SQL

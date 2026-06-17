@@ -1,3 +1,13 @@
+// Auth check
+const token = localStorage.getItem("token");
+if (!token) { window.location.href = "/login.html"; }
+const origFetch = window.fetch;
+window.fetch = async function(url, opts = {}) {
+  const headers = opts.headers || {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  return origFetch(url, { ...opts, headers });
+};
+
 // ============ DOM REFS ============
 const $ = id => document.getElementById(id);
 

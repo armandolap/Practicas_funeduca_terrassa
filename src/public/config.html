@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuració</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body data-page="config">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1>Configuració</h1>
+  <div class="filters">
+    <div class="filter-group">
+      <label for="selectTaula">Taula</label>
+      <select id="selectTaula"></select>
+    </div>
+    <button class="btn btn-primary btn-sm" id="btnCarregar">Carregar</button>
+  </div>
+  <div id="configContent">
+    <table class="table" id="taulaConfig">
+      <thead id="theadConfig"></thead>
+      <tbody id="tbodyConfig"></tbody>
+    </table>
+    <button class="btn btn-success btn-sm mt-20" id="btnAfegir">Afegir</button>
+  </div>
+</main>
+<div id="toast" class="toast"></div>
+<script src="/js/auth-sidebar.js"></script>
+<script src="/js/config.js"></script>
+</body>
+</html>

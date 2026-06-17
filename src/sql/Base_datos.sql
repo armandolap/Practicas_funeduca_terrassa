@@ -435,11 +435,12 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`usuario_app` (
   `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
-  `idNivel_acceso` INT NOT NULL UNIQUE,
+  `idNivel_acceso` INT NOT NULL,
   `Nom` VARCHAR(45) NOT NULL,
   `Cognoms` VARCHAR(45) NOT NULL,
   `email` VARCHAR(45) NOT NULL,
   `Telefon` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`idUsuario_APP`, `idNivel_acceso`),
   INDEX `fk_usuario_app_Nivel_acceso1_idx` (`idNivel_acceso` ASC) VISIBLE,
   CONSTRAINT `fk_usuario_app_Nivel_acceso1`

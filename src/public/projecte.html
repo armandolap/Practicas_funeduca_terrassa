@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projecte - FunEduca CRM</title>
+<link rel="stylesheet" href="/css/projectes.css">
+</head>
+<body data-page="projectes">
+<aside class="sidebar">
+  <div class="sidebar-header" style="padding:0.75rem 1.5rem;font-size:1.1rem;font-weight:700;color:#e94560;">FunEduca CRM</div>
+  <div class="sidebar-item" data-page="projectes">Projectes</div>
+  <div class="sidebar-item" data-page="clients">Clients</div>
+  <div class="sidebar-item" data-page="families">Famílies</div>
+  <div class="sidebar-item" data-page="usuaris">Responsables/Treballadors</div>
+  <div class="sidebar-item" data-page="domicilis">Domicilis</div>
+  <div class="sidebar-item" data-page="informes">Informes</div>
+  <div class="sidebar-item" data-page="config" id="sidebarConfig" style="display:none">Configuració</div>
+  <div class="sidebar-item" data-page="persones">Persones/Famílies</div>
+  <hr>
+  <div class="sidebar-item" id="sidebarLogout">Tancar sessió</div>
+</aside>
+<main class="main-content">
+  <div class="detail-header">
+    <button class="back-btn" id="btnBack">&larr;</button>
+    <h1 id="projectName"></h1>
+    <span id="badgeObert" class="badge"></span>
+    <span id="badgeActiu" class="badge"></span>
+    <button class="btn btn-primary" id="btnEditar" style="display:none;margin-left:auto;">Editar</button>
+  </div>
+
+  <section class="form-section">
+    <h2>Informació general</h2>
+    <div class="info-grid" id="infoGrid"></div>
+  </section>
+
+  <section class="form-section">
+    <h2>Descripció</h2>
+    <p id="projectDesc" style="color:#555;line-height:1.6;">—</p>
+  </section>
+
+  <section class="form-section">
+    <h2>Participants</h2>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:0.75rem;">
+      <button class="btn btn-primary btn-sm" id="btnAfegirParticipant">Afegir participant</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>Nom</th><th>Cognoms</th><th>Família</th><th>Accions</th></tr></thead>
+        <tbody id="participantsBody"></tbody>
+      </table>
+    </div>
+    <p id="noParticipants" style="color:#888;text-align:center;padding:1rem;">No hi ha participants</p>
+  </section>
+</main>
+
+<div class="modal-overlay" id="modalAfegir" style="display:none;">
+  <div class="modal-content">
+    <h2>Afegir participant</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="searchClient">Cercar client</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="searchClient" placeholder="Escriu nom o cognoms..." autocomplete="off">
+          <div class="dropdown" id="clientDropdown"></div>
+        </div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;margin-top:0.5rem;">
+      <table>
+        <thead><tr><th></th><th>Nom</th><th>Cognoms</th><th>Família</th></tr></thead>
+        <tbody id="clientSearchBody"></tbody>
+      </table>
+    </div>
+    <p id="noClientResults" style="color:#888;text-align:center;padding:0.5rem;display:none;">Cap resultat</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="btnCancelAfegir">Cancel·lar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function() {
+  const token = localStorage.getItem("token");
+  if (!token) { window.location.href = "/login.html"; return; }
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.idNivel_acceso;
+    const configEl = document.getElementById("sidebarConfig");
+    if (configEl) configEl.style.display = role === 1 ? "block" : "none";
+    const page = document.querySelector(`[data-page="${document.body.dataset.page}"]`);
+    if (page) page.classList.add("active");
+  } catch(e) { window.location.href = "/login.html"; }
+  document.addEventListener("click", function(e) {
+    if (e.target.id === "sidebarLogout") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login.html";
+    }
+    if (e.target.closest(".sidebar-item:not([data-page])")) return;
+    const item = e.target.closest(".sidebar-item[data-page]");
+    if (item) {
+      const map = { projectes: "/projectes.html", clients: "/clients.html", families: "/families.html", usuaris: "/usuaris.html", domicilis: "/domicilis.html", informes: "/informes.html", config: "/config.html", persones: "/persones-families.html" };
+      if (map[item.dataset.page]) window.location.href = map[item.dataset.page];
+    }
+  });
+})();
+</script>
+<script src="/js/projecte.js"></script>
+</body>
+</html>

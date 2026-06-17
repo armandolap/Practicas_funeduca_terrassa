@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inici de sessió - FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1e293b 0%, #2563eb 100%); font-family: system-ui, sans-serif; }
+  .login-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 400px; }
+  .login-card h1 { text-align: center; margin-bottom: 8px; color: #1e293b; font-size: 24px; }
+  .login-card p { text-align: center; color: #64748b; margin-bottom: 32px; font-size: 14px; }
+  .login-card .form-group { margin-bottom: 20px; }
+  .login-card label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 14px; color: #1e293b; }
+  .login-card input { width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 16px; transition: border-color 0.2s; box-sizing: border-box; }
+  .login-card input:focus { outline: none; border-color: #2563eb; }
+  .login-card button { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .login-card button:hover { background: #1d4ed8; }
+  .login-card .error { color: #ef4444; font-size: 14px; text-align: center; margin-top: 16px; display: none; }
+  .login-card .logo { text-align: center; margin-bottom: 24px; font-size: 32px; }
+</style>
+</head>
+<body>
+<div class="login-card">
+  <div class="logo">📋</div>
+  <h1>FunEduca CRM</h1>
+  <p>Introdueix les teves credencials</p>
+  <div class="form-group">
+    <label for="email">Correu electrònic</label>
+    <input type="email" id="email" placeholder="correu@exemple.com" autocomplete="email">
+  </div>
+  <div class="form-group">
+    <label for="password">Contrasenya</label>
+    <input type="password" id="password" placeholder="Introdueix la contrasenya" autocomplete="current-password">
+  </div>
+  <button id="btnLogin">Iniciar sessió</button>
+  <div class="error" id="loginError">Credencials incorrectes</div>
+</div>
+<script src="/js/login.js"></script>
+</body>
+</html>

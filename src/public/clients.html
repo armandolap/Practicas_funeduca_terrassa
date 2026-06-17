@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clients - FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body data-page="clients">
+<aside class="sidebar">
+  <div class="sidebar-header"><span class="logo-icon">📋</span> FunEduca CRM</div>
+  <div class="sidebar-item" data-page="projectes">Projectes</div>
+  <div class="sidebar-item active" data-page="clients">Clients</div>
+  <div class="sidebar-item" data-page="families">Famílies</div>
+  <div class="sidebar-item" data-page="domicilis">Domicilis</div>
+  <hr>
+  <div class="sidebar-item" data-page="config">Configuració</div>
+  <div class="sidebar-item" data-page="informes">Informes</div>
+</aside>
+<main class="main-content">
+  <div class="flex-between mb-20">
+    <h1 style="margin-bottom:0">Clients</h1>
+    <a href="/index.html" class="btn btn-primary">+ Crear nou</a>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label>Cercar (nom/cognoms)</label>
+      <input type="text" id="filterSearch" placeholder="Escriu per cercar...">
+    </div>
+    <div class="filter-group">
+      <label>Segment d'edat</label>
+      <select id="filterAge">
+        <option value="">Totes les edats</option>
+        <option value="0-3">0-3</option>
+        <option value="4-6">4-6</option>
+        <option value="7-9">7-9</option>
+        <option value="10-12">10-12</option>
+        <option value="13-15">13-15</option>
+        <option value="16-18">16-18</option>
+        <option value="18-30">18-30</option>
+        <option value="30-65">30-65</option>
+        <option value="+65">+65</option>
+      </select>
+    </div>
+    <div class="filter-group autocomplete-wrap">
+      <label>Família</label>
+      <input type="text" id="filterFamilia" placeholder="Cercar familia..." autocomplete="off">
+      <div class="dropdown" id="familiaDropdown"></div>
+    </div>
+    <div class="filter-group">
+      <label>Gènere</label>
+      <select id="filterGenere"><option value="">Tots</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Barri</label>
+      <select id="filterBarri"><option value="">Tots</option></select>
+    </div>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr><th>Nom</th><th>Cognoms</th><th>Edat</th><th>Família</th><th>Projectes</th></tr>
+    </thead>
+    <tbody id="clientsBody"></tbody>
+  </table>
+
+  <div class="flex-between mt-20">
+    <button class="btn btn-outline" id="prevBtn" disabled>Anterior</button>
+    <span id="pageInfo">Pàgina 1 de 1</span>
+    <button class="btn btn-outline" id="nextBtn">Següent</button>
+  </div>
+</main>
+<div id="toast" class="toast"></div>
+<script src="/js/sidebar.js"></script>
+<script src="/js/clients.js"></script>
+</body>
+</html>

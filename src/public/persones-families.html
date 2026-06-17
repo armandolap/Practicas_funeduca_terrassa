@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Persones i Famílies</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body data-page="persones">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1>Persones i Famílies</h1>
+  <div class="filters">
+    <div class="filter-group">
+      <label for="cercaText">Cerca</label>
+      <input type="text" id="cercaText" placeholder="Nom o cognoms...">
+    </div>
+    <div class="filter-group" id="filterGenere">
+      <label for="filtreGenere">Gènere</label>
+      <select id="filtreGenere"><option value="">Tots</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="filtreBarri">Barri</label>
+      <select id="filtreBarri"><option value="">Tots</option></select>
+    </div>
+    <div class="filter-group" id="filterEstructura">
+      <label for="filtreEstructura">Estructura familiar</label>
+      <select id="filtreEstructura"><option value="">Totes</option></select>
+    </div>
+    <button class="btn btn-primary" id="btnCercar">Cercar</button>
+  </div>
+  <div class="flex gap-10 mb-20">
+    <button class="btn btn-primary btn-sm" id="btnPersones">Persones</button>
+    <button class="btn btn-outline btn-sm" id="btnFamilies">Famílies</button>
+  </div>
+  <table class="table" id="taula">
+    <thead id="thead"></thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</main>
+<div id="toast" class="toast"></div>
+<script src="/js/auth-sidebar.js"></script>
+<script src="/js/persones-families.js"></script>
+</body>
+</html>

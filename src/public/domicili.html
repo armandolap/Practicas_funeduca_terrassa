@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Domicili</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body data-page="domicilis">
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1 id="titolDomicili">Domicili</h1>
+  <section class="card" id="sectionAdreca">
+    <div class="card-header">Adreça</div>
+    <dl class="info-grid" id="infoAdreca"></dl>
+  </section>
+  <section class="card" id="sectionPersones">
+    <div class="card-header">Persones</div>
+    <table class="table" id="taulaPersones">
+      <thead>
+        <tr><th>Nom</th><th>Cognoms</th><th>Família</th><th>Estat</th><th></th></tr>
+      </thead>
+      <tbody id="tbodyPersones"></tbody>
+    </table>
+  </section>
+  <section class="card" id="sectionFamilies">
+    <div class="card-header">Famílies</div>
+    <table class="table" id="taulaFamilies">
+      <thead>
+        <tr><th>Cognom</th><th>Membres</th><th>Estructura</th></tr>
+      </thead>
+      <tbody id="tbodyFamilies"></tbody>
+    </table>
+  </section>
+  <section class="card" id="sectionProjectes">
+    <div class="card-header">Projectes</div>
+    <ul id="llistaProjectes"></ul>
+  </section>
+</main>
+<div id="toast" class="toast"></div>
+<script src="/js/auth-sidebar.js"></script>
+<script src="/js/domicili.js"></script>
+</body>
+</html>

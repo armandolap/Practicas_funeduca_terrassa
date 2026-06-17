@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responsables / Treballadors</title>
+<link rel="stylesheet" href="/css/pages.css">
+</head>
+<body data-page="usuaris">
+<aside class="sidebar">
+  <div id="sidebarConfig" class="sidebar-item" data-page="config">Configuració</div>
+  <div class="sidebar-item" data-page="projectes">Projectes</div>
+  <div class="sidebar-item" data-page="clients">Clients</div>
+  <div class="sidebar-item" data-page="families">Famílies</div>
+  <div class="sidebar-item" data-page="usuaris">Usuaris</div>
+  <div class="sidebar-item" data-page="domicilis">Domicilis</div>
+  <div class="sidebar-item" data-page="persones">Persones-Famílies</div>
+  <hr>
+  <div class="sidebar-item" data-page="informes">Informes</div>
+  <div class="sidebar-item" id="sidebarLogout">Tancar sessió</div>
+</aside>
+
+<main class="main-content">
+  <div class="page-header">
+    <h1>Responsables / Treballadors</h1>
+    <button class="btn-primary" id="btnCrearUsuari" style="display:none;">Crear usuari</button>
+  </div>
+
+  <div class="filter-buttons">
+    <button class="filter-btn active" data-filter="">Tots</button>
+    <button class="filter-btn" data-filter="responsables">Responsables</button>
+    <button class="filter-btn" data-filter="trabajadores">Treballadors</button>
+  </div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label for="searchUsuari">Cercar</label>
+      <input type="text" id="searchUsuari" placeholder="Nom, cognoms o email...">
+    </div>
+    <button class="btn-primary" id="btnSearchUsuari" style="align-self:flex-end;">Cercar</button>
+  </div>
+
+  <table id="usuarisTable">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Cognoms</th>
+        <th>Rol</th>
+        <th>Telèfon</th>
+        <th>Email</th>
+        <th>Projectes actius</th>
+        <th>Projectes oberts</th>
+        <th>Persones en proj. actius</th>
+      </tr>
+    </thead>
+    <tbody id="usuarisBody"></tbody>
+  </table>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function() {
+  const token = localStorage.getItem("token");
+  if (!token) { window.location.href = "/login.html"; return; }
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.idNivel_acceso;
+    const configEl = document.getElementById("sidebarConfig");
+    if (configEl) configEl.style.display = role === 1 ? "block" : "none";
+    const page = document.querySelector(`[data-page="${document.body.dataset.page}"]`);
+    if (page) page.classList.add("active");
+  } catch(e) { window.location.href = "/login.html"; }
+  document.addEventListener("click", function(e) {
+    if (e.target.id === "sidebarLogout") {
+      localStorage.removeItem("token"); localStorage.removeItem("user"); window.location.href = "/login.html";
+    }
+    const item = e.target.closest(".sidebar-item[data-page]");
+    if (item) {
+      const map = { projectes: "/projectes.html", clients: "/clients.html", families: "/families.html", usuaris: "/usuaris.html", domicilis: "/domicilis.html", informes: "/informes.html", config: "/config.html", persones: "/persones-families.html" };
+      if (map[item.dataset.page]) window.location.href = map[item.dataset.page];
+    }
+  });
+})();
+</script>
+<script src="/js/usuaris.js"></script>
+</body>
+</html>

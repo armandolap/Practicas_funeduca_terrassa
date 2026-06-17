@@ -1,72 +1,56 @@
 const clientRepository = require("../repositories/client");
 
-// GET /client
 async function getAllClients(req, res) {
     try {
-        const clients = await clientRepository.getAll();
-
+        const { q, familia, genere, barri, edatMin, edatMax } = req.query;
+        const clients = await clientRepository.getAll({ q, familia, genere, barri, edatMin, edatMax });
         res.status(200).json(clients);
     } catch (error) {
         console.error(error);
-
         res.status(500).json({
             message: "Error obtenint clients"
         });
     }
 }
 
-// GET /client/:id
 async function getClientById(req, res) {
     try {
         const { id } = req.params;
-
-        const client = await clientRepository.getById(id);
-
+        const client = await clientRepository.getByIdEnhanced(id);
         if (!client) {
             return res.status(404).json({
                 message: "Client no trobat"
             });
         }
-
         res.status(200).json(client);
-
     } catch (error) {
         console.error(error);
-
         res.status(500).json({
             message: "Error obtenint client"
         });
     }
 }
 
-// POST /client
 async function createClient(req, res) {
     try {
         const clientData = req.body;
-
         const id = await clientRepository.create(clientData);
-
         res.status(201).json({
             message: "Client creat",
             id
         });
-
     } catch (error) {
         console.error(error);
-
         res.status(500).json({
             message: "Error creant client"
         });
     }
 }
 
-// PUT /client/:id
 async function updateClient(req, res) {
     try {
         const { id } = req.params;
         const clientData = req.body;
-
-        // Recalculate C_edad if Fecha_nacimiento provided
         if (clientData.Fecha_nacimiento) {
             const nac = new Date(clientData.Fecha_nacimiento);
             const avui = new Date();
@@ -77,48 +61,37 @@ async function updateClient(req, res) {
             }
             clientData.C_edad = edad;
         }
-
         const affectedRows = await clientRepository.update(id, clientData);
-
         if (affectedRows === 0) {
             return res.status(404).json({
                 message: "Client no trobat"
             });
         }
-
         res.status(200).json({
             message: "Client actualitzat"
         });
-
     } catch (error) {
         console.error(error);
-
         res.status(500).json({
             message: "Error actualitzant client"
         });
     }
 }
 
-// DELETE /client/:id
 async function deleteClient(req, res) {
     try {
         const { id } = req.params;
-
         const affectedRows = await clientRepository.remove(id);
-
         if (affectedRows === 0) {
             return res.status(404).json({
                 message: "Client no trobat"
             });
         }
-
         res.status(200).json({
             message: "Client eliminat"
         });
-
     } catch (error) {
         console.error(error);
-
         res.status(500).json({
             message: "Error eliminant client"
         });
@@ -136,15 +109,12 @@ function calcTempsEntitat(altaDateStr) {
     return "0";
 }
 
-// POST /client/full
 async function createFullClient(req, res) {
     try {
         const { client: clientData, familia, domicili } = req.body;
-
         if (!clientData) {
             return res.status(400).json({ message: "Dades de client obligatòries" });
         }
-
         const {
             Nom,
             Cognoms,
@@ -163,8 +133,6 @@ async function createFullClient(req, res) {
             idSebas,
             idNecessitat_especial
         } = clientData;
-
-        // Required fields
         if (!Nom?.trim()) return res.status(400).json({ message: "Nom obligatori" });
         if (!Cognoms?.trim()) return res.status(400).json({ message: "Cognoms obligatoris" });
         if (!Fecha_nacimiento) return res.status(400).json({ message: "Fecha naixement obligatòria" });
@@ -172,16 +140,12 @@ async function createFullClient(req, res) {
         if (!idRol) return res.status(400).json({ message: "Rol obligatori" });
         if (!idSituacio_economica) return res.status(400).json({ message: "Situació econòmica obligatòria" });
         if (!Pais_naixement) return res.status(400).json({ message: "País naixement obligatori" });
-
-        // Validate family/domicile structure
         if (!familia?.idFamilia && !familia?.Estructura_familiar) {
             return res.status(400).json({ message: "Estructura familiar obligatòria si no s'assigna una família existent" });
         }
         if (!domicili?.idDomicili && !domicili?.idcallejero) {
             return res.status(400).json({ message: "Dades de domicili obligatòries si no s'assigna un d'existent" });
         }
-
-        // Calculate age from Fecha_nacimiento
         const nac = new Date(Fecha_nacimiento);
         const avui = new Date();
         let C_edad = avui.getFullYear() - nac.getFullYear();
@@ -189,15 +153,11 @@ async function createFullClient(req, res) {
         if (m < 0 || (m === 0 && avui.getDate() < nac.getDate())) {
             C_edad--;
         }
-
-        // Default IDs from static inserts (ordered as in inserts_tablas_estaticas.sql)
         const RISK_SENSE_RISC = 1;
         const SEBAS_NO_SEBAS = 12;
         const CURS_NO_APLICA = 26;
-
         const altaDate = Data_d_alta || new Date().toISOString().split("T")[0];
         const temps = calcTempsEntitat(altaDate);
-
         const payload = {
             domicili: domicili || {},
             familia: {
@@ -227,14 +187,11 @@ async function createFullClient(req, res) {
             },
             nacionalitat: Pais_naixement
         };
-
         const id = await clientRepository.createFull(payload);
-
         res.status(201).json({
             message: "Client creat correctament",
             id
         });
-
     } catch (error) {
         console.error(error);
         res.status(500).json({

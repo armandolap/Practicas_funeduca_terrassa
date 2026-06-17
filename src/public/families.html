@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Famílies</title>
+<link rel="stylesheet" href="/css/pages.css">
+</head>
+<body data-page="families">
+<aside class="sidebar">
+  <div id="sidebarConfig" class="sidebar-item" data-page="config">Configuració</div>
+  <div class="sidebar-item" data-page="projectes">Projectes</div>
+  <div class="sidebar-item" data-page="clients">Clients</div>
+  <div class="sidebar-item" data-page="families">Famílies</div>
+  <div class="sidebar-item" data-page="usuaris">Usuaris</div>
+  <div class="sidebar-item" data-page="domicilis">Domicilis</div>
+  <div class="sidebar-item" data-page="persones">Persones-Famílies</div>
+  <hr>
+  <div class="sidebar-item" data-page="informes">Informes</div>
+  <div class="sidebar-item" id="sidebarLogout">Tancar sessió</div>
+</aside>
+
+<main class="main-content">
+  <h1>Famílies</h1>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label for="searchText">Cercar</label>
+      <input type="text" id="searchText" placeholder="Cognom familiar...">
+    </div>
+    <div class="filter-group">
+      <label for="filterEstructura">Estructura familiar</label>
+      <select id="filterEstructura"><option value="">Totes</option></select>
+    </div>
+    <div class="filter-group">
+      <label for="filterBarri">Barri</label>
+      <select id="filterBarri"><option value="">Tots</option></select>
+    </div>
+    <button class="btn-primary" id="btnSearch" style="align-self:flex-end;">Cercar</button>
+  </div>
+
+  <table id="familiesTable">
+    <thead>
+      <tr>
+        <th>Cognom familiar</th>
+        <th>Membres</th>
+        <th>Menors / Majors</th>
+        <th>Estructura familiar</th>
+        <th>Domicili principal</th>
+        <th>Centre coordinació</th>
+      </tr>
+    </thead>
+    <tbody id="familiesBody"></tbody>
+  </table>
+
+  <div class="pagination" id="pagination">
+    <button id="prevPage" disabled>Anterior</button>
+    <span id="pageInfo">Pàgina 1</span>
+    <button id="nextPage">Següent</button>
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function() {
+  const token = localStorage.getItem("token");
+  if (!token) { window.location.href = "/login.html"; return; }
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.idNivel_acceso;
+    const configEl = document.getElementById("sidebarConfig");
+    if (configEl) configEl.style.display = role === 1 ? "block" : "none";
+    const page = document.querySelector(`[data-page="${document.body.dataset.page}"]`);
+    if (page) page.classList.add("active");
+  } catch(e) { window.location.href = "/login.html"; }
+  document.addEventListener("click", function(e) {
+    if (e.target.id === "sidebarLogout") {
+      localStorage.removeItem("token"); localStorage.removeItem("user"); window.location.href = "/login.html";
+    }
+    const item = e.target.closest(".sidebar-item[data-page]");
+    if (item) {
+      const map = { projectes: "/projectes.html", clients: "/clients.html", families: "/families.html", usuaris: "/usuaris.html", domicilis: "/domicilis.html", informes: "/informes.html", config: "/config.html", persones: "/persones-families.html" };
+      if (map[item.dataset.page]) window.location.href = map[item.dataset.page];
+    }
+  });
+})();
+</script>
+<script src="/js/families.js"></script>
+</body>
+</html>

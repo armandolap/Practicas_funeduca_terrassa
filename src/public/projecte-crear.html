@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear Projecte - FunEduca CRM</title>
+<link rel="stylesheet" href="/css/projectes.css">
+</head>
+<body data-page="projectes">
+<aside class="sidebar">
+  <div class="sidebar-header" style="padding:0.75rem 1.5rem;font-size:1.1rem;font-weight:700;color:#e94560;">FunEduca CRM</div>
+  <div class="sidebar-item" data-page="projectes">Projectes</div>
+  <div class="sidebar-item" data-page="clients">Clients</div>
+  <div class="sidebar-item" data-page="families">Famílies</div>
+  <div class="sidebar-item" data-page="usuaris">Responsables/Treballadors</div>
+  <div class="sidebar-item" data-page="domicilis">Domicilis</div>
+  <div class="sidebar-item" data-page="informes">Informes</div>
+  <div class="sidebar-item" data-page="config" id="sidebarConfig" style="display:none">Configuració</div>
+  <div class="sidebar-item" data-page="persones">Persones/Famílies</div>
+  <hr>
+  <div class="sidebar-item" id="sidebarLogout">Tancar sessió</div>
+</aside>
+<main class="main-content">
+  <div class="detail-header">
+    <button class="back-btn" id="btnBack">&larr;</button>
+    <h1 id="formTitle">Crear Projecte</h1>
+  </div>
+
+  <section class="form-section">
+    <h2>Dades del projecte</h2>
+    <div class="form-row">
+      <div class="form-group required">
+        <label for="nomProjecte">Nom del projecte</label>
+        <input type="text" id="nomProjecte" required>
+      </div>
+      <div class="form-group required">
+        <label for="plazas">Places</label>
+        <input type="number" id="plazas" min="0" value="0" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group required">
+        <label for="fechaInicio">Data inici</label>
+        <input type="date" id="fechaInicio" required>
+      </div>
+      <div class="form-group required">
+        <label for="fechaFin">Data fi</label>
+        <input type="date" id="fechaFin">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="descripcio">Descripció</label>
+        <textarea id="descripcio" rows="3"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <h2>Centre d'activitats</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="centreSearch">Cercar centre d'activitats</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="centreSearch" placeholder="Escriu el nom del centre..." autocomplete="off">
+          <div class="dropdown" id="centreDropdown"></div>
+        </div>
+      </div>
+    </div>
+    <div id="centreSelected" class="centre-selected" style="display:none;">
+      <span id="centreSelectedName"></span>
+      <button type="button" id="clearCentreBtn">X</button>
+    </div>
+
+    <div id="newCentreForm" style="display:none;margin-top:1rem;border-top:1px solid #dde1e6;padding-top:1rem;">
+      <h3 style="font-size:1rem;margin-bottom:0.75rem;color:#1a1a2e;">Crear nou centre</h3>
+      <div class="form-row">
+        <div class="form-group required">
+          <label for="nomCentre">Nom del centre</label>
+          <input type="text" id="nomCentre">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="tipusVia">Tipus de via</label>
+          <select id="tipusVia"><option value="">-- Selecciona --</option></select>
+        </div>
+        <div class="form-group">
+          <label for="nomCalle">Nom del carrer</label>
+          <div class="autocomplete-wrap">
+            <input type="text" id="nomCalle" placeholder="Cercar o escriure carrer..." autocomplete="off">
+            <div class="dropdown" id="calleDropdown"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="numCalle">Número</label>
+          <input type="text" id="numCalle">
+        </div>
+        <div class="form-group">
+          <label for="pis">Pis</label>
+          <input type="text" id="pis">
+        </div>
+        <div class="form-group">
+          <label for="escala">Escala</label>
+          <input type="text" id="escala">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="barri">Barri</label>
+          <select id="barri"><option value="">-- Selecciona --</option></select>
+        </div>
+        <div class="form-group">
+          <label for="codiPostal">Codi postal</label>
+          <select id="codiPostal"><option value="">-- Selecciona --</option></select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="form-section">
+    <h2>Responsable</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="responsable">Selecciona un responsable</label>
+        <select id="responsable"><option value="">-- Selecciona --</option></select>
+      </div>
+    </div>
+  </section>
+
+  <div class="form-actions">
+    <button class="btn btn-outline" id="btnCancel">Cancel·lar</button>
+    <button class="btn btn-primary" id="btnGuardar">Guardar projecte</button>
+  </div>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+(function() {
+  const token = localStorage.getItem("token");
+  if (!token) { window.location.href = "/login.html"; return; }
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.idNivel_acceso;
+    const configEl = document.getElementById("sidebarConfig");
+    if (configEl) configEl.style.display = role === 1 ? "block" : "none";
+    const page = document.querySelector(`[data-page="${document.body.dataset.page}"]`);
+    if (page) page.classList.add("active");
+  } catch(e) { window.location.href = "/login.html"; }
+  document.addEventListener("click", function(e) {
+    if (e.target.id === "sidebarLogout") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login.html";
+    }
+    if (e.target.closest(".sidebar-item:not([data-page])")) return;
+    const item = e.target.closest(".sidebar-item[data-page]");
+    if (item) {
+      const map = { projectes: "/projectes.html", clients: "/clients.html", families: "/families.html", usuaris: "/usuaris.html", domicilis: "/domicilis.html", informes: "/informes.html", config: "/config.html", persones: "/persones-families.html" };
+      if (map[item.dataset.page]) window.location.href = map[item.dataset.page];
+    }
+  });
+})();
+</script>
+<script src="/js/projecte-crear.js"></script>
+</body>
+</html>

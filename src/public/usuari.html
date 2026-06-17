@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detall Usuari</title>
+<link rel="stylesheet" href="/css/pages.css">
+</head>
+<body data-page="usuaris">
+<aside class="sidebar">
+  <div id="sidebarConfig" class="sidebar-item" data-page="config">Configuració</div>
+  <div class="sidebar-item" data-page="projectes">Projectes</div>
+  <div class="sidebar-item" data-page="clients">Clients</div>
+  <div class="sidebar-item" data-page="families">Famílies</div>
+  <div class="sidebar-item" data-page="usuaris">Usuaris</div>
+  <div class="sidebar-item" data-page="domicilis">Domicilis</div>
+  <div class="sidebar-item" data-page="persones">Persones-Famílies</div>
+  <hr>
+  <div class="sidebar-item" data-page="informes">Informes</div>
+  <div class="sidebar-item" id="sidebarLogout">Tancar sessió</div>
+</aside>
+
+<main class="main-content">
+  <div class="detail-header" id="detailHeader">
+    <h1 id="userName"></h1>
+    <div class="subtitle" id="userRol"></div>
+  </div>
+
+  <div class="detail-actions">
+    <button class="btn-secondary" id="btnEditar" style="display:none;">Editar</button>
+  </div>
+
+  <div class="card">
+    <h2>Contacte</h2>
+    <div class="contact-info">
+      <p><strong>Email</strong><br><span id="userEmail"></span></p>
+      <p><strong>Telèfon</strong><br><span id="userTelefon"></span></p>
+      <p><strong>Rol</strong><br><span id="userRolText"></span></p>
+    </div>
+  </div>
+
+  <div class="stats" id="statsContainer">
+    <div class="stat-card"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Projectes</div></div>
+    <div class="stat-card"><div class="stat-value" id="statOberts">0</div><div class="stat-label">Oberts</div></div>
+    <div class="stat-card"><div class="stat-value" id="statActius">0</div><div class="stat-label">Actius</div></div>
+    <div class="stat-card"><div class="stat-value" id="statInactius">0</div><div class="stat-label">Inactius</div></div>
+    <div class="stat-card"><div class="stat-value" id="statTancats">0</div><div class="stat-label">Tancats</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Projectes</h2>
+    <table id="projectesTable">
+      <thead>
+        <tr>
+          <th>Nom del projecte</th>
+          <th>Centre</th>
+          <th>Inscrits</th>
+          <th>Estat</th>
+        </tr>
+      </thead>
+      <tbody id="projectesBody"></tbody>
+    </table>
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function() {
+  const token = localStorage.getItem("token");
+  if (!token) { window.location.href = "/login.html"; return; }
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const role = payload.idNivel_acceso;
+    const configEl = document.getElementById("sidebarConfig");
+    if (configEl) configEl.style.display = role === 1 ? "block" : "none";
+    const page = document.querySelector(`[data-page="${document.body.dataset.page}"]`);
+    if (page) page.classList.add("active");
+  } catch(e) { window.location.href = "/login.html"; }
+  document.addEventListener("click", function(e) {
+    if (e.target.id === "sidebarLogout") {
+      localStorage.removeItem("token"); localStorage.removeItem("user"); window.location.href = "/login.html";
+    }
+    const item = e.target.closest(".sidebar-item[data-page]");
+    if (item) {
+      const map = { projectes: "/projectes.html", clients: "/clients.html", families: "/families.html", usuaris: "/usuaris.html", domicilis: "/domicilis.html", informes: "/informes.html", config: "/config.html", persones: "/persones-families.html" };
+      if (map[item.dataset.page]) window.location.href = map[item.dataset.page];
+    }
+  });
+})();
+</script>
+<script src="/js/usuari.js"></script>
+</body>
+</html>

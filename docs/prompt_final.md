@@ -270,7 +270,7 @@ Per `src/views/J1 llistat persones families`:
 
 ### Authorization Matrix
 
-| Feature | Total (1) | R. Zona (2) | Coordinador (3) | R. Projecte (4) | Treballador (5) |
+| Feature | Total (1) | R. Zona (2) | Viewer (3) | R. Projecte (4) | Treballador (5) |
 |---------|-----------|-------------|-----------------|------------------|-----------------|
 | Create users | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Edit users | ✅ | ❌ | ❌ | ❌ | ❌ |

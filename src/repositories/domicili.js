@@ -2,73 +2,140 @@ const { createPool } = require("../config/database");
 
 const pool = createPool();
 
-async function getAll() {
+async function getAll(filters = {}) {
+    const { barri, tipus, offset = 0, limit = 15 } = filters;
+    const params = [];
+    const conditions = [];
+
+    if (barri) {
+        conditions.push(`cal.idBarri = ?`);
+        params.push(barri);
+    }
+    if (tipus) {
+        conditions.push(`dm.Tipus_domicili = ?`);
+        params.push(tipus);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
     const [rows] = await pool.query(`
-        SELECT *
-        FROM Domicili
-        ORDER BY idDomicili
-    `);
+        SELECT dm.idDomicili, dm.Tipus_domicili, td.Nom_domicili,
+               dir.idDireccio, dir.Num_calle, dir.Pis, dir.Escala,
+               cal.idcallejero, cal.Nom_calle,
+               tv.idTipus_via, tv.Nom AS tipus_via,
+               b.idBarri, b.Nom AS barri,
+               cp.idCodi_postal, cp.Codi AS codi_postal,
+               CONCAT(tv.Nom, ' ', cal.Nom_calle, ', ', dir.Num_calle) AS adreca_completa,
+               (SELECT COUNT(*) FROM Client WHERE idDomicili = dm.idDomicili) AS quantitat_gent
+        FROM Domicili dm
+        JOIN tipus_domicili td ON dm.Tipus_domicili = td.idTipus_domicili
+        JOIN Direccio dir ON dm.Direccio = dir.idDireccio
+        JOIN callejero cal ON dir.idcallejero = cal.idcallejero
+        JOIN tipus_via tv ON cal.idTipus_via = tv.idTipus_via
+        JOIN barri b ON cal.idBarri = b.idBarri
+        JOIN codi_postal cp ON cal.idCodi_postal = cp.idCodi_postal
+        ${whereClause}
+        ORDER BY cal.Nom_calle, dir.Num_calle
+        LIMIT ? OFFSET ?
+    `, [...params, parseInt(limit), parseInt(offset)]);
 
     return rows;
 }
 
 async function getById(id) {
     const [rows] = await pool.query(
-        `
-        SELECT *
-        FROM Domicili
-        WHERE idDomicili = ?
-        `,
+        `SELECT * FROM Domicili WHERE idDomicili = ?`,
         [id]
     );
-
     return rows[0] || null;
+}
+
+async function getByIdEnhanced(id) {
+    const [domRows] = await pool.query(`
+        SELECT dm.*, td.Nom_domicili,
+               dir.idDireccio, dir.Num_calle, dir.Pis, dir.Escala,
+               cal.idcallejero, cal.Nom_calle,
+               tv.idTipus_via, tv.Nom AS tipus_via,
+               b.idBarri, b.Nom AS barri,
+               cp.idCodi_postal, cp.Codi AS codi_postal,
+               CONCAT(tv.Nom, ' ', cal.Nom_calle, ', ', dir.Num_calle) AS adreca_completa
+        FROM Domicili dm
+        JOIN tipus_domicili td ON dm.Tipus_domicili = td.idTipus_domicili
+        JOIN Direccio dir ON dm.Direccio = dir.idDireccio
+        JOIN callejero cal ON dir.idcallejero = cal.idcallejero
+        JOIN tipus_via tv ON cal.idTipus_via = tv.idTipus_via
+        JOIN barri b ON cal.idBarri = b.idBarri
+        JOIN codi_postal cp ON cal.idCodi_postal = cp.idCodi_postal
+        WHERE dm.idDomicili = ?
+    `, [id]);
+
+    if (domRows.length === 0) return null;
+
+    const domicili = domRows[0];
+
+    const [persones] = await pool.query(`
+        SELECT c.idClient, c.Nom, c.Cognoms, c.Baixa AS estat, c.idFamilia, f.Cognom_familiar
+        FROM Client c
+        JOIN Familia f ON c.idFamilia = f.idFamilia
+        WHERE c.idDomicili = ?
+        ORDER BY c.Cognoms, c.Nom
+    `, [id]);
+
+    const [families] = await pool.query(`
+        SELECT f.idFamilia, f.Cognom_familiar,
+               (SELECT COUNT(*) FROM Client WHERE idFamilia = f.idFamilia) AS num_membres,
+               f.Estructura_familiar
+        FROM Client c
+        JOIN Familia f ON c.idFamilia = f.idFamilia
+        WHERE c.idDomicili = ?
+        GROUP BY f.idFamilia, f.Cognom_familiar, f.Estructura_familiar
+        ORDER BY f.Cognom_familiar
+    `, [id]);
+
+    const [projectes] = await pool.query(`
+        SELECT DISTINCT p.*
+        FROM proyectos_has_client phc
+        JOIN Proyectos p ON phc.idProyecto = p.idProyecto
+        JOIN Client c ON phc.idClient = c.idClient
+        WHERE c.idDomicili = ?
+        ORDER BY p.Nom_projecte
+    `, [id]);
+
+    return {
+        ...domicili,
+        persones,
+        families,
+        projectes
+    };
 }
 
 async function create(idTipusDomicili, direccio) {
     const [result] = await pool.query(
-        `
-        INSERT INTO Domicili
-        (Tipus_domicili, Direccio)
-        VALUES (?, ?)
-        `,
+        `INSERT INTO Domicili (Tipus_domicili, Direccio) VALUES (?, ?)`,
         [idTipusDomicili, direccio]
     );
-
     return result.insertId;
 }
 
 async function update(id, idTipusDomicili, direccio) {
     const [result] = await pool.query(
-        `
-        UPDATE Domicili
-        SET
-            Tipus_domicili = ?,
-            Direccio = ?
-        WHERE idDomicili = ?
-        `,
+        `UPDATE Domicili SET Tipus_domicili = ?, Direccio = ? WHERE idDomicili = ?`,
         [idTipusDomicili, direccio, id]
     );
-
     return result.affectedRows;
 }
 
 async function remove(id) {
     const [result] = await pool.query(
-        `
-        DELETE FROM Domicili
-        WHERE idDomicili = ?
-        `,
+        `DELETE FROM Domicili WHERE idDomicili = ?`,
         [id]
     );
-
     return result.affectedRows;
 }
 
 async function getByFamily(idFamilia) {
     const [rows] = await pool.query(
-        `
-        SELECT DISTINCT
+        `SELECT DISTINCT
             dm.idDomicili,
             dm.Tipus_domicili,
             td.Nom_domicili,
@@ -94,8 +161,7 @@ async function getByFamily(idFamilia) {
         JOIN barri b ON c.idBarri = b.idBarri
         JOIN codi_postal cp ON c.idCodi_postal = cp.idCodi_postal
         WHERE cl.idFamilia = ?
-        ORDER BY dm.idDomicili
-        `,
+        ORDER BY dm.idDomicili`,
         [idFamilia]
     );
     return rows;
@@ -104,7 +170,6 @@ async function getByFamily(idFamilia) {
 async function searchCombined({ q, tipus_via, idFamilia }) {
     const results = [];
 
-    // 1. If family selected, search their domiciles
     if (idFamilia) {
         let sql = `
             SELECT DISTINCT
@@ -153,7 +218,6 @@ async function searchCombined({ q, tipus_via, idFamilia }) {
         results.push(...rows);
     }
 
-    // 2. Search callejero catalog
     if (!tipus_via || tipus_via) {
         let sql = `
             SELECT
@@ -193,7 +257,6 @@ async function searchCombined({ q, tipus_via, idFamilia }) {
         }
 
         if (q && q.length < 3 && (!tipus_via)) {
-            // Don't search callejero without enough criteria
             sql += ` AND 1=0`;
         }
 
@@ -209,6 +272,7 @@ async function searchCombined({ q, tipus_via, idFamilia }) {
 module.exports = {
     getAll,
     getById,
+    getByIdEnhanced,
     create,
     update,
     remove,
