@@ -430,7 +430,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`usuario_app` (
   `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
-  `idNivel_acceso` INT NOT NULL,
+  `idNivel_acceso` INT NOT NULL UNIQUE,
   `Nom` VARCHAR(45) NOT NULL,
   `Cognoms` VARCHAR(45) NOT NULL,
   `email` VARCHAR(45) NOT NULL,
