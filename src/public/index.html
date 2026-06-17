@@ -75,22 +75,22 @@
       </div>
       <div class="form-group">
         <label for="cursActual">Curs actual</label>
-        <select id="cursActual"><option value="">-- Selecciona --</option></select>
+        <select id="cursActual"></select>
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-group">
         <label for="risc">Risc</label>
-        <select id="risc"><option value="">-- Selecciona --</option></select>
+        <select id="risc"></select>
       </div>
       <div class="form-group">
         <label for="resulAcad">Resultat acadèmic</label>
-        <select id="resulAcad"><option value="">-- Selecciona --</option></select>
+        <select id="resulAcad"></select>
       </div>
       <div class="form-group">
         <label for="sebas">SEBAS</label>
-        <select id="sebas"><option value="">-- Selecciona --</option></select>
+        <select id="sebas"></select>
       </div>
       <div class="form-group">
         <label for="derivacio">Derivació serveis socials</label>
@@ -130,16 +130,22 @@
   <section class="form-section" id="section-domicili">
     <h2>Domicili</h2>
     <div class="form-row">
+      <div class="form-group domicili-search-wrap">
+        <label for="domiciliSearch">Cercar carrer o domicili</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="domiciliSearch" placeholder="Escriu almenys 3 caràcters..." autocomplete="off">
+          <div class="dropdown" id="domiciliDropdown"></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
       <div class="form-group">
         <label for="tipusVia">Tipus de via</label>
         <select id="tipusVia"><option value="">-- Selecciona --</option></select>
       </div>
-      <div class="form-group domicili-search-wrap">
+      <div class="form-group">
         <label for="nomCalle">Nom del carrer</label>
-        <div class="autocomplete-wrap">
-          <input type="text" id="nomCalle" placeholder="Escriu almenys 3 caràcters..." autocomplete="off">
-          <div class="dropdown" id="callejeroDropdown"></div>
-        </div>
+        <input type="text" id="nomCalle" readonly>
       </div>
       <div class="form-group">
         <label for="numCalle">Número</label>
@@ -158,22 +164,16 @@
       <div class="form-group">
         <label for="barri">Barri</label>
         <input type="text" id="barri" readonly>
+        <select id="barriSelect" style="display:none"></select>
       </div>
       <div class="form-group">
         <label for="codiPostal">Codi postal</label>
         <input type="text" id="codiPostal" readonly>
+        <select id="codiPostalSelect" style="display:none"></select>
       </div>
       <div class="form-group">
         <label for="tipusDomicili">Tipus de domicili</label>
         <select id="tipusDomicili"><option value="">-- Selecciona --</option></select>
-      </div>
-    </div>
-    <div id="familyDomicilisGroup" style="display:none">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="familyDomicilis">Domicilis de la família</label>
-          <select id="familyDomicilis"><option value="">-- Selecciona un domicili existent --</option></select>
-        </div>
       </div>
     </div>
     <div class="preview-bar" id="previewBar"></div>

@@ -26,17 +26,18 @@ const selectedFamilyInfo = $("selectedFamilyInfo");
 const selectedFamilyName = $("selectedFamilyName");
 const clearFamilyBtn = $("clearFamilyBtn");
 
+const domiciliSearch = $("domiciliSearch");
+const domiciliDropdown = $("domiciliDropdown");
 const tipusVia = $("tipusVia");
 const nomCalle = $("nomCalle");
-const callejeroDropdown = $("callejeroDropdown");
 const numCalle = $("numCalle");
 const pis = $("pis");
 const escala = $("escala");
-const barri = $("barri");
-const codiPostal = $("codiPostal");
+const barriInput = $("barri");
+const barriSelect = $("barriSelect");
+const codiPostalInput = $("codiPostal");
+const codiPostalSelect = $("codiPostalSelect");
 const tipusDomicili = $("tipusDomicili");
-const familyDomicilisGroup = $("familyDomicilisGroup");
-const familyDomicilis = $("familyDomicilis");
 const previewBar = $("previewBar");
 
 const btnCrear = $("btnCrear");
@@ -45,10 +46,13 @@ const toast = $("toast");
 // ============ STATE ============
 let selectedFamilyId = null;
 let selectedCallejeroId = null;
-let selectedFamilyDomiciliId = null;
-let familyDomiciles = [];
+let selectedDomiciliId = null;
+let domicileType = null; // "callejero" | "domicili"
 let debounceTimer = null;
 let lastFamilyQuery = "";
+let domiciliDebounce = null;
+let lastDomiciliQuery = "";
+let domiciliResults = [];
 
 // ============ HELPERS ============
 function showToast(msg, type) {
@@ -105,6 +109,55 @@ async function initDropdowns() {
         await loadSelect(url, sel, "idPais", "Nom_pais");
       } else {
         await loadSelect(url, sel);
+      }
+    }
+  }
+  setDefaultDropdowns();
+}
+
+function setDefaultDropdowns() {
+  // Risc → "Sense risc"
+  if (risc) {
+    for (const opt of risc.options) {
+      if (opt.textContent.toLowerCase().includes("sense risc")) {
+        risc.value = opt.value;
+        break;
+      }
+    }
+  }
+  // Sebas → "No SEBAS"
+  if (sebas) {
+    for (const opt of sebas.options) {
+      if (opt.textContent.toLowerCase().includes("no sebas")) {
+        sebas.value = opt.value;
+        break;
+      }
+    }
+  }
+  // Curs actual → "No aplica"
+  if (cursActual) {
+    for (const opt of cursActual.options) {
+      if (opt.textContent.toLowerCase().includes("no aplica")) {
+        cursActual.value = opt.value;
+        break;
+      }
+    }
+  }
+  // Resultat academic → "No aplica"
+  if (resulAcad) {
+    for (const opt of resulAcad.options) {
+      if (opt.textContent.toLowerCase().includes("no aplica")) {
+        resulAcad.value = opt.value;
+        break;
+      }
+    }
+  }
+  // NESE → "No neses"
+  if (neses) {
+    for (let i = 0; i < neses.options.length; i++) {
+      if (neses.options[i].textContent.toLowerCase().includes("no neses")) {
+        neses.options[i].selected = true;
+        break;
       }
     }
   }
@@ -165,7 +218,10 @@ function selectFamily(item) {
   familiaDropdown.style.display = "none";
   estructuraFamiliar.value = item.Estructura_familiar || "";
   estructuraFamiliar.disabled = true;
-  loadFamilyDomiciles(item.idFamilia);
+  // Re-trigger domicile search to include family domiciles
+  if (domiciliSearch.value.trim().length >= 3) {
+    triggerDomiciliSearch();
+  }
 }
 
 clearFamilyBtn.addEventListener("click", clearFamily);
@@ -177,168 +233,203 @@ function clearFamily() {
   familiaSearch.value = "";
   estructuraFamiliar.disabled = false;
   estructuraFamiliar.value = "";
-  familyDomicilisGroup.style.display = "none";
-  familyDomicilis.innerHTML = '<option value="">-- Selecciona un domicili existent --</option>';
-  selectedFamilyDomiciliId = null;
-  familyDomiciles = [];
-  enableCallejeroSearch();
+  // Re-trigger domicile search to exclude family domiciles
+  if (domiciliSearch.value.trim().length >= 3) {
+    triggerDomiciliSearch();
+  }
 }
 
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".familia-search-wrap")) {
     familiaDropdown.style.display = "none";
   }
-});
-
-// ============ FAMILY DOMICILES ============
-async function loadFamilyDomiciles(idFamilia) {
-  try {
-    const res = await fetch(`/domicili/byFamily/${idFamilia}`);
-    if (!res.ok) return;
-    familyDomiciles = await res.json();
-    familyDomicilis.innerHTML = '<option value="">-- Selecciona un domicili existent --</option>';
-    for (const d of familyDomiciles) {
-      const opt = document.createElement("option");
-      opt.value = d.idDomicili;
-      const addr = [d.tipus_via_nom, d.Nom_calle, d.Num_calle].filter(Boolean).join(" ");
-      opt.textContent = `${addr} ${d.Pis ? `Pis ${d.Pis}` : ""} ${d.Escala ? `Esc ${d.Escala}` : ""} - ${d.barri_nom} (${d.codi_postal})`.trim();
-      familyDomicilis.appendChild(opt);
-    }
-    familyDomicilisGroup.style.display = "block";
-  } catch {}
-}
-
-familyDomicilis.addEventListener("change", () => {
-  const val = familyDomicilis.value;
-  if (!val) {
-    selectedFamilyDomiciliId = null;
-    enableCallejeroSearch();
-    return;
-  }
-  selectedFamilyDomiciliId = parseInt(val);
-  const dom = familyDomiciles.find(d => d.idDomicili === selectedFamilyDomiciliId);
-  if (dom) {
-    fillDomicileFromExisting(dom);
+  if (!e.target.closest(".domicili-search-wrap")) {
+    domiciliDropdown.style.display = "none";
   }
 });
 
-function fillDomicileFromExisting(dom) {
-  tipusVia.value = dom.idTipus_via || "";
-  nomCalle.value = dom.Nom_calle || "";
-  numCalle.value = dom.Num_calle || "";
-  pis.value = dom.Pis || "";
-  escala.value = dom.Escala || "";
-  barri.value = dom.barri_nom || "";
-  codiPostal.value = dom.codi_postal || "";
-  tipusDomicili.value = dom.Tipus_domicili || "";
-  selectedCallejeroId = dom.idcallejero;
-  disableCallejeroSearch();
-  updatePreview();
-}
-
-function disableCallejeroSearch() {
-  tipusVia.disabled = true;
-  nomCalle.disabled = true;
-  numCalle.disabled = true;
-  pis.disabled = true;
-  escala.disabled = true;
-}
-
-function enableCallejeroSearch() {
-  tipusVia.disabled = false;
-  nomCalle.disabled = false;
-  numCalle.disabled = false;
-  pis.disabled = false;
-  escala.disabled = false;
-  selectedCallejeroId = null;
-  selectedFamilyDomiciliId = null;
-}
-
-// ============ CALLEJERO SEARCH ============
-let callejeroDebounce = null;
-let lastCallejeroQuery = "";
-let callejeroResults = [];
-
-tipusVia.addEventListener("change", onCallejeroFilter);
-nomCalle.addEventListener("input", onCallejeroFilter);
-
-function onCallejeroFilter() {
-  const q = nomCalle.value.trim();
+// ============ UNIFIED DOMICILE SEARCH ============
+domiciliSearch.addEventListener("input", () => {
+  const q = domiciliSearch.value.trim();
   if (q.length < 3) {
-    callejeroDropdown.style.display = "none";
-    barri.value = "";
-    codiPostal.value = "";
-    selectedCallejeroId = null;
+    domiciliDropdown.style.display = "none";
     return;
   }
-  clearTimeout(callejeroDebounce);
-  callejeroDebounce = setTimeout(async () => {
-    if (q === lastCallejeroQuery) return;
-    lastCallejeroQuery = q;
-    selectedCallejeroId = null;
-    updatePreview();
-    await fetchCallejero();
-  }, 500);
+  clearTimeout(domiciliDebounce);
+  domiciliDebounce = setTimeout(() => {
+    if (q === lastDomiciliQuery) return;
+    lastDomiciliQuery = q;
+    triggerDomiciliSearch();
+  }, 400);
+});
+
+function triggerDomiciliSearch() {
+  const q = domiciliSearch.value.trim();
+  if (q.length < 3) return;
+  let url = `/domicili/search?q=${encodeURIComponent(q)}`;
+  if (selectedFamilyId) {
+    url += `&idFamilia=${selectedFamilyId}`;
+  }
+  fetchDomicili(url);
 }
 
-async function fetchCallejero() {
-  const tv = tipusVia.value;
-  const q = nomCalle.value.trim();
-  if (q.length < 3) return;
-  let url = `/callejero?q=${encodeURIComponent(q)}`;
-  if (tv) url += `&tipus_via=${encodeURIComponent(tv)}`;
+async function fetchDomicili(url) {
   try {
     const res = await fetch(url);
     if (!res.ok) return;
-    callejeroResults = await res.json();
-    showCallejeroDropdown(callejeroResults);
-    autoFillCallejero(callejeroResults);
+    domiciliResults = await res.json();
+    showDomiciliDropdown(domiciliResults);
+    autoFillBarriCp(domiciliResults);
   } catch {}
 }
 
-function showCallejeroDropdown(results) {
-  callejeroDropdown.innerHTML = "";
+function showDomiciliDropdown(results) {
+  domiciliDropdown.innerHTML = "";
   if (results.length === 0) {
-    callejeroDropdown.style.display = "none";
+    domiciliDropdown.style.display = "none";
     return;
   }
   for (const r of results) {
     const div = document.createElement("div");
-    div.textContent = r.Nom_complet;
-    if (r.barri || r.codi_postal) {
-      const small = document.createElement("small");
-      small.textContent = [r.barri, r.codi_postal].filter(Boolean).join(" · ");
-      div.appendChild(small);
+    if (r._type === "domicili") {
+      // Existing domicile
+      let label = `📍 ${r.Nom_complet}`;
+      if (r.Num_calle) label += `, ${r.Num_calle}`;
+      if (r.Pis) label += `, Pis ${r.Pis}`;
+      if (r.Escala) label += `, Esc ${r.Escala}`;
+      div.innerHTML = `${label} <small>Domicili existent</small>`;
+    } else {
+      // Callejero result
+      let label = r.Nom_complet;
+      div.innerHTML = `${label} <small>Carrer</small>`;
+      if (r.barri || r.codi_postal) {
+        const small = document.createElement("small");
+        small.textContent = [r.barri, r.codi_postal].filter(Boolean).join(" · ");
+        div.appendChild(small);
+      }
     }
-    div.addEventListener("click", () => selectCallejero(r));
-    callejeroDropdown.appendChild(div);
+    div.addEventListener("click", () => selectDomiciliResult(r));
+    domiciliDropdown.appendChild(div);
   }
-  callejeroDropdown.style.display = "block";
+  domiciliDropdown.style.display = "block";
 }
 
-function selectCallejero(r) {
-  nomCalle.value = r.Nom_complet;
-  barri.value = r.barri || "";
-  codiPostal.value = r.codi_postal || "";
-  callejeroDropdown.style.display = "none";
-  lastCallejeroQuery = r.Nom_complet;
-  selectedCallejeroId = r.idDireccio || r.idcallejero;
-  // If it has idcallejero, use that
-  if (r.idcallejero) selectedCallejeroId = r.idcallejero;
-  else if (r.idDireccio) selectedCallejeroId = r.idDireccio;
-  updatePreview(r);
+function selectDomiciliResult(r) {
+  domiciliDropdown.style.display = "none";
+  lastDomiciliQuery = r.Nom_complet;
+  domiciliSearch.value = r.Nom_complet;
+  domicileType = r._type;
+
+  if (r._type === "domicili") {
+    // Reusing an existing domicile
+    selectedDomiciliId = r.idDomicili;
+    selectedCallejeroId = null;
+    tipusVia.value = r.idTipus_via || "";
+    nomCalle.value = r.Nom_calle || "";
+    numCalle.value = r.Num_calle || "";
+    pis.value = r.Pis || "";
+    escala.value = r.Escala || "";
+    tipusDomicili.value = r.Tipus_domicili || "";
+    // Disable address editing since we're reusing
+    setDomicileEditState(true);
+    setBarriCpValue(r.barri, r.codi_postal);
+    updatePreview(r);
+  } else {
+    // New address from callejero catalog
+    selectedCallejeroId = r.idcallejero;
+    selectedDomiciliId = null;
+    tipusVia.value = r.idTipus_via || "";
+    nomCalle.value = r.Nom_calle || "";
+    // Don't touch num/pis/escala - user must enter them
+    tipusDomicili.value = tipusDomicili.value || "";
+    setDomicileEditState(false);
+    setBarriCpValue(r.barri, r.codi_postal);
+    updatePreview(r);
+  }
 }
 
-function autoFillCallejero(results) {
+function setDomicileEditState(readonly) {
+  const fields = [numCalle, pis, escala];
+  for (const f of fields) {
+    f.readOnly = readonly;
+    f.style.background = readonly ? "#f0f0f0" : "#fff";
+  }
+}
+
+function setBarriCpValue(barriVal, cpVal) {
+  // Collect unique barri/CP from current results
+  const barris = [...new Set(domiciliResults.map(r => r.barri).filter(Boolean))];
+  const cps = [...new Set(domiciliResults.map(r => r.codi_postal).filter(Boolean))];
+
+  if (barris.length <= 1) {
+    barriInput.value = barriVal || "";
+    barriInput.style.display = "block";
+    barriSelect.style.display = "none";
+  } else {
+    showBarriDisambiguation(barris);
+  }
+
+  if (cps.length <= 1) {
+    codiPostalInput.value = cpVal || "";
+    codiPostalInput.style.display = "block";
+    codiPostalSelect.style.display = "none";
+  } else {
+    showCpDisambiguation(cps);
+  }
+}
+
+function showBarriDisambiguation(barris) {
+  barriInput.style.display = "none";
+  barriSelect.style.display = "block";
+  barriSelect.innerHTML = '<option value="">-- Selecciona barri --</option>';
+  for (const b of barris) {
+    const opt = document.createElement("option");
+    opt.value = b;
+    opt.textContent = b;
+    barriSelect.appendChild(opt);
+  }
+  barriSelect.value = "";
+}
+
+function showCpDisambiguation(cps) {
+  codiPostalInput.style.display = "none";
+  codiPostalSelect.style.display = "block";
+  codiPostalSelect.innerHTML = '<option value="">-- Selecciona CP --</option>';
+  for (const cp of cps) {
+    const opt = document.createElement("option");
+    opt.value = cp;
+    opt.textContent = cp;
+    codiPostalSelect.appendChild(opt);
+  }
+  codiPostalSelect.value = "";
+}
+
+function autoFillBarriCp(results) {
   if (results.length === 0) {
-    barri.value = "";
-    codiPostal.value = "";
+    barriInput.value = "";
+    codiPostalInput.value = "";
     return;
   }
-  const barris = new Set(results.map(r => r.barri).filter(Boolean));
-  const cps = new Set(results.map(r => r.codi_postal).filter(Boolean));
-  barri.value = barris.size === 1 ? [...barris][0] : "";
-  codiPostal.value = cps.size === 1 ? [...cps][0] : "";
+  const allBarris = results.map(r => r.barri).filter(Boolean);
+  const allCps = results.map(r => r.codi_postal).filter(Boolean);
+  const uniqueBarris = [...new Set(allBarris)];
+  const uniqueCps = [...new Set(allCps)];
+
+  if (uniqueBarris.length === 1) {
+    barriInput.value = uniqueBarris[0];
+    barriInput.style.display = "block";
+    barriSelect.style.display = "none";
+  } else if (uniqueBarris.length > 1) {
+    showBarriDisambiguation(uniqueBarris);
+  }
+
+  if (uniqueCps.length === 1) {
+    codiPostalInput.value = uniqueCps[0];
+    codiPostalInput.style.display = "block";
+    codiPostalSelect.style.display = "none";
+  } else if (uniqueCps.length > 1) {
+    showCpDisambiguation(uniqueCps);
+  }
 }
 
 function updatePreview(r) {
@@ -351,14 +442,9 @@ function updatePreview(r) {
   if (r.Nom_complet) parts.push(r.Nom_complet);
   if (r.barri) parts.push(`[${r.barri}]`);
   if (r.codi_postal) parts.push(`<${r.codi_postal}>`);
+  if (r._type === "domicili") parts.push("(Ja existeix)");
   previewBar.textContent = parts.join(" ") || "";
 }
-
-document.addEventListener("click", (e) => {
-  if (!e.target.closest(".autocomplete-wrap") && !e.target.closest(".domicili-search-wrap")) {
-    callejeroDropdown.style.display = "none";
-  }
-});
 
 // ============ SUBMIT ============
 btnCrear.addEventListener("click", submitForm);
@@ -366,7 +452,6 @@ btnCrear.addEventListener("click", submitForm);
 async function submitForm() {
   const neseOptions = [...neses.selectedOptions].map(o => parseInt(o.value)).filter(n => !isNaN(n));
 
-  // Validation
   if (!nom.value.trim()) { showToast("El camp Nom és obligatori", "error"); nom.focus(); return; }
   if (!cognoms.value.trim()) { showToast("El camp Cognoms és obligatori", "error"); cognoms.focus(); return; }
   if (!fechaNaixement.value) { showToast("La data de naixement és obligatòria", "error"); fechaNaixement.focus(); return; }
@@ -375,14 +460,34 @@ async function submitForm() {
   if (!situacioEconomica.value) { showToast("La situació econòmica és obligatòria", "error"); situacioEconomica.focus(); return; }
   if (!paisNaixement.value) { showToast("El país de naixement és obligatori", "error"); paisNaixement.focus(); return; }
 
-  // Validate family or estructura_familiar
   if (!selectedFamilyId && !estructuraFamiliar.value) {
     showToast("Cal seleccionar una família o indicar l'estructura familiar", "error");
     estructuraFamiliar.focus();
     return;
   }
 
-  // Payload
+  // Build domicili payload
+  let domiciliPayload;
+  if (selectedDomiciliId) {
+    domiciliPayload = { idDomicili: selectedDomiciliId };
+  } else if (selectedCallejeroId) {
+    const finalBarri = barriSelect.style.display !== "none" && barriSelect.value
+      ? barriSelect.value
+      : barriInput.value;
+    const finalCp = codiPostalSelect.style.display !== "none" && codiPostalSelect.value
+      ? codiPostalSelect.value
+      : codiPostalInput.value;
+    domiciliPayload = {
+      idcallejero: selectedCallejeroId,
+      Num_calle: numCalle.value.trim(),
+      Pis: pis.value.trim() || null,
+      Escala: escala.value.trim() || null,
+      Tipus_domicili: tipusDomicili.value ? parseInt(tipusDomicili.value) : 1,
+      barri: finalBarri || null,
+      codi_postal: finalCp || null,
+    };
+  }
+
   const payload = {
     client: {
       Nom: nom.value.trim(),
@@ -403,22 +508,9 @@ async function submitForm() {
     familia: selectedFamilyId
       ? { idFamilia: selectedFamilyId }
       : { Estructura_familiar: parseInt(estructuraFamiliar.value) },
-    domicili: selectedFamilyDomiciliId
-      ? { idDomicili: selectedFamilyDomiciliId }
-      : {
-          idcallejero: selectedCallejeroId,
-          Num_calle: numCalle.value.trim(),
-          Pis: pis.value.trim() || null,
-          Escala: escala.value.trim() || null,
-          Tipus_domicili: tipusDomicili.value ? parseInt(tipusDomicili.value) : 1,
-        },
+    domicili: domiciliPayload,
     necessitats_especials: neseOptions,
   };
-
-  // If no domicile address was entered, don't send domicili data
-  if (!selectedFamilyDomiciliId && !selectedCallejeroId) {
-    delete payload.domicili;
-  }
 
   btnCrear.disabled = true;
   btnCrear.textContent = "Creant...";
@@ -455,11 +547,9 @@ function resetForm() {
   rol.value = "";
   situacioEconomica.value = "";
   paisNaixement.value = "";
-  neses.selectedIndex = -1;
-  cursActual.value = "";
-  risc.value = "";
-  resulAcad.value = "";
-  sebas.value = "";
+  // Reset multi-select
+  for (const opt of neses.options) opt.selected = false;
+  setDefaultDropdowns();
   derivacio.checked = false;
   dataAlta.value = new Date().toISOString().split("T")[0];
   clearFamily();
@@ -467,20 +557,31 @@ function resetForm() {
 }
 
 function clearDomicile() {
+  domiciliSearch.value = "";
+  domiciliDropdown.style.display = "none";
   tipusVia.value = "";
   nomCalle.value = "";
   numCalle.value = "";
+  numCalle.readOnly = false;
+  numCalle.style.background = "#fff";
   pis.value = "";
+  pis.readOnly = false;
+  pis.style.background = "#fff";
   escala.value = "";
-  barri.value = "";
-  codiPostal.value = "";
+  escala.readOnly = false;
+  escala.style.background = "#fff";
+  barriInput.value = "";
+  barriInput.style.display = "block";
+  barriSelect.style.display = "none";
+  codiPostalInput.value = "";
+  codiPostalInput.style.display = "block";
+  codiPostalSelect.style.display = "none";
   tipusDomicili.value = "";
   selectedCallejeroId = null;
-  selectedFamilyDomiciliId = null;
-  callejeroResults = [];
-  callejeroDropdown.style.display = "none";
+  selectedDomiciliId = null;
+  domicileType = null;
+  domiciliResults = [];
   previewBar.textContent = "";
-  enableCallejeroSearch();
 }
 
 // ============ INIT ============
