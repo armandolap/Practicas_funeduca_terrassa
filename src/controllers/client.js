@@ -66,6 +66,18 @@ async function updateClient(req, res) {
         const { id } = req.params;
         const clientData = req.body;
 
+        // Recalculate C_edad if Fecha_nacimiento provided
+        if (clientData.Fecha_nacimiento) {
+            const nac = new Date(clientData.Fecha_nacimiento);
+            const avui = new Date();
+            let edad = avui.getFullYear() - nac.getFullYear();
+            const m = avui.getMonth() - nac.getMonth();
+            if (m < 0 || (m === 0 && avui.getDate() < nac.getDate())) {
+                edad--;
+            }
+            clientData.C_edad = edad;
+        }
+
         const affectedRows = await clientRepository.update(id, clientData);
 
         if (affectedRows === 0) {
@@ -116,7 +128,7 @@ async function deleteClient(req, res) {
 // POST /client/full
 async function createFullClient(req, res) {
     try {
-        const { client: clientData, familia, domicili } = req.body;
+        const { client: clientData, familia, domicili, necessitats_especials } = req.body;
 
         if (!clientData) {
             return res.status(400).json({ message: "Dades de client obligatòries" });
@@ -198,6 +210,8 @@ async function createFullClient(req, res) {
             },
             nacionalitat: Pais_naixement
         };
+
+        payload.necessitats_especials = necessitats_especials || [];
 
         const id = await clientRepository.createFull(payload);
 

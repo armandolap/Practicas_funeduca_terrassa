@@ -2,6 +2,7 @@ const router = require("express").Router();
 const famili = require("../controllers/familia");
 
 router.get("/", famili.getAllFamilias);
+router.get("/search", famili.searchFamilies);
 router.post("/", famili.createFamilia);
 
 router.get("/:id", famili.getFamiliaById);

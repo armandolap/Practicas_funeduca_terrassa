@@ -698,6 +698,222 @@ function declareManualTests() {
     ]);
 }
 
+async function testFamiliaSearch() {
+    console.log(`\n--- /familia/search ---`);
+
+    // Search with existing family
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/familia/search?q=Garcia`);
+        assert(
+            `GET /familia/search?q=Garcia → ${status}`,
+            status === 200 && Array.isArray(body),
+            `expected 200 + array, got ${status}`
+        );
+        if (Array.isArray(body)) {
+            assert(
+                `GET /familia/search?q=Garcia té resultats`,
+                body.length > 0,
+                `expected >0 results, got ${body.length}`
+            );
+            if (body.length > 0) {
+                assert(
+                    `GET /familia/search?q=Garcia[0] té idFamilia`,
+                    body[0].idFamilia != null,
+                    `missing idFamilia`
+                );
+                assert(
+                    `GET /familia/search?q=Garcia[0] té Cognom_familiar`,
+                    typeof body[0].Cognom_familiar === "string",
+                    `missing Cognom_familiar`
+                );
+            }
+        }
+    }
+
+    // Search with no results
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/familia/search?q=ZZZNOTHING`);
+        assert(
+            `GET /familia/search?q=ZZZNOTHING buit`,
+            status === 200 && Array.isArray(body) && body.length === 0,
+            `expected 200 + empty array, got ${status}`
+        );
+    }
+
+    // Search without query → 400
+    {
+        const { status } = await fetchJson(`${BASE_URL}/familia/search`);
+        assert(
+            `GET /familia/search (sense q) → ${status}`,
+            status === 400,
+            `expected 400, got ${status}`
+        );
+    }
+}
+
+async function testDomiciliByFamily() {
+    console.log(`\n--- /domicili/byFamily ---`);
+
+    // Get domiciles of existing family (id 1 from seed)
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/domicili/byFamily/1`);
+        assert(
+            `GET /domicili/byFamily/1 → ${status}`,
+            status === 200 && Array.isArray(body),
+            `expected 200 + array, got ${status}`
+        );
+        if (Array.isArray(body)) {
+            assert(
+                `GET /domicili/byFamily/1 té resultats`,
+                body.length > 0,
+                `expected >0 results, got ${body.length}`
+            );
+            if (body.length > 0) {
+                assert(
+                    `GET /domicili/byFamily/1[0] té idDomicili`,
+                    body[0].idDomicili != null,
+                    `missing idDomicili`
+                );
+            }
+        }
+    }
+
+    // Get domiciles of non-existing family
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/domicili/byFamily/999999`);
+        assert(
+            `GET /domicili/byFamily/999999 → ${status}`,
+            status === 200 && Array.isArray(body) && body.length === 0,
+            `expected 200 + empty array, got ${status}`
+        );
+    }
+}
+
+async function testClientFullCreate() {
+    console.log(`\n--- POST /client/full ---`);
+
+    // Successful full creation
+    const fullPayload = {
+        client: {
+            Nom: "Client Full",
+            Cognoms: "Test Full",
+            Telefon: "600000001",
+            Correu_electronic: "full@test.com",
+            Fecha_nacimiento: "2000-06-15",
+            idGenere: 1,
+            idRol: 3,
+            idSituacio_economica: 1,
+            Pais_naixement: 1,
+            Risc: 1,
+            idSebas: 12
+        },
+        familia: {
+            Estructura_familiar: 1
+        },
+        domicili: {
+            idcallejero: 1,
+            Num_calle: "5",
+            Pis: "1",
+            Escala: "A",
+            Tipus_domicili: 1
+        },
+        necessitats_especials: [1]
+    };
+
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(fullPayload),
+        });
+        assert(
+            `POST /client/full → ${status}`,
+            status === 201 && body && body.id,
+            `expected 201 + {id}, got ${status} ${JSON.stringify(body)}`
+        );
+
+        if (body?.id) {
+            // Verify client was created
+            const { status: getSt, body: getBody } = await fetchJson(`${BASE_URL}/client/${body.id}`);
+            assert(
+                `GET /client/${body.id} after full create → ${getSt}`,
+                getSt === 200 && getBody && getBody.Nom === "Client Full",
+                `expected 200 + client with Nom="Client Full", got ${getSt} ${JSON.stringify(getBody)}`
+            );
+
+            // Verify age was calculated
+            if (getBody) {
+                assert(
+                    `GET /client/${body.id} C_edad calculada`,
+                    getBody.C_edad != null,
+                    `C_edad missing`
+                );
+            }
+
+            // Verify defaults
+            if (getBody) {
+                assert(
+                    `GET /client/${body.id} Baixa=0`,
+                    getBody.Baixa === 0,
+                    `expected Baixa=0, got ${getBody.Baixa}`
+                );
+                assert(
+                    `GET /client/${body.id} C_temps_a_lentitat="0"`,
+                    getBody.C_temps_a_lentitat === "0",
+                    `expected "0", got "${getBody.C_temps_a_lentitat}"`
+                );
+            }
+
+            // Cleanup
+            await fetchJson(`${BASE_URL}/client/${body.id}`, { method: "DELETE" });
+        }
+    }
+
+    // Missing required fields → 400
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ client: { Nom: "Only Name" } }),
+        });
+        assert(
+            `POST /client/full missing fields → ${status}`,
+            status === 400,
+            `expected 400, got ${status}`
+        );
+    }
+
+    // Reuse existing familia and domicili
+    {
+        const reusePayload = {
+            client: {
+                Nom: "Client Reuse",
+                Cognoms: "Test Reuse",
+                Fecha_nacimiento: "1995-01-01",
+                idGenere: 1,
+                idRol: 3,
+                idSituacio_economica: 1,
+                Pais_naixement: 1
+            },
+            familia: { idFamilia: 1 },
+            domicili: { idDomicili: 1 }
+        };
+        const { status, body } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(reusePayload),
+        });
+        assert(
+            `POST /client/full amb familia/domicili existents → ${status}`,
+            status === 201 && body && body.id,
+            `expected 201 + {id}, got ${status} ${JSON.stringify(body)}`
+        );
+        if (body?.id) {
+            await fetchJson(`${BASE_URL}/client/${body.id}`, { method: "DELETE" });
+        }
+    }
+}
+
 function generateReport() {
     const lines = [];
     lines.push(`# AI Test Report`);
@@ -862,6 +1078,9 @@ async function main() {
         await testCallejeroSearch();
         await testStaticFiles();
         await testDesplegables();
+        await testFamiliaSearch();
+        await testDomiciliByFamily();
+        await testClientFullCreate();
 
         // Declarar tests manuals
         declareManualTests();

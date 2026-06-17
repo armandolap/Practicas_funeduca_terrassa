@@ -237,6 +237,16 @@ async function createFull(data) {
             );
         }
 
+        // 6. Create necessitats_especials associations
+        const neses = data.necessitats_especials || [];
+        if (neses.length > 0) {
+            const neseValues = neses.map(id => [id, idClient]);
+            await conn.query(
+                `INSERT INTO necessitats_especials_has_client (idNecessitat_especial, idClient) VALUES ?`,
+                [neseValues]
+            );
+        }
+
         await conn.commit();
         return idClient;
 
