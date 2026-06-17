@@ -148,10 +148,111 @@ async function remove(id) {
     return result.affectedRows;
 }
 
+async function createFull(data) {
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+
+        const {
+            domicili,
+            familia,
+            client,
+            nacionalitat
+        } = data;
+
+        let idDireccio = null;
+        let idDomicili = domicili?.idDomicili || null;
+
+        // 1. Create direccio if we have address data
+        if (domicili?.idcallejero && !idDomicili) {
+            const [rDir] = await conn.query(
+                `INSERT INTO direccio (idcallejero, Num_calle, Pis, Escala) VALUES (?, ?, ?, ?)`,
+                [domicili.idcallejero, domicili.Num_calle, domicili.Pis ?? null, domicili.Escala ?? null]
+            );
+            idDireccio = rDir.insertId;
+        }
+
+        // 2. Create domicili if we have a direccio and no existing domicile
+        if (idDireccio && !idDomicili) {
+            const [rDom] = await conn.query(
+                `INSERT INTO Domicili (Tipus_domicili, Direccio) VALUES (?, ?)`,
+                [domicili.Tipus_domicili, idDireccio]
+            );
+            idDomicili = rDom.insertId;
+        }
+
+        let idFamilia = familia?.idFamilia || null;
+
+        // 3. Create familia if not assigned
+        if (!idFamilia) {
+            const [rFam] = await conn.query(
+                `INSERT INTO Familia (Cognom_familiar, Estructura_familiar) VALUES (?, ?)`,
+                [familia.Cognom_familiar, familia.Estructura_familiar]
+            );
+            idFamilia = rFam.insertId;
+        }
+
+        // 4. Create client
+        const [rCli] = await conn.query(
+            `INSERT INTO Client (
+                idFamilia, idRol, idGenere,
+                Nom, Cognoms, Telefon, Correu_electronic,
+                Data_d_alta, C_temps_a_lentitat,
+                Fecha_nacimiento, C_edad,
+                Pais_naixement, Risc, Resultat_academic,
+                idSituacio_economica, idSebas,
+                derivacio_serveis_socials,
+                Curs_actual, idDomicili, Baixa
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+                idFamilia,
+                client.idRol,
+                client.idGenere,
+                client.Nom,
+                client.Cognoms,
+                client.Telefon ?? null,
+                client.Correu_electronic ?? null,
+                client.Data_d_alta,
+                client.C_temps_a_lentitat,
+                client.Fecha_nacimiento,
+                client.C_edad,
+                client.Pais_naixement,
+                client.Risc,
+                client.Resultat_academic ?? null,
+                client.idSituacio_economica,
+                client.idSebas,
+                client.derivacio_serveis_socials ?? 0,
+                client.Curs_actual ?? null,
+                idDomicili,
+                0
+            ]
+        );
+        const idClient = rCli.insertId;
+
+        // 5. Create nacionalitat
+        if (nacionalitat) {
+            await conn.query(
+                `INSERT INTO nacionalitat (idPais, idClient) VALUES (?, ?)`,
+                [nacionalitat, idClient]
+            );
+        }
+
+        await conn.commit();
+        return idClient;
+
+    } catch (error) {
+        await conn.rollback();
+        throw error;
+    } finally {
+        conn.release();
+    }
+}
+
 module.exports = {
     getAll,
     getById,
     create,
     update,
-    remove
+    remove,
+    createFull
 };
