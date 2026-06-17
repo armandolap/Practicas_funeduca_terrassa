@@ -13,6 +13,6 @@ router.get("/cursAny/:any", reports.cursAny);
 router.get("/resAcad", reports.resAcad);
 router.get("/motiusBaixa", reports.motiusBaixa);
 router.get("/riscos", reports.riscos);
-router.get("/països", reports.països);
+router.get("/paisos", reports.paisos);
 
 module.exports = router;

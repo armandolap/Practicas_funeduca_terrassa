@@ -97,4 +97,27 @@ async function remove(id) {
     return result.affectedRows;
 }
 
-module.exports = { getAll, search, getById, create, update, remove };
+async function createWithDireccio(nom, direccioData) {
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        const [rDir] = await conn.query(
+            `INSERT INTO direccio (idcallejero, Num_calle, Pis, Escala) VALUES (?, ?, ?, ?)`,
+            [direccioData.idcallejero, direccioData.Num_calle ?? null, direccioData.Pis ?? null, direccioData.Escala ?? null]
+        );
+        const idDireccio = rDir.insertId;
+        const [rCentre] = await conn.query(
+            `INSERT INTO centre_activitats (nom_centre_activitats, direccio_idDireccio) VALUES (?, ?)`,
+            [nom, idDireccio]
+        );
+        await conn.commit();
+        return rCentre.insertId;
+    } catch (error) {
+        await conn.rollback();
+        throw error;
+    } finally {
+        conn.release();
+    }
+}
+
+module.exports = { getAll, search, getById, create, update, remove, createWithDireccio };

@@ -45,7 +45,7 @@ async function insertTestData(conn) {
     await conn.query(`INSERT INTO Familia (Cognom_familiar, Estructura_familiar) VALUES ('Ferrer', 6)`);
 
     // Usuario_app
-    await conn.query(`INSERT INTO Usuario_APP (idNivel_acceso, Nom, Cognoms, email, Telefon, password) VALUES (1, 'Usuari', 'Test', 'test@test.com', '600000000', '$2b$10$LKZOF.JsFT1DYYgWQx9j9OG1WlSlLbBUSxVHkOuNtDuMrdSCbZZhC')`);
+    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, email, Telefon, password) VALUES (1, 'Usuari', 'Test', 'test@test.com', '600000000', '$2b$10$LKZOF.JsFT1DYYgWQx9j9OG1WlSlLbBUSxVHkOuNtDuMrdSCbZZhC')`);
 
     // Centre activitats
     await conn.query(`INSERT INTO centre_activitats (nom_centre_activitats, direccio_idDireccio) VALUES ('Centre Test', 1)`);

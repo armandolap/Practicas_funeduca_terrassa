@@ -39,8 +39,15 @@ async function getById(req, res) {
 
 async function create(req, res) {
     try {
-        const { nom_centre_activitats, direccio_idDireccio } = req.body;
-        const id = await centreActivitatsRepository.create({ nom_centre_activitats, direccio_idDireccio });
+        const { nom_centre_activitats, direccio_idDireccio, direccio } = req.body;
+        let id;
+        if (direccio && direccio.idcallejero && !direccio_idDireccio) {
+            id = await centreActivitatsRepository.createWithDireccio(nom_centre_activitats, direccio);
+        } else if (direccio_idDireccio) {
+            id = await centreActivitatsRepository.create({ nom_centre_activitats, direccio_idDireccio });
+        } else {
+            return res.status(400).json({ message: "Cal proporcionar direccio_idDireccio o un objecte direccio" });
+        }
         res.status(201).json({ message: "Centre d'activitats creat", id });
     } catch (error) {
         console.error(error);

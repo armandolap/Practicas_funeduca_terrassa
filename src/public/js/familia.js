@@ -52,7 +52,7 @@ if (!id) {
         const edat = c.C_edad || "";
         tr.innerHTML = `<td>${c.Nom}</td><td>${c.Cognoms}</td><td>${c.Nom_rol || ""}</td><td>${edat}</td>`;
         tr.addEventListener("click", () => {
-          window.location.href = `/clients.html?id=${c.idClient}`;
+          window.location.href = `/client.html?id=${c.idClient}`;
         });
         membresBody.appendChild(tr);
       });

@@ -11,7 +11,7 @@ const REPORTS = [
   { label: "Res. Acadèmic", endpoint: "resAcad" },
   { label: "Motius Baixa", endpoint: "motiusBaixa" },
   { label: "Riscos", endpoint: "riscos" },
-  { label: "Països", endpoint: "països" },
+  { label: "Països", endpoint: "paisos" },
 ];
 
 const btnContainer = document.getElementById("reportButtons");

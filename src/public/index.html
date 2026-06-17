@@ -4,17 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Creació de Client</title>
+<link rel="stylesheet" href="/css/main.css">
 <link rel="stylesheet" href="/css/client-create.css">
 </head>
-<body>
-<aside class="sidebar">
-  <div class="sidebar-item">Llistat de projectes</div>
-  <div class="sidebar-item active">Llistat d'usuaris/familia</div>
-  <div class="sidebar-item">Responsable proj.</div>
-  <hr>
-  <div class="sidebar-item">CONFIGURACIO</div>
-  <div class="sidebar-item">INFORMES</div>
-</aside>
+<body data-page="persona">
+<aside class="sidebar" id="sidebar"></aside>
 
 <main class="main-content">
   <h1>Creació de Client</h1>
@@ -194,6 +188,7 @@
 
 <div id="toast" class="toast"></div>
 
+<script src="/js/auth-sidebar.js"></script>
 <script src="/js/client-create.js"></script>
 </body>
 </html>

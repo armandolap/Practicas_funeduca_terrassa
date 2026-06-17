@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crear Projecte - FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
 <link rel="stylesheet" href="/css/projectes.css">
 </head>
 <body data-page="projectes">
@@ -17,6 +18,7 @@
   <div class="sidebar-item" data-page="informes">Informes</div>
   <div class="sidebar-item" data-page="config" id="sidebarConfig" style="display:none">Configuració</div>
   <div class="sidebar-item" data-page="persones">Persones/Famílies</div>
+  <div class="sidebar-item" data-page="persona">Crear persona</div>
   <hr>
   <div class="sidebar-item" id="sidebarLogout">Tancar sessió</div>
 </aside>
@@ -156,7 +158,7 @@
     if (e.target.closest(".sidebar-item:not([data-page])")) return;
     const item = e.target.closest(".sidebar-item[data-page]");
     if (item) {
-      const map = { projectes: "/projectes.html", clients: "/clients.html", families: "/families.html", usuaris: "/usuaris.html", domicilis: "/domicilis.html", informes: "/informes.html", config: "/config.html", persones: "/persones-families.html" };
+      const map = { projectes: "/projectes.html", clients: "/clients.html", families: "/families.html", usuaris: "/usuaris.html", domicilis: "/domicilis.html", informes: "/informes.html", config: "/config.html", persones: "/persones-families.html", persona: "/index.html" };
       if (map[item.dataset.page]) window.location.href = map[item.dataset.page];
     }
   });

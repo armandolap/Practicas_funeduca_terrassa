@@ -16,7 +16,7 @@ if (token) {
   try {
     const p = JSON.parse(atob(token.split('.')[1]));
     userRole = p.idNivel_acceso;
-    userId = p.id;
+    userId = p.idUsuario_APP;
   } catch(e) {}
 }
 

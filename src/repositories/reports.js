@@ -107,7 +107,8 @@ async function cont() {
             (SELECT COUNT(*) FROM Familia) AS total_families,
             (SELECT COUNT(*) FROM Client WHERE Baixa = 1) AS baixa_total,
             (SELECT COUNT(*) FROM Client c JOIN Genere g ON c.idGenere = g.idGenere WHERE c.Baixa = 1 AND g.Nom_genere LIKE '%Femen%') AS baixa_dones,
-            (SELECT COUNT(*) FROM Client c JOIN Genere g ON c.idGenere = g.idGenere WHERE c.Baixa = 1 AND g.Nom_genere LIKE '%Mascul%') AS baixa_homes
+            (SELECT COUNT(*) FROM Client c JOIN Genere g ON c.idGenere = g.idGenere WHERE c.Baixa = 1 AND g.Nom_genere LIKE '%Mascul%') AS baixa_homes,
+            (SELECT COUNT(*) FROM Client c JOIN Genere g ON c.idGenere = g.idGenere WHERE c.Baixa = 1 AND g.Nom_genere NOT LIKE '%Femen%' AND g.Nom_genere NOT LIKE '%Mascul%') AS baixa_no_binari
     `);
     return rows[0];
 }

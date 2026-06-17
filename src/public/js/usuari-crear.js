@@ -14,19 +14,34 @@ function showToast(msg, type) {
   setTimeout(() => toast.classList.remove("show"), 4000);
 }
 
-const NIVELLS = [
-  { id: 1, Nom: "Total" },
-  { id: 2, Nom: "Responsable de zona" },
-  { id: 4, Nom: "Viewer" },
-  { id: 5, Nom: "Treballador" }
-];
-
-NIVELLS.forEach(n => {
-  const opt = document.createElement("option");
-  opt.value = n.id;
-  opt.textContent = n.Nom;
-  inputNivell.appendChild(opt);
-});
+(async function loadNivells() {
+  try {
+    const res = await fetch("/desplegables/Nivel_acceso");
+    if (res.ok) {
+      const nivells = await res.json();
+      nivells.forEach(n => {
+        const opt = document.createElement("option");
+        opt.value = n.id;
+        opt.textContent = n.Nom;
+        inputNivell.appendChild(opt);
+      });
+      return;
+    }
+  } catch(e) {}
+  const fallback = [
+    { id: 1, Nom: "Total" },
+    { id: 2, Nom: "Responsable de zona" },
+    { id: 3, Nom: "Viewer" },
+    { id: 4, Nom: "Responsable de projecte" },
+    { id: 5, Nom: "Treballador" }
+  ];
+  fallback.forEach(n => {
+    const opt = document.createElement("option");
+    opt.value = n.id;
+    opt.textContent = n.Nom;
+    inputNivell.appendChild(opt);
+  });
+})();
 
 btnSubmit.addEventListener("click", async () => {
   if (!inputNom.value.trim()) { showToast("El camp Nom és obligatori", "error"); inputNom.focus(); return; }

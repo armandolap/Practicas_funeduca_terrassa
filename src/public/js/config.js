@@ -1,3 +1,13 @@
+(function() {
+  const tok = localStorage.getItem("token");
+  if (tok) {
+    try {
+      const role = JSON.parse(atob(tok.split('.')[1])).idNivel_acceso;
+      if (role !== 1) { window.location.href = "/projectes.html"; return; }
+    } catch(e) { window.location.href = "/login.html"; return; }
+  }
+})();
+
 const ENTITY_MAP = {
   estructura_familiar: { endpoint: "estFamilia", createDelete: false },
   pais: { endpoint: "paisos", createDelete: false },

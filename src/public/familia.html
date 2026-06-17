@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Detall Família</title>
-<link rel="stylesheet" href="/css/pages.css">
+<link rel="stylesheet" href="/css/main.css">
 </head>
 <body data-page="families">
 <aside class="sidebar">
@@ -15,6 +15,7 @@
   <div class="sidebar-item" data-page="usuaris">Usuaris</div>
   <div class="sidebar-item" data-page="domicilis">Domicilis</div>
   <div class="sidebar-item" data-page="persones">Persones-Famílies</div>
+  <div class="sidebar-item" data-page="persona">Crear persona</div>
   <hr>
   <div class="sidebar-item" data-page="informes">Informes</div>
   <div class="sidebar-item" id="sidebarLogout">Tancar sessió</div>
@@ -54,6 +55,7 @@
 
 <div id="toast" class="toast"></div>
 
+<script src="/js/sidebar.js"></script>
 <script>
 (function() {
   const token = localStorage.getItem("token");
@@ -72,7 +74,7 @@
     }
     const item = e.target.closest(".sidebar-item[data-page]");
     if (item) {
-      const map = { projectes: "/projectes.html", clients: "/clients.html", families: "/families.html", usuaris: "/usuaris.html", domicilis: "/domicilis.html", informes: "/informes.html", config: "/config.html", persones: "/persones-families.html" };
+      const map = { projectes: "/projectes.html", clients: "/clients.html", families: "/families.html", usuaris: "/usuaris.html", domicilis: "/domicilis.html", informes: "/informes.html", config: "/config.html", persones: "/persones-families.html", persona: "/index.html" };
       if (map[item.dataset.page]) window.location.href = map[item.dataset.page];
     }
   });
