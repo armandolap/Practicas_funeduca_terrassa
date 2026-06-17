@@ -4,6 +4,7 @@ const cursoRepo = require("../repositories/curso");
 const estFamiliarRepo = require("../repositories/estructura_familiar");
 const motiuBaixaRepo = require("../repositories/motiu_baixa");
 const nesesRepo = require("../repositories/NESES");
+const paisosRepo = require("../repositories/paisos");
 const resulAcadRepo = require("../repositories/resul_acad");
 const riscRepo = require("../repositories/risc");
 const rolRepo = require("../repositories/rol");
@@ -12,13 +13,17 @@ const sitEcoRepo = require("../repositories/situacio_eco");
 const tipusDomRepo = require("../repositories/tipus_domicili");
 const tipusViaRepo = require("../repositories/tipus_via");
 
+const genereRepo = require("../repositories/genere");
+
 const MAP = {
   barri:              { repo: barriRepo,       idKey: "idBarri",             nomKey: "Nom" },
   codi_postal:        { repo: codiPostalRepo,   idKey: "idCodi_postal",       nomKey: "Codi" },
   curso:              { repo: cursoRepo,         idKey: "idCurs_actual",       nomKey: "Nom" },
   estructura_familiar: { repo: estFamiliarRepo,  idKey: "idEstructura_familiar", nomKey: "Nom_est_fam" },
+  genere:             { repo: genereRepo,       idKey: "idGenere",            nomKey: "Nom_genere" },
   motiu_baixa:        { repo: motiuBaixaRepo,   idKey: "idMotiu_baixa",       nomKey: "Nom_motiu_baixa" },
   neses:              { repo: nesesRepo,        idKey: "idNecessitat_especial", nomKey: "Nom_necessitat" },
+  pais:               { repo: paisosRepo,       idKey: "idPais",              nomKey: "Nom_pais" },
   resul_acad:         { repo: resulAcadRepo,    idKey: "idResultat_academic",  nomKey: "Nom_resultat_acad" },
   risc:               { repo: riscRepo,         idKey: "idRisc",              nomKey: "Nivel" },
   rol:                { repo: rolRepo,          idKey: "idRol",               nomKey: "Nom_rol" },

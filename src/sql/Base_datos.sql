@@ -182,6 +182,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`familia` (
   `Cognom_familiar` VARCHAR(45) NOT NULL,
   `Estructura_familiar` INT NOT NULL,
   PRIMARY KEY (`idFamilia`),
+  UNIQUE INDEX `Cognom_familiar_UNIQUE` (`Cognom_familiar` ASC) VISIBLE,
   INDEX `fk_Familias_Estructura_familiar1_idx` (`Estructura_familiar` ASC) VISIBLE,
   CONSTRAINT `fk_Familias_Estructura_familiar1`
     FOREIGN KEY (`Estructura_familiar`)
@@ -288,6 +289,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`client` (
   `Resultat_academic` INT NULL,
   `idSituacio_economica` INT NOT NULL,
   `idSebas` INT NOT NULL,
+  `idNecessitat_especial` INT NULL DEFAULT NULL,
   `derivacio_serveis_socials` TINYINT NOT NULL,
   `Curs_actual` INT NULL DEFAULT NULL,
   `idDomicili` INT NOT NULL,
@@ -338,7 +340,10 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`client` (
     REFERENCES `crm_funeduca`.`sebas` (`idSebas`),
   CONSTRAINT `fk_Usuarios_Situacio_laboral1`
     FOREIGN KEY (`idSituacio_economica`)
-    REFERENCES `crm_funeduca`.`situacio_economica` (`idSituacio_economica`))
+    REFERENCES `crm_funeduca`.`situacio_economica` (`idSituacio_economica`),
+  CONSTRAINT `fk_Client_Necessitats_especials1`
+    FOREIGN KEY (`idNecessitat_especial`)
+    REFERENCES `crm_funeduca`.`necessitats_especials` (`idNecessitat_especial`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb3;
 
@@ -430,7 +435,7 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`usuario_app` (
   `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
-  `idNivel_acceso` INT NOT NULL,
+  `idNivel_acceso` INT NOT NULL UNIQUE,
   `Nom` VARCHAR(45) NOT NULL,
   `Cognoms` VARCHAR(45) NOT NULL,
   `email` VARCHAR(45) NOT NULL,

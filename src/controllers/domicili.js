@@ -129,10 +129,52 @@ async function deleteDomicili(req, res) {
     }
 }
 
+// GET /domicili/byFamily/:idFamilia
+async function getDomicilisByFamily(req, res) {
+    try {
+        const { idFamilia } = req.params;
+
+        const domicilis = await domiciliRepository.getByFamily(idFamilia);
+
+        res.status(200).json(domicilis);
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Error obtenint domicilis de la família"
+        });
+    }
+}
+
+// GET /domicili/search
+async function searchDomicilisCarrer(req, res) {
+    try {
+        const { q, tipus_via, idFamilia } = req.query;
+
+        const results = await domiciliRepository.searchCombined({
+            q: q || "",
+            tipus_via: tipus_via || null,
+            idFamilia: idFamilia || null
+        });
+
+        res.status(200).json(results);
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Error cercant domicilis i carrers"
+        });
+    }
+}
+
 module.exports = {
     getAllDomicilis,
     getDomiciliById,
     createDomicili,
     updateDomicili,
-    deleteDomicili
+    deleteDomicili,
+    getDomicilisByFamily,
+    searchDomicilisCarrer
 };

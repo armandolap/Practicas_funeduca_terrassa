@@ -1,16 +1,22 @@
 # Resultat dels tests
 
-**Data:** 2026-06-16T10:57:46.941Z
+**Data:** 2026-06-16T11:52:52.811Z
 
-❌ **19 test(s) han fallat** (de 215 totals)
+❌ **19 test(s) han fallat** (de 238 totals)
 
 ## Possibles problemes i solucions
 
-### POST /projectes → 500
+### PUT /projectes/999999 (nonexistent) → 400
 
-**Error:** expected 201 + {id}, got 500 {"message":"Error creant projecte"}
+**Error:** expected 404, got 400
 
-**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
+**Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
+
+### PUT /projectes/2 → 500
+
+**Error:** expected 200, got 500 {"message":"Error actualitzant projecte"}
+
+**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
 
 ### PUT /usuario/999999 (nonexistent) → 500
 
@@ -29,12 +35,6 @@
 **Error:** expected 400 for empty body, got 500
 
 **Possible solució:** Verifica que el controlador valida les dades d'entrada i retorna 400 per payloads buits o invàlids.
-
-### POST /domicili → 500
-
-**Error:** expected 201 + {id}, got 500 {"message":"Error creant domicili"}
-
-**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
 
 ### POST /familia {} → 500 (validation)
 

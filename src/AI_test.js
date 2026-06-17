@@ -337,7 +337,7 @@ async function testEndpoint(ep) {
                 const key = endpointToKey(name);
                 const field = key ? CONTROLLER_FIELDS[key] : null;
                 const originalVal = key === "projectes"
-                    ? updatePayload.Nom_projecte
+                    ? (updatePayload.projecte ? updatePayload.projecte.Nom_projecte : null)
                     : updatePayload && typeof updatePayload === "object" ? updatePayload[field] : null;
                 const gotVal = key === "projectes" ? getBody2.Nom_projecte : getBody2[field];
                 if (field && originalVal && key !== "client") {
@@ -463,9 +463,9 @@ async function testCallejeroSearch() {
             if (body.length > 0) {
                 const row = body[0];
                 assert(
-                    `GET /callejero?q=ABAT[0] té idDireccio`,
-                    row.idDireccio != null,
-                    `missing idDireccio`
+                    `GET /callejero?q=ABAT[0] té idcallejero`,
+                    row.idcallejero != null,
+                    `missing idcallejero`
                 );
                 assert(
                     `GET /callejero?q=ABAT[0] té Nom_complet`,
@@ -479,11 +479,11 @@ async function testCallejeroSearch() {
                 );
 
                 // GET /callejero/:id from search result
-                const cid = row.idDireccio;
+                const cid = row.idcallejero;
                 const { status: st2, body: b2 } = await fetchJson(`${BASE_URL}/callejero/${cid}`);
                 assert(
                     `GET /callejero/${cid} → ${st2}`,
-                    st2 === 200 && b2 && b2.idDireccio === cid,
+                    st2 === 200 && b2 && b2.idcallejero === cid,
                     `expected 200 + matching id, got ${st2}`
                 );
                 if (b2) {
@@ -579,8 +579,8 @@ async function testStaticFiles() {
         const text = await res.text();
         assert(
             `GET / → ${res.status}`,
-            res.status === 200 && text.includes("Cercador de carrers"),
-            `expected 200 + "Cercador de carrers", got ${res.status}`
+            res.status === 200 && text.includes("Creació de Client"),
+            `expected 200 + "Creació de Client", got ${res.status}`
         );
     }
 
@@ -693,6 +693,342 @@ function declareManualTests() {
         "Comprovar que el formulari es veu correctament en mòbil",
         "Comprovar que el menú desplegable no surt de la pantalla",
     ]);
+}
+
+async function testFamiliaSearch() {
+    console.log(`\n--- /familia/search ---`);
+
+    // Search with existing family
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/familia/search?q=Garcia`);
+        assert(
+            `GET /familia/search?q=Garcia → ${status}`,
+            status === 200 && Array.isArray(body),
+            `expected 200 + array, got ${status}`
+        );
+        if (Array.isArray(body)) {
+            assert(
+                `GET /familia/search?q=Garcia té resultats`,
+                body.length > 0,
+                `expected >0 results, got ${body.length}`
+            );
+            if (body.length > 0) {
+                assert(
+                    `GET /familia/search?q=Garcia[0] té idFamilia`,
+                    body[0].idFamilia != null,
+                    `missing idFamilia`
+                );
+                assert(
+                    `GET /familia/search?q=Garcia[0] té Cognom_familiar`,
+                    typeof body[0].Cognom_familiar === "string",
+                    `missing Cognom_familiar`
+                );
+            }
+        }
+    }
+
+    // Search with no results
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/familia/search?q=ZZZNOTHING`);
+        assert(
+            `GET /familia/search?q=ZZZNOTHING buit`,
+            status === 200 && Array.isArray(body) && body.length === 0,
+            `expected 200 + empty array, got ${status}`
+        );
+    }
+
+    // Search without query → 400
+    {
+        const { status } = await fetchJson(`${BASE_URL}/familia/search`);
+        assert(
+            `GET /familia/search (sense q) → ${status}`,
+            status === 400,
+            `expected 400, got ${status}`
+        );
+    }
+}
+
+async function testDomiciliByFamily() {
+    console.log(`\n--- /domicili/byFamily ---`);
+
+    // Get domiciles of existing family (id 1 from seed)
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/domicili/byFamily/1`);
+        assert(
+            `GET /domicili/byFamily/1 → ${status}`,
+            status === 200 && Array.isArray(body),
+            `expected 200 + array, got ${status}`
+        );
+        if (Array.isArray(body)) {
+            assert(
+                `GET /domicili/byFamily/1 té resultats`,
+                body.length > 0,
+                `expected >0 results, got ${body.length}`
+            );
+            if (body.length > 0) {
+                assert(
+                    `GET /domicili/byFamily/1[0] té idDomicili`,
+                    body[0].idDomicili != null,
+                    `missing idDomicili`
+                );
+            }
+        }
+    }
+
+    // Get domiciles of non-existing family
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/domicili/byFamily/999999`);
+        assert(
+            `GET /domicili/byFamily/999999 → ${status}`,
+            status === 200 && Array.isArray(body) && body.length === 0,
+            `expected 200 + empty array, got ${status}`
+        );
+    }
+}
+
+async function testDomiciliSearch() {
+    console.log(`\n--- /domicili/search ---`);
+
+    // Search with existing street
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/domicili/search?q=ABAT`);
+        assert(
+            `GET /domicili/search?q=ABAT → ${status}`,
+            status === 200 && Array.isArray(body),
+            `expected 200 + array, got ${status}`
+        );
+        if (Array.isArray(body)) {
+            assert(
+                `GET /domicili/search?q=ABAT té resultats`,
+                body.length > 0,
+                `expected >0 results, got ${body.length}`
+            );
+            if (body.length > 0) {
+                const row = body[0];
+                assert(
+                    `GET /domicili/search?q=ABAT[0] té _type`,
+                    row._type === "callejero",
+                    `expected _type="callejero", got "${row._type}"`
+                );
+                assert(
+                    `GET /domicili/search?q=ABAT[0] té idcallejero`,
+                    row.idcallejero != null,
+                    `missing idcallejero`
+                );
+                assert(
+                    `GET /domicili/search?q=ABAT[0] té Nom_complet`,
+                    typeof row.Nom_complet === "string" && row.Nom_complet.length > 0,
+                    `missing or empty Nom_complet`
+                );
+            }
+        }
+    }
+
+    // Search with family (should include both callejero and domicile results)
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/domicili/search?q=A&idFamilia=1`);
+        assert(
+            `GET /domicili/search?q=A&idFamilia=1 → ${status}`,
+            status === 200 && Array.isArray(body),
+            `expected 200 + array, got ${status}`
+        );
+    }
+
+    // Search with empty results
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/domicili/search?q=ZZZNOTHING`);
+        assert(
+            `GET /domicili/search?q=ZZZNOTHING → ${status}`,
+            status === 200 && Array.isArray(body),
+            `expected 200 + array, got ${status}`
+        );
+        if (Array.isArray(body)) {
+            assert(
+                `GET /domicili/search?q=ZZZNOTHING buit`,
+                body.length === 0,
+                `expected 0 results, got ${body.length}`
+            );
+        }
+    }
+
+    // Search with too short query (min 3 chars)
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/domicili/search?q=AB`);
+        assert(
+            `GET /domicili/search?q=AB (short) → ${status}`,
+            status === 200 && Array.isArray(body),
+            `expected 200 + array, got ${status}`
+        );
+    }
+
+    // Search without query
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/domicili/search`);
+        assert(
+            `GET /domicili/search (sense q) → ${status}`,
+            status === 200 && Array.isArray(body),
+            `expected 200 + array, got ${status}`
+        );
+    }
+}
+
+async function testFamiliaCheckName() {
+    console.log(`\n--- /familia/checkName ---`);
+
+    // Check existing family name
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/familia/checkName?name=Garcia`);
+        assert(
+            `GET /familia/checkName?name=Garcia → ${status}`,
+            status === 200 && body && body.exists === true,
+            `expected 200 + exists=true, got ${status} ${JSON.stringify(body)}`
+        );
+    }
+
+    // Check non-existing family name
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/familia/checkName?name=ZZZZZ`);
+        assert(
+            `GET /familia/checkName?name=ZZZZZ → ${status}`,
+            status === 200 && body && body.exists === false,
+            `expected 200 + exists=false, got ${status} ${JSON.stringify(body)}`
+        );
+    }
+
+    // Check without name param
+    {
+        const { status } = await fetchJson(`${BASE_URL}/familia/checkName`);
+        assert(
+            `GET /familia/checkName (sense name) → ${status}`,
+            status === 400,
+            `expected 400, got ${status}`
+        );
+    }
+}
+
+async function testClientFullCreate() {
+    console.log(`\n--- POST /client/full ---`);
+
+    // Successful full creation
+    const fullPayload = {
+        client: {
+            Nom: "Client Full",
+            Cognoms: "Test Full",
+            Telefon: "600000001",
+            Correu_electronic: "full@test.com",
+            Fecha_nacimiento: "2000-06-15",
+            idGenere: 1,
+            idRol: 3,
+            idSituacio_economica: 1,
+            Pais_naixement: 1,
+            Risc: 1,
+            idSebas: 12,
+            idNecessitat_especial: 1
+        },
+        familia: {
+            Estructura_familiar: 1
+        },
+        domicili: {
+            idcallejero: 1,
+            Num_calle: "5",
+            Pis: "1",
+            Escala: "A",
+            Tipus_domicili: 1
+        }
+    };
+
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(fullPayload),
+        });
+        assert(
+            `POST /client/full → ${status}`,
+            status === 201 && body && body.id,
+            `expected 201 + {id}, got ${status} ${JSON.stringify(body)}`
+        );
+
+        if (body?.id) {
+            // Verify client was created
+            const { status: getSt, body: getBody } = await fetchJson(`${BASE_URL}/client/${body.id}`);
+            assert(
+                `GET /client/${body.id} after full create → ${getSt}`,
+                getSt === 200 && getBody && getBody.Nom === "Client Full",
+                `expected 200 + client with Nom="Client Full", got ${getSt} ${JSON.stringify(getBody)}`
+            );
+
+            // Verify age was calculated
+            if (getBody) {
+                assert(
+                    `GET /client/${body.id} C_edad calculada`,
+                    getBody.C_edad != null,
+                    `C_edad missing`
+                );
+            }
+
+            // Verify defaults
+            if (getBody) {
+                assert(
+                    `GET /client/${body.id} Baixa=0`,
+                    getBody.Baixa === 0,
+                    `expected Baixa=0, got ${getBody.Baixa}`
+                );
+                assert(
+                    `GET /client/${body.id} C_temps_a_lentitat="0"`,
+                    getBody.C_temps_a_lentitat === "0",
+                    `expected "0", got "${getBody.C_temps_a_lentitat}"`
+                );
+            }
+
+            // Cleanup
+            await fetchJson(`${BASE_URL}/client/${body.id}`, { method: "DELETE" });
+        }
+    }
+
+    // Missing required fields → 400
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ client: { Nom: "Only Name" } }),
+        });
+        assert(
+            `POST /client/full missing fields → ${status}`,
+            status === 400,
+            `expected 400, got ${status}`
+        );
+    }
+
+    // Reuse existing familia and domicili
+    {
+        const reusePayload = {
+            client: {
+                Nom: "Client Reuse",
+                Cognoms: "Test Reuse",
+                Fecha_nacimiento: "1995-01-01",
+                idGenere: 1,
+                idRol: 3,
+                idSituacio_economica: 1,
+                Pais_naixement: 1
+            },
+            familia: { idFamilia: 1 },
+            domicili: { idDomicili: 1 }
+        };
+        const { status, body } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(reusePayload),
+        });
+        assert(
+            `POST /client/full amb familia/domicili existents → ${status}`,
+            status === 201 && body && body.id,
+            `expected 201 + {id}, got ${status} ${JSON.stringify(body)}`
+        );
+        if (body?.id) {
+            await fetchJson(`${BASE_URL}/client/${body.id}`, { method: "DELETE" });
+        }
+    }
 }
 
 function generateReport() {
@@ -859,6 +1195,11 @@ async function main() {
         await testCallejeroSearch();
         await testStaticFiles();
         await testDesplegables();
+        await testFamiliaSearch();
+        await testDomiciliByFamily();
+        await testDomiciliSearch();
+        await testFamiliaCheckName();
+        await testClientFullCreate();
 
         // Declarar tests manuals
         declareManualTests();

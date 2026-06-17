@@ -79,10 +79,33 @@ async function remove(id) {
     return result.affectedRows;
 }
 
+async function existsByName(name) {
+    const [rows] = await pool.query(
+        `SELECT idFamilia, Cognom_familiar FROM Familia WHERE Cognom_familiar = ?`,
+        [name]
+    );
+    return rows.length > 0 ? rows[0] : null;
+}
+
+async function searchByName(query) {
+    const [rows] = await pool.query(
+        `
+        SELECT idFamilia, Cognom_familiar, Estructura_familiar
+        FROM Familia
+        WHERE Cognom_familiar LIKE ?
+        ORDER BY Cognom_familiar
+        LIMIT 20
+        `,
+        [`%${query}%`]
+    );
+    return rows;
+}
+
 module.exports = {
     getAll,
     getById,
     create,
     update,
-    remove
+    remove,
+    searchByName
 };

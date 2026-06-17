@@ -132,10 +132,56 @@ async function deleteFamilia(req, res) {
     }
 }
 
+// GET /familia/search?q=
+async function searchFamilies(req, res) {
+    try {
+        const { q } = req.query;
+
+        if (!q?.trim()) {
+            return res.status(400).json({ message: "Paràmetre de cerca 'q' obligatori" });
+        }
+
+        const families = await familiaRepository.searchByName(q.trim());
+
+        res.status(200).json(families);
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Error cercant famílies"
+        });
+    }
+}
+
+// GET /familia/checkName?name=
+async function checkFamilyName(req, res) {
+    try {
+        const { name } = req.query;
+
+        if (!name?.trim()) {
+            return res.status(400).json({ message: "Paràmetre 'name' obligatori" });
+        }
+
+        const existing = await familiaRepository.existsByName(name.trim());
+
+        res.status(200).json({ exists: !!existing, family: existing });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Error comprovant nom de família"
+        });
+    }
+}
+
 module.exports = {
     getAllFamilias,
     getFamiliaById,
     createFamilia,
     updateFamilia,
-    deleteFamilia
+    deleteFamilia,
+    searchFamilies,
+    checkFamilyName
 };

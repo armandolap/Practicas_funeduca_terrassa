@@ -1,14 +1,14 @@
 const { createPool } = require("../config/database");
 
 const pool = createPool();
-// aqui va la peticion al server SQL 
-// FALTEN PUT i POST per editar i crear
 
 async function getAll() {
     const [rows] = await pool.query(`
-        SELECT *
-        FROM proyectos
-        ORDER BY Nom_projecte
+        SELECT p.*, u.idUsuario_APP AS responsable
+        FROM proyectos p
+        LEFT JOIN Responsables r ON r.proyectos_idProyecto = p.idProyecto
+        LEFT JOIN usuario_app u ON u.idUsuario_APP = r.idUsuario_APP
+        ORDER BY p.Nom_projecte
     `);
 
     return rows;
@@ -17,9 +17,11 @@ async function getAll() {
 async function getById(id) {
     const [rows] = await pool.query(
         `
-        SELECT *
-        FROM proyectos
-        WHERE idProyecto = ?
+        SELECT p.*, u.idUsuario_APP AS responsable
+        FROM proyectos p
+        LEFT JOIN Responsables r ON r.proyectos_idProyecto = p.idProyecto
+        LEFT JOIN usuario_app u ON u.idUsuario_APP = r.idUsuario_APP
+        WHERE p.idProyecto = ?
         `,
         [id]
     );
@@ -28,7 +30,6 @@ async function getById(id) {
 }
 
 async function create(projecteData) {
-    // Desestructuramos para mayor claridad y asignamos valores por defecto de BBDD si es necesario
     const {
         Nom_projecte,
         Descripcio,
@@ -48,7 +49,7 @@ async function create(projecteData) {
             fecha_inicio_act,
             fecha_fin_act,
             idcentre_activitats
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
     const values = [
@@ -66,8 +67,73 @@ async function create(projecteData) {
     return result.insertId;
 }
 
+async function update(id, projecteData) {
+    const {
+        Nom_projecte,
+        Descripcio,
+        plazas = 0,
+        inscritos = 0,
+        fecha_inicio_act = null,
+        fecha_fin_act = null,
+        idcentre_activitats
+    } = projecteData;
+
+    const query = `
+        UPDATE proyectos
+        SET Nom_projecte = ?,
+            Descripcio = ?,
+            plazas = ?,
+            inscritos = ?,
+            fecha_inicio_act = ?,
+            fecha_fin_act = ?,
+            idcentre_activitats = ?
+        WHERE idProyecto = ?
+    `;
+
+    const [result] = await pool.query(query, [
+        Nom_projecte,
+        Descripcio,
+        plazas,
+        inscritos,
+        fecha_inicio_act,
+        fecha_fin_act,
+        idcentre_activitats,
+        id
+    ]);
+
+    return result.affectedRows;
+}
+
+async function setResponsable(projectId, usuarioId) {
+    await pool.query(
+        `DELETE FROM Responsables WHERE proyectos_idProyecto = ?`,
+        [projectId]
+    );
+    if (usuarioId) {
+        await pool.query(
+            `INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (?, ?)`,
+            [projectId, usuarioId]
+        );
+    }
+}
+
+async function remove(id) {
+    await pool.query(
+        `DELETE FROM Responsables WHERE proyectos_idProyecto = ?`,
+        [id]
+    );
+    const [result] = await pool.query(
+        `DELETE FROM proyectos WHERE idProyecto = ?`,
+        [id]
+    );
+    return result.affectedRows;
+}
+
 module.exports = {
     getAll,
     getById,
-    create
+    create,
+    update,
+    remove,
+    setResponsable
 };
