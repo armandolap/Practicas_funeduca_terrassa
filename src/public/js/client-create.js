@@ -134,7 +134,15 @@ function setDefaultDropdowns() {
   selectDefault("sebas", "no sebas");
   selectDefault("cursActual", "no aplica");
   selectDefault("resulAcad", "no aplica");
-  selectDefault("neses", "no neses");
+  // NESE: find exact "No NESE"
+  if (neses) {
+    for (const opt of neses.options) {
+      if (opt.textContent.trim() === "No NESE") {
+        neses.value = opt.value;
+        break;
+      }
+    }
+  }
 }
 
 // ============ AGE CALCULATION ============

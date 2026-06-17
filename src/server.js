@@ -128,14 +128,20 @@ async function startServer() {
             path.join(__dirname, "sql", "inserts_tablas_estaticas.sql")
         );
 
+        // 6. Cargar datos de prueba (clients, famílies, domicilis)
+        console.log("Insertant dades de prova...");
+
+        const { insertTestData } = require("./seeder/seeder");
+        await insertTestData(bootstrap);
+
         await bootstrap.end();
 
         console.log("Base de datos preparada");
 
-        // 6. Crear pool para el resto de la aplicación
+        // 7. Crear pool para el resto de la aplicación
         const { createPool } = require("./config/database");
         createPool();
-        // 7. Arrancar servidor
+        // 8. Arrancar servidor
         server.listen(PORT, () => {
             console.log(`Servidor en http://localhost:${PORT}`);
 
