@@ -117,6 +117,17 @@ body {
   height: 80px;
 }
 
+/* WARNING MESSAGE */
+.warning-message {
+  background: #fff3cd;
+  border: 1px solid #e94560;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #c62828;
+}
+
 /* DISAMBIGUATION DROPDOWNS */
 #barriSelect,
 #codiPostalSelect {

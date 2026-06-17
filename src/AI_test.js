@@ -875,6 +875,40 @@ async function testDomiciliSearch() {
     }
 }
 
+async function testFamiliaCheckName() {
+    console.log(`\n--- /familia/checkName ---`);
+
+    // Check existing family name
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/familia/checkName?name=Garcia`);
+        assert(
+            `GET /familia/checkName?name=Garcia → ${status}`,
+            status === 200 && body && body.exists === true,
+            `expected 200 + exists=true, got ${status} ${JSON.stringify(body)}`
+        );
+    }
+
+    // Check non-existing family name
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/familia/checkName?name=ZZZZZ`);
+        assert(
+            `GET /familia/checkName?name=ZZZZZ → ${status}`,
+            status === 200 && body && body.exists === false,
+            `expected 200 + exists=false, got ${status} ${JSON.stringify(body)}`
+        );
+    }
+
+    // Check without name param
+    {
+        const { status } = await fetchJson(`${BASE_URL}/familia/checkName`);
+        assert(
+            `GET /familia/checkName (sense name) → ${status}`,
+            status === 400,
+            `expected 400, got ${status}`
+        );
+    }
+}
+
 async function testClientFullCreate() {
     console.log(`\n--- POST /client/full ---`);
 
@@ -891,7 +925,8 @@ async function testClientFullCreate() {
             idSituacio_economica: 1,
             Pais_naixement: 1,
             Risc: 1,
-            idSebas: 12
+            idSebas: 12,
+            idNecessitat_especial: 1
         },
         familia: {
             Estructura_familiar: 1
@@ -902,8 +937,7 @@ async function testClientFullCreate() {
             Pis: "1",
             Escala: "A",
             Tipus_domicili: 1
-        },
-        necessitats_especials: [1]
+        }
     };
 
     {
@@ -1167,6 +1201,7 @@ async function main() {
         await testFamiliaSearch();
         await testDomiciliByFamily();
         await testDomiciliSearch();
+        await testFamiliaCheckName();
         await testClientFullCreate();
 
         // Declarar tests manuals

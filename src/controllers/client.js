@@ -128,7 +128,7 @@ async function deleteClient(req, res) {
 // POST /client/full
 async function createFullClient(req, res) {
     try {
-        const { client: clientData, familia, domicili, necessitats_especials } = req.body;
+        const { client: clientData, familia, domicili } = req.body;
 
         if (!clientData) {
             return res.status(400).json({ message: "Dades de client obligatòries" });
@@ -148,7 +148,8 @@ async function createFullClient(req, res) {
             Risc,
             Resultat_academic,
             Curs_actual,
-            idSebas
+            idSebas,
+            idNecessitat_especial
         } = clientData;
 
         // Required fields
@@ -206,12 +207,11 @@ async function createFullClient(req, res) {
                 Risc: Risc ?? RISK_SENSE_RISC,
                 Resultat_academic: Resultat_academic ?? null,
                 Curs_actual: Curs_actual ?? CURS_NO_APLICA,
-                idSebas: idSebas ?? SEBAS_NO_SEBAS
+                idSebas: idSebas ?? SEBAS_NO_SEBAS,
+                idNecessitat_especial: idNecessitat_especial ?? null
             },
             nacionalitat: Pais_naixement
         };
-
-        payload.necessitats_especials = necessitats_especials || [];
 
         const id = await clientRepository.createFull(payload);
 

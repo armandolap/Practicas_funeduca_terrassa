@@ -127,10 +127,11 @@ async function runSeed() {
                 Resultat_academic,
                 idSituacio_economica,
                 idSebas,
+                idNecessitat_especial,
                 derivacio_serveis_socials,
                 idDomicili,
                 Baixa)
-            VALUES (1,3,1,'Joan','Garcia Lopez',NULL,NULL,CURDATE(),'1 any','2010-5-15',16,1,1,1,1,1,0,1,0)
+            VALUES (1,3,1,'Joan','Garcia Lopez',NULL,NULL,CURDATE(),'1 any','2010-5-15',16,1,1,1,1,1,NULL,0,1,0)
         `);
 
         await connection.query("SET FOREIGN_KEY_CHECKS = 1");

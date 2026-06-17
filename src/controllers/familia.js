@@ -154,11 +154,34 @@ async function searchFamilies(req, res) {
     }
 }
 
+// GET /familia/checkName?name=
+async function checkFamilyName(req, res) {
+    try {
+        const { name } = req.query;
+
+        if (!name?.trim()) {
+            return res.status(400).json({ message: "Paràmetre 'name' obligatori" });
+        }
+
+        const existing = await familiaRepository.existsByName(name.trim());
+
+        res.status(200).json({ exists: !!existing, family: existing });
+
+    } catch (error) {
+        console.error(error);
+
+        res.status(500).json({
+            message: "Error comprovant nom de família"
+        });
+    }
+}
+
 module.exports = {
     getAllFamilias,
     getFamiliaById,
     createFamilia,
     updateFamilia,
     deleteFamilia,
-    searchFamilies
+    searchFamilies,
+    checkFamilyName
 };

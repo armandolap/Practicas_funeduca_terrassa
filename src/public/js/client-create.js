@@ -25,6 +25,7 @@ const estructuraFamiliar = $("estructuraFamiliar");
 const selectedFamilyInfo = $("selectedFamilyInfo");
 const selectedFamilyName = $("selectedFamilyName");
 const clearFamilyBtn = $("clearFamilyBtn");
+const familiaWarning = $("familiaWarning");
 
 const domiciliSearch = $("domiciliSearch");
 const domiciliDropdown = $("domiciliDropdown");
@@ -39,6 +40,8 @@ const codiPostalInput = $("codiPostal");
 const codiPostalSelect = $("codiPostalSelect");
 const tipusDomicili = $("tipusDomicili");
 const previewBar = $("previewBar");
+const familyDomicilisGroup = $("familyDomicilisGroup");
+const familyDomicilis = $("familyDomicilis");
 
 const btnCrear = $("btnCrear");
 const toast = $("toast");
@@ -47,12 +50,13 @@ const toast = $("toast");
 let selectedFamilyId = null;
 let selectedCallejeroId = null;
 let selectedDomiciliId = null;
-let domicileType = null; // "callejero" | "domicili"
 let debounceTimer = null;
 let lastFamilyQuery = "";
 let domiciliDebounce = null;
 let lastDomiciliQuery = "";
 let domiciliResults = [];
+let familyDomiciles = [];
+let lastFamiliaNameCheck = "";
 
 // ============ HELPERS ============
 function showToast(msg, type) {
@@ -116,51 +120,21 @@ async function initDropdowns() {
 }
 
 function setDefaultDropdowns() {
-  // Risc → "Sense risc"
-  if (risc) {
-    for (const opt of risc.options) {
-      if (opt.textContent.toLowerCase().includes("sense risc")) {
-        risc.value = opt.value;
-        break;
+  const selectDefault = (selId, search) => {
+    const sel = $(selId);
+    if (!sel) return;
+    for (const opt of sel.options) {
+      if (opt.textContent.toLowerCase().includes(search)) {
+        sel.value = opt.value;
+        return;
       }
     }
-  }
-  // Sebas → "No SEBAS"
-  if (sebas) {
-    for (const opt of sebas.options) {
-      if (opt.textContent.toLowerCase().includes("no sebas")) {
-        sebas.value = opt.value;
-        break;
-      }
-    }
-  }
-  // Curs actual → "No aplica"
-  if (cursActual) {
-    for (const opt of cursActual.options) {
-      if (opt.textContent.toLowerCase().includes("no aplica")) {
-        cursActual.value = opt.value;
-        break;
-      }
-    }
-  }
-  // Resultat academic → "No aplica"
-  if (resulAcad) {
-    for (const opt of resulAcad.options) {
-      if (opt.textContent.toLowerCase().includes("no aplica")) {
-        resulAcad.value = opt.value;
-        break;
-      }
-    }
-  }
-  // NESE → "No neses"
-  if (neses) {
-    for (let i = 0; i < neses.options.length; i++) {
-      if (neses.options[i].textContent.toLowerCase().includes("no neses")) {
-        neses.options[i].selected = true;
-        break;
-      }
-    }
-  }
+  };
+  selectDefault("risc", "sense risc");
+  selectDefault("sebas", "no sebas");
+  selectDefault("cursActual", "no aplica");
+  selectDefault("resulAcad", "no aplica");
+  selectDefault("neses", "no neses");
 }
 
 // ============ AGE CALCULATION ============
@@ -203,7 +177,7 @@ function showFamilyDropdown(items) {
   }
   for (const item of items) {
     const div = document.createElement("div");
-    div.textContent = item.Cognom_familiar;
+    div.textContent = `${item.Cognom_familiar} (ID: ${item.idFamilia})`;
     div.addEventListener("click", () => selectFamily(item));
     familiaDropdown.appendChild(div);
   }
@@ -218,10 +192,9 @@ function selectFamily(item) {
   familiaDropdown.style.display = "none";
   estructuraFamiliar.value = item.Estructura_familiar || "";
   estructuraFamiliar.disabled = true;
-  // Re-trigger domicile search to include family domiciles
-  if (domiciliSearch.value.trim().length >= 3) {
-    triggerDomiciliSearch();
-  }
+  familiaWarning.style.display = "none";
+  // Load family domiciles and auto-fill domicile search
+  loadFamilyDomiciles(item.idFamilia);
 }
 
 clearFamilyBtn.addEventListener("click", clearFamily);
@@ -233,7 +206,10 @@ function clearFamily() {
   familiaSearch.value = "";
   estructuraFamiliar.disabled = false;
   estructuraFamiliar.value = "";
-  // Re-trigger domicile search to exclude family domiciles
+  familiaWarning.style.display = "none";
+  familyDomicilisGroup.style.display = "none";
+  familyDomicilis.innerHTML = '<option value="">Domicilis de la família</option>';
+  familyDomiciles = [];
   if (domiciliSearch.value.trim().length >= 3) {
     triggerDomiciliSearch();
   }
@@ -245,6 +221,69 @@ document.addEventListener("click", (e) => {
   }
   if (!e.target.closest(".domicili-search-wrap")) {
     domiciliDropdown.style.display = "none";
+  }
+});
+
+// ============ FAMILY NAME DUPLICATE CHECK ============
+cognoms.addEventListener("blur", () => {
+  if (selectedFamilyId) return;
+  const name = cognoms.value.trim();
+  if (name.length < 2) return;
+  checkFamilyNameExists(name);
+});
+
+async function checkFamilyNameExists(name) {
+  if (name === lastFamiliaNameCheck) return;
+  lastFamiliaNameCheck = name;
+  try {
+    const res = await fetch(`/familia/checkName?name=${encodeURIComponent(name)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.exists) {
+      cognoms.style.borderColor = "#e94560";
+      cognoms.style.boxShadow = "0 0 0 2px rgba(233,69,96,0.25)";
+      familiaWarning.style.display = "block";
+      familiaWarning.textContent = `Ja existeix una família amb aquest nom: "${data.family.Cognom_familiar}". Modifica'l per desambiguar.`;
+    } else {
+      cognoms.style.borderColor = "";
+      cognoms.style.boxShadow = "";
+      familiaWarning.style.display = "none";
+    }
+  } catch {}
+}
+
+// ============ FAMILY DOMICILES ============
+async function loadFamilyDomiciles(idFamilia) {
+  try {
+    const res = await fetch(`/domicili/byFamily/${idFamilia}`);
+    if (!res.ok) return;
+    familyDomiciles = await res.json();
+    familyDomicilis.innerHTML = '<option value="">Domicilis de la família</option>';
+    for (const d of familyDomiciles) {
+      const opt = document.createElement("option");
+      opt.value = d.idDomicili;
+      const addr = [d.tipus_via, d.Nom_calle, d.Num_calle].filter(Boolean).join(" ");
+      opt.textContent = `${addr} ${d.Pis ? `Pis ${d.Pis}` : ""} ${d.Escala ? `Esc ${d.Escala}` : ""} - ${d.barri} (${d.codi_postal})`.trim();
+      familyDomicilis.appendChild(opt);
+    }
+    familyDomicilisGroup.style.display = "block";
+    // Auto-fill domicile search with first domicile
+    if (familyDomiciles.length > 0) {
+      const first = familyDomiciles[0];
+      domiciliSearch.value = first.Nom_complet;
+      // Trigger search to show results
+      triggerDomiciliSearch();
+    }
+  } catch {}
+}
+
+familyDomicilis.addEventListener("change", () => {
+  const val = familyDomicilis.value;
+  if (!val) return;
+  const dom = familyDomiciles.find(d => d.idDomicili == val);
+  if (dom) {
+    domiciliSearch.value = dom.Nom_complet;
+    triggerDomiciliSearch();
   }
 });
 
@@ -292,14 +331,12 @@ function showDomiciliDropdown(results) {
   for (const r of results) {
     const div = document.createElement("div");
     if (r._type === "domicili") {
-      // Existing domicile
-      let label = `📍 ${r.Nom_complet}`;
+      let label = r.Nom_complet;
       if (r.Num_calle) label += `, ${r.Num_calle}`;
       if (r.Pis) label += `, Pis ${r.Pis}`;
       if (r.Escala) label += `, Esc ${r.Escala}`;
       div.innerHTML = `${label} <small>Domicili existent</small>`;
     } else {
-      // Callejero result
       let label = r.Nom_complet;
       div.innerHTML = `${label} <small>Carrer</small>`;
       if (r.barri || r.codi_postal) {
@@ -318,10 +355,8 @@ function selectDomiciliResult(r) {
   domiciliDropdown.style.display = "none";
   lastDomiciliQuery = r.Nom_complet;
   domiciliSearch.value = r.Nom_complet;
-  domicileType = r._type;
 
   if (r._type === "domicili") {
-    // Reusing an existing domicile
     selectedDomiciliId = r.idDomicili;
     selectedCallejeroId = null;
     tipusVia.value = r.idTipus_via || "";
@@ -330,22 +365,20 @@ function selectDomiciliResult(r) {
     pis.value = r.Pis || "";
     escala.value = r.Escala || "";
     tipusDomicili.value = r.Tipus_domicili || "";
-    // Disable address editing since we're reusing
     setDomicileEditState(true);
+    clearBarriCpHighlight();
     setBarriCpValue(r.barri, r.codi_postal);
-    updatePreview(r);
   } else {
-    // New address from callejero catalog
     selectedCallejeroId = r.idcallejero;
     selectedDomiciliId = null;
     tipusVia.value = r.idTipus_via || "";
     nomCalle.value = r.Nom_calle || "";
-    // Don't touch num/pis/escala - user must enter them
     tipusDomicili.value = tipusDomicili.value || "";
     setDomicileEditState(false);
+    clearBarriCpHighlight();
     setBarriCpValue(r.barri, r.codi_postal);
-    updatePreview(r);
   }
+  updatePreview(r);
 }
 
 function setDomicileEditState(readonly) {
@@ -357,51 +390,61 @@ function setDomicileEditState(readonly) {
 }
 
 function setBarriCpValue(barriVal, cpVal) {
-  // Collect unique barri/CP from current results
-  const barris = [...new Set(domiciliResults.map(r => r.barri).filter(Boolean))];
-  const cps = [...new Set(domiciliResults.map(r => r.codi_postal).filter(Boolean))];
+  const allBarris = [...new Set(domiciliResults.map(r => r.barri).filter(Boolean))];
+  const allCps = [...new Set(domiciliResults.map(r => r.codi_postal).filter(Boolean))];
 
-  if (barris.length <= 1) {
+  if (allBarris.length <= 1) {
     barriInput.value = barriVal || "";
     barriInput.style.display = "block";
     barriSelect.style.display = "none";
   } else {
-    showBarriDisambiguation(barris);
+    barriInput.style.display = "none";
+    barriSelect.style.display = "block";
+    barriSelect.innerHTML = '<option value="">-- Selecciona barri --</option>';
+    for (const b of allBarris) {
+      const opt = document.createElement("option");
+      opt.value = b;
+      opt.textContent = b;
+      if (b === barriVal) opt.selected = true;
+      barriSelect.appendChild(opt);
+    }
+    if (!allBarris.includes(barriVal)) {
+      highlightAmbiguity("barri");
+    }
   }
 
-  if (cps.length <= 1) {
+  if (allCps.length <= 1) {
     codiPostalInput.value = cpVal || "";
     codiPostalInput.style.display = "block";
     codiPostalSelect.style.display = "none";
   } else {
-    showCpDisambiguation(cps);
+    codiPostalInput.style.display = "none";
+    codiPostalSelect.style.display = "block";
+    codiPostalSelect.innerHTML = '<option value="">-- Selecciona CP --</option>';
+    for (const cp of allCps) {
+      const opt = document.createElement("option");
+      opt.value = cp;
+      opt.textContent = cp;
+      if (cp === cpVal) opt.selected = true;
+      codiPostalSelect.appendChild(opt);
+    }
+    if (!allCps.includes(cpVal)) {
+      highlightAmbiguity("codiPostal");
+    }
   }
 }
 
-function showBarriDisambiguation(barris) {
-  barriInput.style.display = "none";
-  barriSelect.style.display = "block";
-  barriSelect.innerHTML = '<option value="">-- Selecciona barri --</option>';
-  for (const b of barris) {
-    const opt = document.createElement("option");
-    opt.value = b;
-    opt.textContent = b;
-    barriSelect.appendChild(opt);
-  }
-  barriSelect.value = "";
+function highlightAmbiguity(field) {
+  const el = field === "barri" ? barriInput : codiPostalInput;
+  el.style.borderColor = "#e94560";
+  el.style.boxShadow = "0 0 0 2px rgba(233,69,96,0.25)";
 }
 
-function showCpDisambiguation(cps) {
-  codiPostalInput.style.display = "none";
-  codiPostalSelect.style.display = "block";
-  codiPostalSelect.innerHTML = '<option value="">-- Selecciona CP --</option>';
-  for (const cp of cps) {
-    const opt = document.createElement("option");
-    opt.value = cp;
-    opt.textContent = cp;
-    codiPostalSelect.appendChild(opt);
-  }
-  codiPostalSelect.value = "";
+function clearBarriCpHighlight() {
+  barriInput.style.borderColor = "";
+  barriInput.style.boxShadow = "";
+  codiPostalInput.style.borderColor = "";
+  codiPostalInput.style.boxShadow = "";
 }
 
 function autoFillBarriCp(results) {
@@ -410,25 +453,42 @@ function autoFillBarriCp(results) {
     codiPostalInput.value = "";
     return;
   }
-  const allBarris = results.map(r => r.barri).filter(Boolean);
-  const allCps = results.map(r => r.codi_postal).filter(Boolean);
-  const uniqueBarris = [...new Set(allBarris)];
-  const uniqueCps = [...new Set(allCps)];
+  const allBarris = [...new Set(results.map(r => r.barri).filter(Boolean))];
+  const allCps = [...new Set(results.map(r => r.codi_postal).filter(Boolean))];
+  clearBarriCpHighlight();
 
-  if (uniqueBarris.length === 1) {
-    barriInput.value = uniqueBarris[0];
+  if (allBarris.length === 1) {
+    barriInput.value = allBarris[0];
     barriInput.style.display = "block";
     barriSelect.style.display = "none";
-  } else if (uniqueBarris.length > 1) {
-    showBarriDisambiguation(uniqueBarris);
+  } else if (allBarris.length > 1) {
+    barriInput.style.display = "none";
+    barriSelect.style.display = "block";
+    barriSelect.innerHTML = '<option value="">-- Selecciona barri --</option>';
+    for (const b of allBarris) {
+      const opt = document.createElement("option");
+      opt.value = b;
+      opt.textContent = b;
+      barriSelect.appendChild(opt);
+    }
+    highlightAmbiguity("barri");
   }
 
-  if (uniqueCps.length === 1) {
-    codiPostalInput.value = uniqueCps[0];
+  if (allCps.length === 1) {
+    codiPostalInput.value = allCps[0];
     codiPostalInput.style.display = "block";
     codiPostalSelect.style.display = "none";
-  } else if (uniqueCps.length > 1) {
-    showCpDisambiguation(uniqueCps);
+  } else if (allCps.length > 1) {
+    codiPostalInput.style.display = "none";
+    codiPostalSelect.style.display = "block";
+    codiPostalSelect.innerHTML = '<option value="">-- Selecciona CP --</option>';
+    for (const cp of allCps) {
+      const opt = document.createElement("option");
+      opt.value = cp;
+      opt.textContent = cp;
+      codiPostalSelect.appendChild(opt);
+    }
+    highlightAmbiguity("codiPostal");
   }
 }
 
@@ -450,8 +510,6 @@ function updatePreview(r) {
 btnCrear.addEventListener("click", submitForm);
 
 async function submitForm() {
-  const neseOptions = [...neses.selectedOptions].map(o => parseInt(o.value)).filter(n => !isNaN(n));
-
   if (!nom.value.trim()) { showToast("El camp Nom és obligatori", "error"); nom.focus(); return; }
   if (!cognoms.value.trim()) { showToast("El camp Cognoms és obligatori", "error"); cognoms.focus(); return; }
   if (!fechaNaixement.value) { showToast("La data de naixement és obligatòria", "error"); fechaNaixement.focus(); return; }
@@ -503,13 +561,13 @@ async function submitForm() {
       Resultat_academic: resulAcad.value ? parseInt(resulAcad.value) : undefined,
       Curs_actual: cursActual.value ? parseInt(cursActual.value) : undefined,
       idSebas: sebas.value ? parseInt(sebas.value) : undefined,
+      idNecessitat_especial: neses.value ? parseInt(neses.value) : null,
       derivacio_serveis_socials: derivacio.checked ? 1 : 0,
     },
     familia: selectedFamilyId
       ? { idFamilia: selectedFamilyId }
       : { Estructura_familiar: parseInt(estructuraFamiliar.value) },
     domicili: domiciliPayload,
-    necessitats_especials: neseOptions,
   };
 
   btnCrear.disabled = true;
@@ -539,6 +597,8 @@ async function submitForm() {
 function resetForm() {
   nom.value = "";
   cognoms.value = "";
+  cognoms.style.borderColor = "";
+  cognoms.style.boxShadow = "";
   telefon.value = "";
   correu.value = "";
   fechaNaixement.value = "";
@@ -547,8 +607,6 @@ function resetForm() {
   rol.value = "";
   situacioEconomica.value = "";
   paisNaixement.value = "";
-  // Reset multi-select
-  for (const opt of neses.options) opt.selected = false;
   setDefaultDropdowns();
   derivacio.checked = false;
   dataAlta.value = new Date().toISOString().split("T")[0];
@@ -572,14 +630,17 @@ function clearDomicile() {
   escala.style.background = "#fff";
   barriInput.value = "";
   barriInput.style.display = "block";
+  barriInput.style.borderColor = "";
+  barriInput.style.boxShadow = "";
   barriSelect.style.display = "none";
   codiPostalInput.value = "";
   codiPostalInput.style.display = "block";
+  codiPostalInput.style.borderColor = "";
+  codiPostalInput.style.boxShadow = "";
   codiPostalSelect.style.display = "none";
   tipusDomicili.value = "";
   selectedCallejeroId = null;
   selectedDomiciliId = null;
-  domicileType = null;
   domiciliResults = [];
   previewBar.textContent = "";
 }

@@ -46,6 +46,7 @@ async function create(clientData) {
         Motiu_baixa,
         idSituacio_economica,
         idSebas,
+        idNecessitat_especial,
         derivacio_serveis_socials,
         Curs_actual
     } = clientData;
@@ -59,10 +60,10 @@ async function create(clientData) {
             Fecha_nacimiento, C_edad,
             Data_baixa,
             Pais_naixement, Risc, Resultat_academic, Motiu_baixa,
-            idSituacio_economica, idSebas,
+            idSituacio_economica, idSebas, idNecessitat_especial,
             derivacio_serveis_socials,
             Curs_actual
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
         [
             idFamilia, idRol, idGenere,
@@ -71,7 +72,7 @@ async function create(clientData) {
             Fecha_nacimiento, C_edad,
             Data_baixa ?? null,
             Pais_naixement, Risc, Resultat_academic, Motiu_baixa ?? null,
-            idSituacio_economica, idSebas,
+            idSituacio_economica, idSebas, idNecessitat_especial ?? null,
             derivacio_serveis_socials,
             Curs_actual ?? null
         ]
@@ -100,6 +101,7 @@ async function update(id, clientData) {
         Motiu_baixa,
         idSituacio_economica,
         idSebas,
+        idNecessitat_especial,
         derivacio_serveis_socials,
         Curs_actual
     } = clientData;
@@ -114,7 +116,7 @@ async function update(id, clientData) {
             Fecha_nacimiento = ?, C_edad = ?,
             Data_baixa = ?,
             Pais_naixement = ?, Risc = ?, Resultat_academic = ?, Motiu_baixa = ?,
-            idSituacio_economica = ?, idSebas = ?,
+            idSituacio_economica = ?, idSebas = ?, idNecessitat_especial = ?,
             derivacio_serveis_socials = ?,
             Curs_actual = ?
         WHERE idClient = ?
@@ -126,7 +128,7 @@ async function update(id, clientData) {
             Fecha_nacimiento, C_edad,
             Data_baixa ?? null,
             Pais_naixement, Risc, Resultat_academic, Motiu_baixa ?? null,
-            idSituacio_economica, idSebas,
+            idSituacio_economica, idSebas, idNecessitat_especial ?? null,
             derivacio_serveis_socials,
             Curs_actual ?? null,
             id
@@ -200,10 +202,10 @@ async function createFull(data) {
                 Data_d_alta, C_temps_a_lentitat,
                 Fecha_nacimiento, C_edad,
                 Pais_naixement, Risc, Resultat_academic,
-                idSituacio_economica, idSebas,
+                idSituacio_economica, idSebas, idNecessitat_especial,
                 derivacio_serveis_socials,
                 Curs_actual, idDomicili, Baixa
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 idFamilia,
                 client.idRol,
@@ -221,6 +223,7 @@ async function createFull(data) {
                 client.Resultat_academic ?? null,
                 client.idSituacio_economica,
                 client.idSebas,
+                client.idNecessitat_especial ?? null,
                 client.derivacio_serveis_socials ?? 0,
                 client.Curs_actual ?? null,
                 idDomicili,
@@ -234,16 +237,6 @@ async function createFull(data) {
             await conn.query(
                 `INSERT INTO nacionalitat (idPais, idClient) VALUES (?, ?)`,
                 [nacionalitat, idClient]
-            );
-        }
-
-        // 6. Create necessitats_especials associations
-        const neses = data.necessitats_especials || [];
-        if (neses.length > 0) {
-            const neseValues = neses.map(id => [id, idClient]);
-            await conn.query(
-                `INSERT INTO necessitats_especials_has_client (idNecessitat_especial, idClient) VALUES ?`,
-                [neseValues]
             );
         }
 

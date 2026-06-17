@@ -71,7 +71,7 @@
       </div>
       <div class="form-group">
         <label for="neses">NESE</label>
-        <select id="neses" multiple></select>
+        <select id="neses"></select>
       </div>
       <div class="form-group">
         <label for="cursActual">Curs actual</label>
@@ -120,6 +120,7 @@
         <select id="estructuraFamiliar"><option value="">-- Selecciona --</option></select>
       </div>
     </div>
+    <div id="familiaWarning" class="warning-message" style="display:none"></div>
     <div id="selectedFamilyInfo" class="selected-info" style="display:none">
       Família seleccionada: <span id="selectedFamilyName"></span>
       <button type="button" id="clearFamilyBtn">X</button>
@@ -174,6 +175,14 @@
       <div class="form-group">
         <label for="tipusDomicili">Tipus de domicili</label>
         <select id="tipusDomicili"><option value="">-- Selecciona --</option></select>
+      </div>
+    </div>
+    <div id="familyDomicilisGroup" style="display:none">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="familyDomicilis">Domicilis de la família</label>
+          <select id="familyDomicilis"><option value="">Domicilis de la família</option></select>
+        </div>
       </div>
     </div>
     <div class="preview-bar" id="previewBar"></div>
