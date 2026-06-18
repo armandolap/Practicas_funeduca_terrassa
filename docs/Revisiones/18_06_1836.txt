@@ -1,0 +1,79 @@
+1.- el boton de editar me lleva a la pagina de crear usuario,
+    pero no me carga los campos,con los campos vacios ni recuerdo los datos de la persona
+    entonces al darle actualizar tendra variacion en campos que no querian variar
+2.- la lista de personas (http://localhost:3000/clients.html) aun muestra proyectos pasados,
+     en la vista de persona-detalle(http://localhost:3000/client.html?id=14 :id ) 
+    es donde ahora sale activo en vez de tots
+PROMPT:
+# Bugs detectados tras las últimas modificaciones
+Se han identificado tres problemas funcionales que deben corregirse sin modificar el resto del sistema ni introducir nuevas pantallas.
+---
+# 1. Edición de persona no carga datos correctamente
+## Problema
+El botón de editar en la lista de personas redirige correctamente a la página de creación/edición (`crear-persona.html`), pero no carga los datos existentes de la persona.
+Esto provoca que:
+* Los campos aparecen vacíos.
+* El usuario no puede saber qué datos está modificando.
+* Al guardar, se pueden sobrescribir datos existentes con valores vacíos.
+## Comportamiento esperado
+Al pulsar "Editar":
+* Debe abrirse `crear-persona.html`.
+* Debe enviarse el id de la persona.
+* La página debe detectar que está en modo edición.
+* Debe solicitar los datos actuales al backend.
+* Todos los campos deben rellenarse automáticamente con los valores existentes.
+* El usuario podrá modificar únicamente los campos que desee.
+* Nunca sobrescribir datos existentes con valores vacíos por defecto.
+---
+# 2. Problemas en crear-persona.html
+Tras las últimas modificaciones, funcionalidades que anteriormente funcionaban han dejado de hacerlo.
+## 2.1 Cálculo automático de edad
+### Problema
+Al introducir o modificar la fecha de nacimiento, la edad ya no se calcula automáticamente.
+### Comportamiento esperado
+* La edad debe actualizarse automáticamente al cambiar la fecha de nacimiento.
+* Debe comportarse igual que antes de las últimas modificaciones.
+---
+## 2.2 Las tablas estáticas no se cargan
+### Problema
+Los desplegables y tablas estáticas no se muestran correctamente en `crear-persona.html`.
+La base de datos ha sido comprobada y contiene los datos, por lo que el problema parece estar en la conexión entre frontend y backend o en la carga de dichos datos.
+### Comportamiento esperado
+Todos los desplegables y datos provenientes de tablas estáticas deben cargarse correctamente como ocurría antes.
+### Acción requerida
+* Revisar las llamadas al backend desde `crear-persona.html`.
+* Verificar endpoints, nombres de propiedades y carga de datos.
+* Reutilizar la lógica existente si fue modificada accidentalmente.
+---
+# 3. Inconsistencia en la visualización de proyectos en personas
+## Problema
+En la lista de personas (`clients.html`) siguen apareciendo proyectos pasados o cerrados cuando no deberían mostrarse.
+En cambio, en la vista de detalle de una persona (`client.html?id=:id`) sí deben poder verse todos los proyectos.
+## Comportamiento esperado
+### En clients.html
+Solo deben mostrarse:
+* Proyectos activos.
+* Proyectos futuros.
+No deben aparecer proyectos cerrados o finalizados.
+### En client.html
+El filtro por defecto debe ser "tots".
+"Tots" debe mostrar:
+* Proyectos pasados.
+* Proyectos activos.
+* Proyectos futuros.
+Los botones de filtrado existentes deben seguir funcionando correctamente.
+## Acción requerida
+Mantener separada la lógica entre:
+* `clients.html`
+* `client.html`
+No reutilizar el filtro del detalle para la lista de personas.
+---
+# Prioridad
+1. Reparar completamente `crear-persona.html`:
+   * Carga de datos en edición.
+   * Cálculo automático de edad.
+   * Carga de tablas estáticas.
+2. Corregir el filtrado de proyectos en `clients.html`.
+## Nota general
+No introducir nuevas vistas ni refactorizaciones grandes.
+Corregir únicamente la lógica existente y reutilizar componentes, servicios y endpoints actuales para evitar romper funcionalidades que ya estaban operativas.
