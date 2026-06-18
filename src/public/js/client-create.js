@@ -683,7 +683,6 @@ function clearDomicile() {
 }
 
 // ============ EDIT MODE ============
-const editPersonId = new URLSearchParams(location.search).get('id');
 let isEditMode = !!editPersonId;
 
 async function loadEditData(id) {

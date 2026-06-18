@@ -18,7 +18,8 @@ async function getFiltered({ q, familia, genere, barri, edatMin, edatMax, offset
                (SELECT GROUP_CONCAT(p.Nom_projecte SEPARATOR ', ')
                 FROM proyectos_has_client phc
                 JOIN proyectos p ON phc.idProyecto = p.idProyecto
-                WHERE phc.idClient = cl.idClient) AS projectes
+                WHERE phc.idClient = cl.idClient
+                  AND (p.fecha_fin_act IS NULL OR p.fecha_fin_act >= CURDATE())) AS projectes
         FROM client cl
         JOIN familia f ON cl.idFamilia = f.idFamilia
         JOIN genere g ON cl.idGenere = g.idGenere
