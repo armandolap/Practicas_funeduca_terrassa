@@ -1,29 +1,12 @@
 # Resultat dels tests
 
-**Data:** 2026-06-18T11:05:39.432Z
+**Data:** 2026-06-18T13:40:34.731Z
 
-❌ **3 test(s) han fallat** (de 292 totals)
+✅ Tots els tests han passat correctament.
 
 ## Possibles problemes i solucions
 
-### POST /usuario → 400
-
-**Error:** expected 201 + {id}, got 400 {"error":"Nom d'usuari obligatori"}
-
-**Possible solució:** Verifica que el controlador retorna 201 i un objecte amb el camp 'id'. Revisa la funció create del repositori.
-
-### POST /callejero (readOnly) → 401
-
-**Error:** expected 404/405, got 401
-
-**Possible solució:** Comprova que l'endpoint existeix a server.js i que la ruta està ben definida.
-
-### GET / → 200
-
-**Error:** expected 200 + login page, got 200
-
-**Possible solució:** Comprova que el controlador retorna l'objecte correcte. Revisa getById al repositori.
-
+No s'han detectat problemes.
 
 ## Tests manuals pendents
 

@@ -236,4 +236,54 @@ async function createFull(data) {
     }
 }
 
-module.exports = { getAll, getFiltered, getDetailById, getProjectsByClient, create, update, remove, createFull };
+async function updateFull(id, data) {
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        const { domicili, familia, client } = data;
+        let idDomicili = client.idDomicili || domicili?.idDomicili || null;
+
+        if (domicili?.idcallejero && !idDomicili) {
+            const [rDir] = await conn.query(
+                `INSERT INTO direccio (idcallejero, Num_calle, Pis, Escala) VALUES (?, ?, ?, ?)`,
+                [domicili.idcallejero, domicili.Num_calle, domicili.Pis ?? null, domicili.Escala ?? null]
+            );
+            const [rDom] = await conn.query(
+                `INSERT INTO domicili (Tipus_domicili, Direccio) VALUES (?, ?)`,
+                [domicili.Tipus_domicili || 1, rDir.insertId]
+            );
+            idDomicili = rDom.insertId;
+        }
+
+        let idFamilia = client.idFamilia || familia?.idFamilia || null;
+        if (!idFamilia && familia?.Cognom_familiar) {
+            const [rFam] = await conn.query(
+                `INSERT INTO familia (Cognom_familiar, Estructura_familiar) VALUES (?, ?)`,
+                [familia.Cognom_familiar, familia.Estructura_familiar || null]
+            );
+            idFamilia = rFam.insertId;
+        }
+
+        await conn.query(`
+            UPDATE client SET idFamilia=?, idRol=?, idGenere=?, Nom=?, Cognoms=?, Telefon=?, Correu_electronic=?,
+                Data_d_alta=?, C_temps_a_lentitat=?, Fecha_nacimiento=?, C_edad=?,
+                Pais_naixement=?, Risc=?, Resultat_academic=?, idSituacio_economica=?, idSebas=?, idNecessitat_especial=?,
+                derivacio_serveis_socials=?, Curs_actual=?, idDomicili=?, Baixa=?
+            WHERE idClient=?
+        `, [idFamilia, client.idRol, client.idGenere, client.Nom, client.Cognoms,
+            client.Telefon ?? null, client.Correu_electronic ?? null,
+            client.Data_d_alta, client.C_temps_a_lentitat, client.Fecha_nacimiento, client.C_edad,
+            client.Pais_naixement, client.Risc, client.Resultat_academic ?? null,
+            client.idSituacio_economica, client.idSebas, client.idNecessitat_especial ?? null,
+            client.derivacio_serveis_socials ?? 0, client.Curs_actual ?? null, idDomicili, client.Baixa ?? 0, id]);
+
+        await conn.commit();
+    } catch (error) {
+        await conn.rollback();
+        throw error;
+    } finally {
+        conn.release();
+    }
+}
+
+module.exports = { getAll, getFiltered, getDetailById, getProjectsByClient, create, update, remove, createFull, updateFull };

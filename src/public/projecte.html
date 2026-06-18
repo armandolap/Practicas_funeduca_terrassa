@@ -62,20 +62,20 @@ async function addClient(clientId) {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
             body: JSON.stringify({ clientIds: [clientId] })
         });
-        if (res.ok) { showToast('Client afegit', 'success'); closeModal(); loadProject(); }
-        else { showToast('Error en afegir client', 'error'); }
+        if (res.ok) { showToast('Participant afegit', 'success'); closeModal(); loadProject(); }
+        else { showToast('Error en afegir participant', 'error'); }
     } catch (err) { showToast('Error de connexió', 'error'); }
 }
 
 async function removeClient(clientId) {
-    if (!confirm('Eliminar aquest client del projecte?')) return;
+    if (!confirm('Eliminar aquest participant del projecte?')) return;
     try {
         const res = await fetch(`/projectes/${projectId}/clients/${clientId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
-        if (res.ok) { showToast('Client eliminat', 'success'); loadProject(); }
-        else { showToast('Error en eliminar client', 'error'); }
+        if (res.ok) { showToast('Participant eliminat', 'success'); loadProject(); }
+        else { showToast('Error en eliminar participant', 'error'); }
     } catch (err) { showToast('Error de connexió', 'error'); }
 }
 
