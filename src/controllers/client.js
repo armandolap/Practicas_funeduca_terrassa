@@ -37,6 +37,8 @@ async function createClient(req, res) {
         if (!Nom?.trim() || !Cognoms?.trim()) {
             return res.status(400).json({ message: "Nom i Cognoms obligatoris" });
         }
+        if (Nom && Nom.length > 100) return res.status(400).json({ message: "Nom no pot superar 100 caràcters" });
+        if (Cognoms && Cognoms.length > 100) return res.status(400).json({ message: "Cognoms no pot superar 100 caràcters" });
         const id = await repo.create(req.body);
         res.status(201).json({ message: "Client creat", id });
     } catch (error) {
@@ -99,18 +101,26 @@ async function createFullClient(req, res) {
                 Risc, Resultat_academic, Curs_actual, idSebas, idNecessitat_especial } = clientData;
         if (!Nom?.trim()) return res.status(400).json({ message: "Nom obligatori" });
         if (!Cognoms?.trim()) return res.status(400).json({ message: "Cognoms obligatoris" });
+        if (Nom && Nom.length > 100) return res.status(400).json({ message: "Nom no pot superar 100 caràcters" });
+        if (Cognoms && Cognoms.length > 100) return res.status(400).json({ message: "Cognoms no pot superar 100 caràcters" });
         if (!Fecha_nacimiento) return res.status(400).json({ message: "Fecha naixement obligatòria" });
-        if (!idGenere) return res.status(400).json({ message: "Gènere obligatori" });
-        if (!idRol) return res.status(400).json({ message: "Rol obligatori" });
-        if (!idSituacio_economica) return res.status(400).json({ message: "Situació econòmica obligatòria" });
-        if (!Pais_naixement) return res.status(400).json({ message: "País naixement obligatori" });
+        if (typeof idGenere !== "number" || !Number.isFinite(idGenere)) return res.status(400).json({ message: "idGenere ha de ser un número" });
+        if (typeof idRol !== "number" || !Number.isFinite(idRol)) return res.status(400).json({ message: "idRol ha de ser un número" });
+        if (typeof idSituacio_economica !== "number" || !Number.isFinite(idSituacio_economica)) return res.status(400).json({ message: "idSituacio_economica ha de ser un número" });
+        if (typeof Pais_naixement !== "number" || !Number.isFinite(Pais_naixement)) return res.status(400).json({ message: "Pais_naixement ha de ser un número" });
+        if (!isValidDate(Fecha_nacimiento)) return res.status(400).json({ message: "Fecha naixement no és una data vàlida" });
+        if (isFutureDate(Fecha_nacimiento)) return res.status(400).json({ message: "Fecha naixement no pot ser futura" });
+        if (Data_d_alta) {
+            if (!isValidDate(Data_d_alta)) return res.status(400).json({ message: "Data d'alta no és una data vàlida" });
+            if (isFutureDate(Data_d_alta)) return res.status(400).json({ message: "Data d'alta no pot ser futura" });
+        }
         if (!familia?.idFamilia && !familia?.Estructura_familiar) {
             return res.status(400).json({ message: "Estructura familiar obligatòria si no s'assigna una família existent" });
         }
         if (!domicili?.idDomicili && !domicili?.idcallejero) {
             return res.status(400).json({ message: "Dades de domicili obligatòries si no s'assigna un d'existent" });
         }
-        const nac = new Date(Fecha_nacimiento);
+        const nac = parseDate(Fecha_nacimiento);
         const avui = new Date();
         let C_edad = avui.getFullYear() - nac.getFullYear();
         const m = avui.getMonth() - nac.getMonth();
@@ -143,10 +153,14 @@ async function updateFullClient(req, res) {
         const { Nom, Cognoms, Fecha_nacimiento, idGenere } = clientData;
         if (!Nom?.trim()) return res.status(400).json({ message: "Nom obligatori" });
         if (!Cognoms?.trim()) return res.status(400).json({ message: "Cognoms obligatoris" });
+        if (Nom && Nom.length > 100) return res.status(400).json({ message: "Nom no pot superar 100 caràcters" });
+        if (Cognoms && Cognoms.length > 100) return res.status(400).json({ message: "Cognoms no pot superar 100 caràcters" });
         if (!Fecha_nacimiento) return res.status(400).json({ message: "Fecha naixement obligatòria" });
-        if (!idGenere) return res.status(400).json({ message: "Gènere obligatori" });
+        if (typeof idGenere !== "number" || !Number.isFinite(idGenere)) return res.status(400).json({ message: "idGenere ha de ser un número" });
+        if (!isValidDate(Fecha_nacimiento)) return res.status(400).json({ message: "Fecha naixement no és una data vàlida" });
+        if (isFutureDate(Fecha_nacimiento)) return res.status(400).json({ message: "Fecha naixement no pot ser futura" });
 
-        const nac = new Date(Fecha_nacimiento);
+        const nac = parseDate(Fecha_nacimiento);
         const avui = new Date();
         let C_edad = avui.getFullYear() - nac.getFullYear();
         const m = avui.getMonth() - nac.getMonth();
@@ -187,6 +201,23 @@ async function updateFullClient(req, res) {
         console.error(error);
         res.status(500).json({ message: "Error actualitzant client complet" });
     }
+}
+
+function isValidDate(dateStr) {
+    if (typeof dateStr !== "string" || !dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return false;
+    const d = new Date(dateStr + "T12:00:00Z");
+    return !isNaN(d.getTime()) && d.toISOString().slice(0, 10) === dateStr;
+}
+
+function isFutureDate(dateStr) {
+    const d = new Date(dateStr + "T12:00:00Z");
+    const avui = new Date();
+    avui.setHours(23, 59, 59, 999);
+    return d > avui;
+}
+
+function parseDate(dateStr) {
+    return new Date(dateStr + "T12:00:00Z");
 }
 
 module.exports = { getAllClients, getClientById, createClient, updateClient, deleteClient, createFullClient, updateFullClient };

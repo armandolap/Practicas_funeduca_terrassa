@@ -32,6 +32,12 @@ async function createDomicili(req, res) {
         if (!Tipus_domicili || !Direccio) {
             return res.status(400).json({ message: "Tipus_domicili i Direccio obligatoris" });
         }
+        if (typeof Tipus_domicili !== "number" || !Number.isFinite(Tipus_domicili)) {
+            return res.status(400).json({ message: "Tipus_domicili ha de ser un número" });
+        }
+        if (typeof Direccio !== "number" || !Number.isFinite(Direccio)) {
+            return res.status(400).json({ message: "Direccio ha de ser un número" });
+        }
         const id = await repo.create(Tipus_domicili, Direccio);
         res.status(201).json({ message: "Domicili creat", id });
     } catch (error) {
@@ -47,6 +53,12 @@ async function updateDomicili(req, res) {
         const { Tipus_domicili, Direccio } = req.body || {};
         if (!Tipus_domicili || !Direccio) {
             return res.status(400).json({ message: "Tipus_domicili i Direccio obligatoris" });
+        }
+        if (typeof Tipus_domicili !== "number" || !Number.isFinite(Tipus_domicili)) {
+            return res.status(400).json({ message: "Tipus_domicili ha de ser un número" });
+        }
+        if (typeof Direccio !== "number" || !Number.isFinite(Direccio)) {
+            return res.status(400).json({ message: "Direccio ha de ser un número" });
         }
         await repo.update(req.params.id, Tipus_domicili, Direccio);
         res.json({ message: "Domicili actualitzat" });

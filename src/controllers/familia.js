@@ -36,8 +36,14 @@ async function createFamilia(req, res) {
         if (!Cognom_familiar?.trim()) {
             return res.status(400).json({ message: "Cognom_familiar obligatori" });
         }
-        if (!Estructura_familiar) {
+        if (Cognom_familiar.length > 100) {
+            return res.status(400).json({ message: "Cognom_familiar no pot superar 100 caràcters" });
+        }
+        if (Estructura_familiar === undefined || Estructura_familiar === null) {
             return res.status(400).json({ message: "Estructura_familiar obligatòria" });
+        }
+        if (typeof Estructura_familiar !== "number" || !Number.isFinite(Estructura_familiar)) {
+            return res.status(400).json({ message: "Estructura_familiar ha de ser un número" });
         }
         const id = await repo.create(Cognom_familiar, null, Estructura_familiar);
         res.status(201).json({ message: "Família creada", id });
@@ -54,6 +60,14 @@ async function updateFamilia(req, res) {
         const { Cognom_familiar, Estructura_familiar } = req.body || {};
         if (!Cognom_familiar?.trim()) {
             return res.status(400).json({ message: "Cognom_familiar obligatori" });
+        }
+        if (Cognom_familiar.length > 100) {
+            return res.status(400).json({ message: "Cognom_familiar no pot superar 100 caràcters" });
+        }
+        if (Estructura_familiar !== undefined && Estructura_familiar !== null) {
+            if (typeof Estructura_familiar !== "number" || !Number.isFinite(Estructura_familiar)) {
+                return res.status(400).json({ message: "Estructura_familiar ha de ser un número" });
+            }
         }
         await repo.update(req.params.id, Cognom_familiar, null, Estructura_familiar);
         res.json({ message: "Família actualitzada" });

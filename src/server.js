@@ -16,6 +16,20 @@ const PORT = process.env.PORT || 3000;
 
 server.use(express.json());
 
+server.use((req, res, next) => {
+    if (["POST", "PUT", "PATCH"].includes(req.method) && (req.body === undefined || req.body === null)) {
+        return res.status(400).json({ message: "El cos de la petició ha de ser JSON" });
+    }
+    next();
+});
+
+server.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+        return res.status(400).json({ message: "JSON malformat" });
+    }
+    next();
+});
+
 // Root → login page
 server.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "login.html"));
