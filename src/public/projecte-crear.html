@@ -74,10 +74,37 @@
     </div>
 
     <div class="card">
-      <h3>Responsable</h3>
+      <h3>Responsables</h3>
+
       <div class="form-group">
-        <label>Selecciona responsable *</label>
-        <select id="responsable" required></select>
+        <label>Responsable de zona *</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="zonaSearch" placeholder="Cerca responsable de zona..." autocomplete="off">
+          <div class="autocomplete-dropdown" id="zonaDropdown" style="display:none"></div>
+        </div>
+        <div id="zonaSelected" style="display:none;margin-top:6px;padding:8px 12px;background:#f0fdf4;border-radius:6px;">
+          <span id="zonaSelectedName" style="font-weight:600;"></span>
+          <span id="zonaRemoveBtn" style="cursor:pointer;color:#ef4444;margin-left:8px;font-size:13px;" onclick="removeZona()">✕</span>
+        </div>
+        <input type="hidden" id="responsableZona">
+      </div>
+
+      <div class="form-group" style="margin-top:16px">
+        <label>Responsables de projecte</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="projRespSearch" placeholder="Cerca responsables de projecte..." autocomplete="off">
+          <div class="autocomplete-dropdown" id="projRespDropdown" style="display:none"></div>
+        </div>
+        <div id="projRespTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+      </div>
+
+      <div class="form-group" style="margin-top:16px">
+        <label>Treballadors</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="trebSearch" placeholder="Cerca treballadors..." autocomplete="off">
+          <div class="autocomplete-dropdown" id="trebDropdown" style="display:none"></div>
+        </div>
+        <div id="trebTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
       </div>
     </div>
 
@@ -92,6 +119,11 @@
 const isEdit = new URLSearchParams(location.search).get('id');
 let selectedCentreId = null;
 let centreSearchTimeout;
+let _zonaUsers = [], _projRespUsers = [], _trebUsers = [];
+let _zonaSelected = null, _projRespSelected = [], _trebSelected = [];
+
+const TOKEN = () => localStorage.getItem('token');
+const AUTH_HEADERS = () => ({ 'Authorization': `Bearer ${TOKEN()}` });
 
 async function initForm() {
     if (!requireAuth()) return;
@@ -102,26 +134,150 @@ async function initForm() {
         return;
     }
     renderSidebar('projectes');
+
+    await loadUserLists();
+    initTagInputs();
+
     if (isEdit) {
         document.getElementById('formTitle').textContent = 'Editar Projecte';
         document.getElementById('btnSave').textContent = 'Actualitzar Projecte';
         await loadProject(isEdit);
+    } else {
+        // Auto-assign zone responsable if current user is level 2
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.idNivel_acceso === 2) {
+            const match = _zonaUsers.find(u => u.idUsuario_APP === user.idUsuario_APP);
+            if (match) selectZona(match);
+        }
     }
-    await loadResponsables();
 }
 
-async function loadResponsables() {
+async function loadUserLists() {
     try {
-        const res = await fetch('/usuario?filter=tots', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
-        const data = await res.json();
-        const sel = document.getElementById('responsable');
-        sel.innerHTML = '<option value="">-- Selecciona --</option>' + data.map(u => `<option value="${u.idUsuario_APP}">${u.Nom} ${u.Cognoms} (${u.nivel_acceso_nom || ''})</option>`).join('');
-    } catch (e) {}
+        const [zonaRes, projRes, trebRes] = await Promise.all([
+            fetch('/projectes/usuaris-per-nivell?min=1&max=2', { headers: AUTH_HEADERS() }),
+            fetch('/projectes/usuaris-per-nivell?min=2&max=3', { headers: AUTH_HEADERS() }),
+            fetch('/projectes/usuaris-per-nivell?min=4&max=4', { headers: AUTH_HEADERS() })
+        ]);
+        _zonaUsers = await zonaRes.json();
+        _projRespUsers = await projRes.json();
+        _trebUsers = await trebRes.json();
+    } catch (e) { console.error(e); }
 }
+
+// ── Tag input helpers ──
+
+function initTagInputs() {
+    setupSearch('zonaSearch', 'zonaDropdown', _zonaUsers, 'zona');
+    setupSearch('projRespSearch', 'projRespDropdown', _projRespUsers, 'projResp');
+    setupSearch('trebSearch', 'trebDropdown', _trebUsers, 'treb');
+}
+
+function setupSearch(inputId, dropdownId, users, type) {
+    const input = document.getElementById(inputId);
+    const dropdown = document.getElementById(dropdownId);
+    input.addEventListener('input', function() {
+        const q = this.value.trim().toLowerCase();
+        if (q.length < 1) { dropdown.style.display = 'none'; return; }
+        const filtered = users.filter(u =>
+            (u.Nom + ' ' + u.Cognoms + ' ' + (u.nivell_nom || '')).toLowerCase().includes(q)
+        );
+        if (filtered.length) {
+            dropdown.innerHTML = filtered.map(u =>
+                `<div onclick="select${capitalize(type)}(${JSON.stringify(u).replace(/"/g, "'")})" style="cursor:pointer;padding:6px 10px;border-bottom:1px solid #f1f5f9;">
+                    ${u.Nom} ${u.Cognoms} <span style="color:#64748b;font-size:12px;">(${u.nivell_nom || ''})</span>
+                </div>`
+            ).join('');
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">Cap resultat</div>';
+            dropdown.style.display = 'block';
+        }
+    });
+    input.addEventListener('blur', () => setTimeout(() => dropdown.style.display = 'none', 200));
+    input.addEventListener('focus', () => { if (input.value.trim()) input.dispatchEvent(new Event('input')); });
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ── Zona ──
+
+function selectZona(user) {
+    const data = typeof user === 'object' ? user : JSON.parse(user);
+    _zonaSelected = data;
+    document.getElementById('responsableZona').value = data.idUsuario_APP;
+    document.getElementById('zonaSearch').value = data.Nom + ' ' + data.Cognoms;
+    document.getElementById('zonaSelected').style.display = 'block';
+    document.getElementById('zonaSelectedName').textContent = data.Nom + ' ' + data.Cognoms + ' (' + (data.nivell_nom || '') + ')';
+    document.getElementById('zonaDropdown').style.display = 'none';
+    const role = getRole();
+    document.getElementById('zonaRemoveBtn').style.display = role === 1 ? '' : 'none';
+}
+
+function removeZona() {
+    _zonaSelected = null;
+    document.getElementById('responsableZona').value = '';
+    document.getElementById('zonaSearch').value = '';
+    document.getElementById('zonaSelected').style.display = 'none';
+}
+
+// ── Projecte resp ──
+
+function selectProjResp(user) {
+    const data = typeof user === 'object' ? user : JSON.parse(user);
+    if (_projRespSelected.some(u => u.idUsuario_APP === data.idUsuario_APP)) return;
+    _projRespSelected.push(data);
+    renderProjRespTags();
+    document.getElementById('projRespSearch').value = '';
+    document.getElementById('projRespDropdown').style.display = 'none';
+}
+
+function removeProjResp(id) {
+    _projRespSelected = _projRespSelected.filter(u => u.idUsuario_APP !== id);
+    renderProjRespTags();
+}
+
+function renderProjRespTags() {
+    const container = document.getElementById('projRespTags');
+    container.innerHTML = _projRespSelected.map(u =>
+        `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e0f2fe;border-radius:20px;font-size:13px;">
+            ${u.Nom} ${u.Cognoms}
+            <span onclick="removeProjResp(${u.idUsuario_APP})" style="cursor:pointer;color:#ef4444;font-weight:700;">✕</span>
+        </span>`
+    ).join('');
+}
+
+// ── Treballadors ──
+
+function selectTreb(user) {
+    const data = typeof user === 'object' ? user : JSON.parse(user);
+    if (_trebSelected.some(u => u.idUsuario_APP === data.idUsuario_APP)) return;
+    _trebSelected.push(data);
+    renderTrebTags();
+    document.getElementById('trebSearch').value = '';
+    document.getElementById('trebDropdown').style.display = 'none';
+}
+
+function removeTreb(id) {
+    _trebSelected = _trebSelected.filter(u => u.idUsuario_APP !== id);
+    renderTrebTags();
+}
+
+function renderTrebTags() {
+    const container = document.getElementById('trebTags');
+    container.innerHTML = _trebSelected.map(u =>
+        `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fef3c7;border-radius:20px;font-size:13px;">
+            ${u.Nom} ${u.Cognoms}
+            <span onclick="removeTreb(${u.idUsuario_APP})" style="cursor:pointer;color:#ef4444;font-weight:700;">✕</span>
+        </span>`
+    ).join('');
+}
+
+// ── Load / Save ──
 
 async function loadProject(id) {
     try {
-        const res = await fetch(`/projectes/${id}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const res = await fetch(`/projectes/${id}`, { headers: AUTH_HEADERS() });
         const p = await res.json();
         document.getElementById('nomProjecte').value = p.Nom_projecte || '';
         document.getElementById('descripcio').value = p.Descripcio || '';
@@ -136,21 +292,105 @@ async function loadProject(id) {
             document.getElementById('centreNameDisplay').textContent = p.nom_centre_activitats || '';
             document.getElementById('centreAddressDisplay').textContent = p.tipus_via ? `${p.tipus_via} ${p.Nom_calle || ''}, ${p.Num_calle || ''}` : '';
         }
-        if (p.responsable) document.getElementById('responsable').value = p.responsable;
+
+        // Load responsables
+        const responsables = p.responsables || [];
+        const zona = responsables.find(r => r.tipus_responsable === 1);
+        const projs = responsables.filter(r => r.tipus_responsable === 2);
+        const trebs = responsables.filter(r => r.tipus_responsable === 3);
+        if (zona) selectZona(zona);
+        projs.forEach(r => {
+            const found = _projRespUsers.find(u => u.idUsuario_APP === r.idUsuario_APP);
+            if (found) selectProjResp(found);
+        });
+        trebs.forEach(r => {
+            const found = _trebUsers.find(u => u.idUsuario_APP === r.idUsuario_APP);
+            if (found) selectTreb(found);
+        });
     } catch (e) { console.error(e); }
 }
+
+async function saveProject(e) {
+    e.preventDefault();
+    if (!requireAuth()) return;
+    const nom = document.getElementById('nomProjecte').value.trim();
+    if (!nom) { alert('El nom del projecte és obligatori'); return; }
+
+    let idCentre = selectedCentreId;
+
+    if (!idCentre && document.getElementById('newCentreForm').style.display === 'block') {
+        const centreName = document.getElementById('newCentreName').value.trim();
+        if (!centreName) { alert('Nom del centre obligatori'); return; }
+        const idCallejero = document.getElementById('newIdCallejero').value;
+        const numCalle = document.getElementById('newNumCalle').value.trim();
+        if (!idCallejero) { alert('Cal seleccionar un carrer de la llista'); return; }
+        if (!numCalle) { alert('Cal indicar el número'); return; }
+        const pis = document.getElementById('newPis').value.trim();
+        const escala = document.getElementById('newEscala').value.trim();
+
+        try {
+            const centreRes = await fetch('/centre-activitats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...AUTH_HEADERS() },
+                body: JSON.stringify({
+                    nom_centre_activitats: centreName,
+                    direccio: { idcallejero: parseInt(idCallejero), Num_calle: numCalle, Pis: pis || null, Escala: escala || null }
+                })
+            });
+            const centreData = await centreRes.json();
+            if (!centreRes.ok) { alert(centreData.message || 'Error creant centre'); return; }
+            idCentre = centreData.id;
+        } catch (err) { alert('Error creant centre'); console.error(err); return; }
+    }
+
+    if (!idCentre) { alert('Cal seleccionar o crear un centre d\'activitats'); return; }
+
+    const zonaId = document.getElementById('responsableZona').value;
+    if (!zonaId) { alert('Cal seleccionar un responsable de zona'); return; }
+
+    const payload = {
+        projecte: {
+            Nom_projecte: nom,
+            Descripcio: document.getElementById('descripcio').value.trim() || null,
+            plazas: parseInt(document.getElementById('plazas').value) || 0,
+            fecha_inicio_act: document.getElementById('fechaInicio').value || null,
+            fecha_fin_act: document.getElementById('fechaFin').value || null,
+            idcentre_activitats: parseInt(idCentre),
+            responsable_zona: parseInt(zonaId),
+            responsables_projecte: _projRespSelected.map(u => u.idUsuario_APP),
+            treballadors: _trebSelected.map(u => u.idUsuario_APP)
+        }
+    };
+
+    try {
+        const url = isEdit ? `/projectes/${isEdit}` : '/projectes';
+        const method = isEdit ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json', ...AUTH_HEADERS() },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert(isEdit ? 'Projecte actualitzat' : 'Projecte creat');
+            window.location.href = `/projecte.html?id=${data.id || isEdit}`;
+        } else {
+            alert(data.message || 'Error');
+        }
+    } catch (err) { alert('Error de connexió'); console.error(err); }
+}
+
+// ── Centre search (unchanged) ──
 
 async function searchCentres() {
     const q = document.getElementById('centreSearch').value.trim();
     const dropdown = document.getElementById('centreDropdown');
     if (q.length < 2) { dropdown.style.display = 'none'; return; }
     try {
-        const res = await fetch(`/centre-activitats/search?q=${encodeURIComponent(q)}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await fetch(`/centre-activitats/search?q=${encodeURIComponent(q)}`, { headers: AUTH_HEADERS() });
         const data = await res.json();
         if (data.length) {
-            dropdown.innerHTML = data.map(c => `<div onclick="selectCentre(${c.idcentre_activitats}, '${c.nom_centre_activitats}', '${c.tipus_via || ''} ${c.Nom_calle || ''}')">${c.nom_centre_activitats} — ${c.tipus_via || ''} ${c.Nom_calle || ''}</div>`).join('');
+            dropdown.innerHTML = data.map(c => `<div onclick="selectCentre(${c.idcentre_activitats}, '${c.nom_centre_activitats.replace(/'/g, "\\'")}', '${(c.tipus_via || '') + ' ' + (c.Nom_calle || '')}')">${c.nom_centre_activitats} — ${c.tipus_via || ''} ${c.Nom_calle || ''}</div>`).join('');
             dropdown.innerHTML += `<hr style="margin:4px 0"><div onclick="showNewCentreForm()" style="color:#2563eb;font-weight:600;">+ Crear nou centre</div>`;
             dropdown.style.display = 'block';
         } else {
@@ -174,6 +414,9 @@ document.addEventListener('click', function(e) {
     if (!e.target.closest('.autocomplete-wrap')) {
         document.getElementById('centreDropdown').style.display = 'none';
         document.getElementById('newStreetDropdown').style.display = 'none';
+        document.getElementById('zonaDropdown').style.display = 'none';
+        document.getElementById('projRespDropdown').style.display = 'none';
+        document.getElementById('trebDropdown').style.display = 'none';
     }
 });
 
@@ -204,9 +447,7 @@ async function searchNewStreets() {
     const dropdown = document.getElementById('newStreetDropdown');
     if (q.length < 2) { dropdown.style.display = 'none'; return; }
     try {
-        const res = await fetch(`/callejero?q=${encodeURIComponent(q)}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await fetch(`/callejero?q=${encodeURIComponent(q)}`, { headers: AUTH_HEADERS() });
         const data = await res.json();
         if (data.length) {
             dropdown.innerHTML = data.map(s =>
@@ -216,7 +457,7 @@ async function searchNewStreets() {
             ).join('');
             dropdown.style.display = 'block';
         } else {
-            dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">No s\'ha trobat cap carrer. Només usuaris amb accés Total poden crear-ne de nous.</div>';
+            dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">No s\'ha trobat cap carrer.</div>';
             dropdown.style.display = 'block';
         }
     } catch (e) { console.error(e); }
@@ -229,75 +470,6 @@ function selectNewStreet(id, tipusVia, nomCalle, barri, cp) {
     document.getElementById('newStreetDisplay').textContent = `${tipusVia} ${nomCalle}`;
     document.getElementById('newStreetDetails').textContent = `${barri} (${cp})`;
     document.getElementById('newStreetDropdown').style.display = 'none';
-}
-
-async function saveProject(e) {
-    e.preventDefault();
-    if (!requireAuth()) return;
-    const nom = document.getElementById('nomProjecte').value.trim();
-    if (!nom) { alert('El nom del projecte és obligatori'); return; }
-
-    let idCentre = selectedCentreId;
-
-    // If creating new centre
-    if (!idCentre && document.getElementById('newCentreForm').style.display === 'block') {
-        const centreName = document.getElementById('newCentreName').value.trim();
-        if (!centreName) { alert('Nom del centre obligatori'); return; }
-        const idCallejero = document.getElementById('newIdCallejero').value;
-        const numCalle = document.getElementById('newNumCalle').value.trim();
-        if (!idCallejero) { alert('Cal seleccionar un carrer de la llista'); return; }
-        if (!numCalle) { alert('Cal indicar el número'); return; }
-        const pis = document.getElementById('newPis').value.trim();
-        const escala = document.getElementById('newEscala').value.trim();
-
-        try {
-            const centreRes = await fetch('/centre-activitats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-                body: JSON.stringify({
-                    nom_centre_activitats: centreName,
-                    direccio: { idcallejero: parseInt(idCallejero), Num_calle: numCalle, Pis: pis || null, Escala: escala || null }
-                })
-            });
-            const centreData = await centreRes.json();
-            if (!centreRes.ok) { alert(centreData.message || 'Error creant centre'); return; }
-            idCentre = centreData.id;
-        } catch (err) { alert('Error creant centre'); console.error(err); return; }
-    }
-
-    if (!idCentre) { alert('Cal seleccionar o crear un centre d\'activitats'); return; }
-
-    const responsable = document.getElementById('responsable').value;
-    if (!responsable) { alert('Cal seleccionar un responsable'); return; }
-
-    const payload = {
-        projecte: {
-            Nom_projecte: nom,
-            Descripcio: document.getElementById('descripcio').value.trim() || null,
-            plazas: parseInt(document.getElementById('plazas').value) || 0,
-            fecha_inicio_act: document.getElementById('fechaInicio').value || null,
-            fecha_fin_act: document.getElementById('fechaFin').value || null,
-            idcentre_activitats: parseInt(idCentre),
-            responsable: parseInt(responsable)
-        }
-    };
-
-    try {
-        const url = isEdit ? `/projectes/${isEdit}` : '/projectes';
-        const method = isEdit ? 'PUT' : 'POST';
-        const res = await fetch(url, {
-            method,
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (res.ok) {
-            alert(isEdit ? 'Projecte actualitzat' : 'Projecte creat');
-            window.location.href = `/projecte.html?id=${data.id || isEdit}`;
-        } else {
-            alert(data.message || 'Error');
-        }
-    } catch (err) { alert('Error de connexió'); console.error(err); }
 }
 
 initForm();

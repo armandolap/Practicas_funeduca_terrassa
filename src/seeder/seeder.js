@@ -150,14 +150,23 @@ async function insertTestData(conn) {
     await conn.query(`INSERT INTO proyectos_has_client (idProyecto, idClient) VALUES (5, 7)`);
 
     // ── Responsables ──
-    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (2, 2)`);
-    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (3, 1)`);
-    // Supervisor (id 3) gets 4 projects in different states
-    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (5, 3)`);  // Projecte Complet (actiu)
-    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (6, 3)`);  // Supervisor Actiu
-    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (7, 3)`);  // Supervisor Futur
-    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (8, 3)`);  // Supervisor Passat
-    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (9, 3)`);  // Supervisor Avui
+    // Projecte Test (1): assign Supervisor (id 3) as zona resp
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (1, 2, 1)`);
+    // Projecte Actiu (2): Admin (1) as zona, Supervisor (3) as projecte resp
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (2, 2, 1)`);
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (2, 3, 2)`);
+    // Projecte Futur (3): Admin (1) as zona
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (3, 1, 1)`);
+    // Projecte Passat (4): Admin (1) as zona
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (4, 1, 1)`);
+    // Projecte Complet (5): Supervisor (3) as zona + Projectes (4) as projecte resp
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (5, 3, 1)`);
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (5, 4, 2)`);
+    // Supervisor projects (6-9): Supervisor (3) as zona
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (6, 3, 1)`);
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (7, 3, 1)`);
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (8, 3, 1)`);
+    await conn.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (9, 3, 1)`);
 
     await conn.query("SET FOREIGN_KEY_CHECKS = 1");
     console.log("Seed completat correctament");

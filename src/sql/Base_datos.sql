@@ -483,6 +483,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`Responsables` (
   `proyectos_idProyecto` INT NOT NULL,
   `idUsuario_APP` INT NOT NULL,
+  `tipus_responsable` TINYINT NOT NULL DEFAULT 1 COMMENT '1=zona, 2=projecte, 3=treballador',
   PRIMARY KEY (`proyectos_idProyecto`, `idUsuario_APP`),
   INDEX `fk_proyectos_has_usuario_app_usuario_app1_idx` (`idUsuario_APP` ASC) VISIBLE,
   INDEX `fk_proyectos_has_usuario_app_proyectos1_idx` (`proyectos_idProyecto` ASC) VISIBLE,

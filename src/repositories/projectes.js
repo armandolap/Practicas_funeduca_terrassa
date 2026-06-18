@@ -4,16 +4,14 @@ const pool = createPool();
 async function getAll(filter = "todos", q = "", responsable_id, idCentre) {
     let sql = `
         SELECT p.*,
-               u.idUsuario_APP AS responsable,
-               u.Nom AS responsable_nom,
-               u.Cognoms AS responsable_cognoms,
-               u.Telefon AS responsable_telefon,
-               u.email AS responsable_email,
+               r.idUsuario_APP AS responsable_zona_id,
+               r_u.Nom AS responsable_zona_nom,
+               r_u.Cognoms AS responsable_zona_cognoms,
                ca.nom_centre_activitats,
                (SELECT COUNT(*) FROM proyectos_has_client phc WHERE phc.idProyecto = p.idProyecto) AS inscritos
         FROM proyectos p
-        LEFT JOIN Responsables r ON r.proyectos_idProyecto = p.idProyecto
-        LEFT JOIN usuario_app u ON u.idUsuario_APP = r.idUsuario_APP
+        LEFT JOIN Responsables r ON r.proyectos_idProyecto = p.idProyecto AND r.tipus_responsable = 1
+        LEFT JOIN usuario_app r_u ON r_u.idUsuario_APP = r.idUsuario_APP
         LEFT JOIN centre_activitats ca ON p.idcentre_activitats = ca.idcentre_activitats
         WHERE 1=1
     `;
@@ -25,7 +23,10 @@ async function getAll(filter = "todos", q = "", responsable_id, idCentre) {
     }
 
     if (responsable_id) {
-        sql += ` AND r.idUsuario_APP = ?`;
+        sql += ` AND p.idProyecto IN (
+            SELECT r2.proyectos_idProyecto FROM Responsables r2
+            WHERE r2.idUsuario_APP = ? AND r2.tipus_responsable IN (1, 2)
+        )`;
         params.push(responsable_id);
     }
 
@@ -53,11 +54,6 @@ async function getAll(filter = "todos", q = "", responsable_id, idCentre) {
 async function getById(id) {
     const [rows] = await pool.query(`
         SELECT p.*,
-               u.idUsuario_APP AS responsable,
-               u.Nom AS responsable_nom,
-               u.Cognoms AS responsable_cognoms,
-               u.Telefon AS responsable_telefon,
-               u.email AS responsable_email,
                ca.nom_centre_activitats,
                ca.idcentre_activitats,
                dir.idDireccio, dir.Num_calle, dir.Pis, dir.Escala,
@@ -67,8 +63,6 @@ async function getById(id) {
                cp.idCodi_postal, cp.Codi AS codi_postal,
                (SELECT COUNT(*) FROM proyectos_has_client phc WHERE phc.idProyecto = p.idProyecto) AS inscritos
         FROM proyectos p
-        LEFT JOIN Responsables r ON r.proyectos_idProyecto = p.idProyecto
-        LEFT JOIN usuario_app u ON u.idUsuario_APP = r.idUsuario_APP
         LEFT JOIN centre_activitats ca ON p.idcentre_activitats = ca.idcentre_activitats
         LEFT JOIN direccio dir ON ca.direccio_idDireccio = dir.idDireccio
         LEFT JOIN callejero c ON dir.idcallejero = c.idcallejero
@@ -78,6 +72,30 @@ async function getById(id) {
         WHERE p.idProyecto = ?
     `, [id]);
     return rows[0] || null;
+}
+
+async function getResponsables(projectId) {
+    const [rows] = await pool.query(`
+        SELECT r.tipus_responsable, r.idUsuario_APP,
+               u.Nom, u.Cognoms, u.idNivel_acceso, na.Nom AS nivell_nom
+        FROM Responsables r
+        JOIN usuario_app u ON r.idUsuario_APP = u.idUsuario_APP
+        JOIN Nivel_acceso na ON u.idNivel_acceso = na.idNivel_acceso
+        WHERE r.proyectos_idProyecto = ?
+        ORDER BY r.tipus_responsable, u.Nom
+    `, [projectId]);
+    return rows;
+}
+
+async function getUsuarisByNivell(minLevel, maxLevel) {
+    const [rows] = await pool.query(`
+        SELECT u.idUsuario_APP, u.Nom, u.Cognoms, u.idNivel_acceso, na.Nom AS nivell_nom
+        FROM usuario_app u
+        JOIN Nivel_acceso na ON u.idNivel_acceso = na.idNivel_acceso
+        WHERE u.idNivel_acceso BETWEEN ? AND ?
+        ORDER BY u.Nom, u.Cognoms
+    `, [minLevel, maxLevel]);
+    return rows;
 }
 
 async function getParticipants(projectId) {
@@ -111,10 +129,20 @@ async function update(id, projecteData) {
     return result.affectedRows;
 }
 
-async function setResponsable(projectId, usuarioId) {
+async function syncResponsables(projectId, responsableZona, responsablesProjecte, treballadors) {
     await pool.query(`DELETE FROM Responsables WHERE proyectos_idProyecto = ?`, [projectId]);
-    if (usuarioId) {
-        await pool.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP) VALUES (?, ?)`, [projectId, usuarioId]);
+
+    if (responsableZona) {
+        await pool.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES (?, ?, 1)`,
+            [projectId, responsableZona]);
+    }
+    if (responsablesProjecte && responsablesProjecte.length) {
+        const values = responsablesProjecte.map(uId => [projectId, uId, 2]);
+        await pool.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES ?`, [values]);
+    }
+    if (treballadors && treballadors.length) {
+        const values = treballadors.map(uId => [projectId, uId, 3]);
+        await pool.query(`INSERT INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES ?`, [values]);
     }
 }
 
@@ -143,4 +171,4 @@ async function removeClient(projectId, clientId) {
     return result.affectedRows;
 }
 
-module.exports = { getAll, getById, getParticipants, create, update, setResponsable, remove, addClients, removeClient };
+module.exports = { getAll, getById, getResponsables, getUsuarisByNivell, getParticipants, create, update, syncResponsables, remove, addClients, removeClient };

@@ -26,8 +26,8 @@ async function getProjectesById(req, res) {
     try {
         const projecte = await repo.getById(req.params.id);
         if (!projecte) return res.status(404).json({ message: "Projecte no trobat" });
-        const participants = await repo.getParticipants(req.params.id);
-        projecte.participants = participants;
+        projecte.participants = await repo.getParticipants(req.params.id);
+        projecte.responsables = await repo.getResponsables(req.params.id);
         res.json(projecte);
     } catch (error) {
         console.error(error);
@@ -38,13 +38,13 @@ async function getProjectesById(req, res) {
 async function createProject(req, res) {
     try {
         const projecte = req.body.projecte || {};
-        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, responsable } = projecte;
+        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, responsable_zona, responsables_projecte, treballadors } = projecte;
 
         if (!Nom_projecte?.trim()) return res.status(400).json({ message: "El nom del projecte és obligatori." });
         if (!idcentre_activitats) return res.status(400).json({ message: "idcentre_activitats és obligatori." });
 
         const newId = await repo.create({ Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
-        if (responsable) await repo.setResponsable(newId, responsable);
+        await repo.syncResponsables(newId, responsable_zona, responsables_projecte, treballadors);
 
         res.status(201).json({ message: "Projecte creat correctament", id: newId });
     } catch (error) {
@@ -56,7 +56,7 @@ async function createProject(req, res) {
 async function updateProject(req, res) {
     try {
         const projecte = req.body.projecte || {};
-        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, responsable } = projecte;
+        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, responsable_zona, responsables_projecte, treballadors } = projecte;
 
         const existing = await repo.getById(req.params.id);
         if (!existing) return res.status(404).json({ message: "Projecte no trobat" });
@@ -65,8 +65,7 @@ async function updateProject(req, res) {
         if (!idcentre_activitats) return res.status(400).json({ message: "idcentre_activitats és obligatori." });
 
         await repo.update(req.params.id, { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
-
-        if (responsable) await repo.setResponsable(req.params.id, responsable);
+        await repo.syncResponsables(req.params.id, responsable_zona, responsables_projecte, treballadors);
 
         res.json({ message: "Projecte actualitzat correctament" });
     } catch (error) {
@@ -108,4 +107,15 @@ async function removeClient(req, res) {
     }
 }
 
-module.exports = { getAllProjectes, getProjectesById, getProjectesByCentre, createProject, updateProject, deleteProject, addClients, removeClient };
+async function getUsuarisPerNivell(req, res) {
+    try {
+        const { min = 1, max = 5 } = req.query;
+        const usuaris = await repo.getUsuarisByNivell(parseInt(min), parseInt(max));
+        res.json(usuaris);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error obtenint usuaris" });
+    }
+}
+
+module.exports = { getAllProjectes, getProjectesById, getProjectesByCentre, createProject, updateProject, deleteProject, addClients, removeClient, getUsuarisPerNivell };

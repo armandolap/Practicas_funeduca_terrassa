@@ -99,7 +99,16 @@ async function loadProject() {
         if (end && end < now) estatProjecte = 'tancat';
         const role = getRole();
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        const canEdit = role === 1 || role === 2 || (p.responsable === user.idUsuario_APP);
+        const isResponsable = (p.responsables || []).some(r => r.idUsuario_APP === user.idUsuario_APP && (r.tipus_responsable === 1 || r.tipus_responsable === 2));
+        const canEdit = role === 1 || role === 2 || isResponsable;
+
+        function renderRespSection(responsables, tipo, label, color) {
+            const items = (responsables || []).filter(r => r.tipus_responsable === tipo);
+            if (!items.length) return `<div class="card"><h3>${label}</h3><p style="color:#94a3b8;">Cap</p></div>`;
+            return `<div class="card"><h3>${label} (${items.length})</h3>` +
+                items.map(r => `<p><strong>${r.Nom || ''} ${r.Cognoms || ''}</strong></p>`).join('') +
+                `</div>`;
+        }
 
         document.getElementById('projectContent').innerHTML = `
             <a class="back-link" href="/projectes.html">← Tornar</a>
@@ -116,12 +125,9 @@ async function loadProject() {
                 <div class="info-card"><div class="label">Places</div><div class="value">${p.plazas || 0}</div></div>
                 <div class="info-card"><div class="label">Inscrits</div><div class="value">${p.inscritos || 0}</div></div>
             </div>
-            <div class="card">
-                <h3>Responsable</h3>
-                <p>${p.responsable_nom ? `${p.responsable_nom} ${p.responsable_cognoms || ''}` : 'Sense responsable'}</p>
-                ${p.responsable_telefon ? `<p>📞 ${p.responsable_telefon}</p>` : ''}
-                ${p.responsable_email ? `<p>✉️ ${p.responsable_email}</p>` : ''}
-            </div>
+            ${renderRespSection(p.responsables, 1, 'Responsable de zona', '#e0f2fe')}
+            ${renderRespSection(p.responsables, 2, 'Responsables de projecte', '#e0f2fe')}
+            ${renderRespSection(p.responsables, 3, 'Treballadors', '#fef3c7')}
             <div class="card">
                 <h3>Centre d'activitats</h3>
                 <p><strong>${p.nom_centre_activitats || '-'}</strong></p>
