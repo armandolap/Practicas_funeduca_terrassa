@@ -47,7 +47,7 @@ async function getFiltered({ q, estructura, barri, offset = 0, limit = 15 }) {
     }
 
     sql += ` ORDER BY f.Cognom_familiar LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
+    params.push(parseInt(limit), parseInt(offset));
 
     const [rows] = await pool.query(sql, params);
     const [[{ total }]] = await pool.query(`SELECT FOUND_ROWS() AS total`);

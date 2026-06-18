@@ -42,7 +42,7 @@ async function getFiltered({ barri, tipus, offset = 0, limit = 15 }) {
     if (barri) { sql += ` AND c.idBarri = ?`; params.push(barri); }
     if (tipus) { sql += ` AND dm.Tipus_domicili = ?`; params.push(tipus); }
     sql += ` ORDER BY dm.idDomicili LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
+    params.push(parseInt(limit), parseInt(offset));
     const [rows] = await pool.query(sql, params);
     const [[{ total }]] = await pool.query(`SELECT FOUND_ROWS() AS total`);
     return { rows, total };
