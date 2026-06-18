@@ -1,13 +1,13 @@
 # DEVIL Test Report
 
-**Date:** 2026-06-18T20:03:04.137Z
+**Date:** 2026-06-18T20:16:02.818Z
 
 ## Summary
 
-- **Passed:** 84
+- **Passed:** 143
 - **Failed:** 0
 - **Warnings:** 0
-- **Total:** 84
+- **Total:** 143
 
 ## Results
 
@@ -84,6 +84,65 @@
   ✓ PUT /familia/1 sense body → 400
   ✓ PUT /domicili/1 sense body → 400
   ✓ PUT /usuario/1 sense body → 400
+  ✓ GET /client/0 → 404
+  ✓ GET /client/-1 → 4xx
+  ✓ GET /client/1.5 → 4xx
+  ✓ GET /client/NaN → 4xx
+  ✓ GET /client/overflow → 4xx
+  ✓ POST /client/full idGenere=-1 → 4xx
+  ✓ POST /client/full idGenere=1.5 → 4xx
+  ✓ GET /client/null → 4xx
+  ✓ GET /client/' (quote) → 4xx
+  ✓ POST /projectes plazas=-999999 → 4xx
+  ✓ DELETE /paisos/1 (readOnly) → 4xx
+  ✓ PUT /paisos/1 (readOnly) → 4xx
+  ✓ POST /paisos (readOnly) → 4xx
+  ✓ DELETE /callejero/1 (readOnly) → 4xx
+  ✓ PUT /resulAcad/1 (readOnly) → 4xx
+  ✓ DELETE /genere/1 (readOnly) → 4xx
+  ✓ POST /desplegables/barri → 4xx
+  ✓ DELETE /projectes/:id/clients/:idClient sense token → 401
+  ✓ POST /callejero sense token → 401
+  ✓ POST /callejero with admin token → handled (no crash)
+  ✓ GET /auth/me token malformed → 401
+  ✓ POST /client/full __proto__ → 201 or 4xx (no crash)
+  ✓ POST /projectes constructor.prototype → 201 or 4xx (no crash)
+  ✓ POST /barri with extra id field → handled (no crash)
+  ✓ POST /client/full deeply nested → handled (no crash)
+  ✓ POST /familia emoji → 201 or 4xx (no crash)
+  ✓ POST /projectes null byte → 201 or 4xx (no crash)
+  ✓ POST /client/full unicode RTL override → 201 or 4xx (no crash)
+  ✓ POST /tipusVia control chars → 201 or 4xx (no crash)
+  ✓ POST /client/full whitespace Nom/Cognoms → 400
+  ✓ POST /familia 1000 emojis → 201 or 4xx (no crash)
+  ✓ POST /client/full accented chars → 201 or 4xx (no crash)
+  ✓ GET /client?limit=-1 → 200 (no crash)
+  ✓ GET /client?offset=-1 → 200 (no crash)
+  ✓ GET /client?limit=0 → 200
+  ✓ GET /client?limit=0 returns ≤0 results
+  ✓ GET /client?limit=9999999 → 200 (no crash)
+  ✓ GET /client?offset=999999999 → 200 (no crash)
+  ✓ GET /client?offset=999999999 returns empty
+  ✓ GET /client?sort=SQLi → 200 (no crash)
+  ✓ GET /client?id[]= → 200 (no crash)
+  ✓ GET /client?familia=1&familia=2 → 200 (no crash)
+  ✓ GET /familia/search?q= → handled
+  ✓ GET /client?q=XSS (query) → 200 (no crash)
+  ✓ POST /client/full XML → 400
+  ✓ POST /client/full multipart → 400
+  ✓ POST /client/full text/html → 400
+  ✓ POST /client/full no Content-Type → 400
+  ✓ POST /client/full charset variation → handled (no crash)
+  ✓ POST /client/full empty string body → 400
+  ✓ POST /client/full body=null → 400
+  ✓ POST /client/full body=number → 400
+  ✓ POST /projectes duplicate keys → handled (no crash)
+  ✓ POST /client/full body=boolean → 400
+  ✓ POST /client/full body=array → 400
+  ✓ DELETE /nivell-acces/1 (FK protected) → 4xx/5xx
+  ✓ DELETE /centre-activitats/1 (FK protected) → 4xx/5xx
+  ✓ DELETE /rol/4 (FK protected) → 4xx/5xx
+  ✓ DELETE /sebas/11 (FK protected) → 4xx/5xx
   ✓ GET /client/999999 → 404
   ✓ PUT /client/999999 → 404
   ✓ DELETE /client/999999 → 404

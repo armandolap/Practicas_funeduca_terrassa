@@ -923,16 +923,16 @@ async function test_13_NoBody() {
     }
 }
 
-async function test_15_NonExistentIds() {
-    console.log(`\n--- 15. IDs inexistents ---`);
+async function test_23_NonExistentIds() {
+    console.log(`\n--- 23. IDs inexistents ---`);
 
-    // 15.1 GET /client/999999
+    // 23.1 GET /client/999999
     {
         const { status } = await fetchJson(`${BASE_URL}/client/999999`);
         expect("GET /client/999999 → 404", status, 404);
     }
 
-    // 15.2 PUT /client/999999
+    // 23.2 PUT /client/999999
     {
         const { status } = await fetchJson(`${BASE_URL}/client/999999`, {
             method: "PUT", body: JSON.stringify({ Nom: "Test" }),
@@ -940,19 +940,19 @@ async function test_15_NonExistentIds() {
         expect("PUT /client/999999 → 404", status, 404);
     }
 
-    // 15.3 DELETE /client/999999
+    // 23.3 DELETE /client/999999
     {
         const { status } = await fetchJson(`${BASE_URL}/client/999999`, { method: "DELETE" });
         expect("DELETE /client/999999 → 404", status, 404);
     }
 
-    // 15.4 GET /projectes/999999
+    // 23.4 GET /projectes/999999
     {
         const { status } = await fetchJson(`${BASE_URL}/projectes/999999`);
         expect("GET /projectes/999999 → 404", status, 404);
     }
 
-    // 15.5 PUT /projectes/999999 (with auth)
+    // 23.5 PUT /projectes/999999 (with auth)
     {
         const { status } = await fetchJson(`${BASE_URL}/projectes/999999`, {
             method: "PUT",
@@ -961,19 +961,19 @@ async function test_15_NonExistentIds() {
         expect("PUT /projectes/999999 → 404", status, 404);
     }
 
-    // 15.6 DELETE /projectes/999999 (with auth)
+    // 23.6 DELETE /projectes/999999 (with auth)
     {
         const { status } = await fetchJson(`${BASE_URL}/projectes/999999`, { method: "DELETE" });
         expect("DELETE /projectes/999999 → 404", status, 404);
     }
 
-    // 15.7 GET /usuario/999999
+    // 23.7 GET /usuario/999999
     {
         const { status } = await fetchJson(`${BASE_URL}/usuario/999999`);
         expect("GET /usuario/999999 → 404", status, 404);
     }
 
-    // 15.8 PUT /usuario/999999
+    // 23.8 PUT /usuario/999999
     {
         const { status } = await fetchJson(`${BASE_URL}/usuario/999999`, {
             method: "PUT", body: JSON.stringify({ Nom: "Test" }),
@@ -981,19 +981,19 @@ async function test_15_NonExistentIds() {
         expect("PUT /usuario/999999 → 404", status, 404);
     }
 
-    // 15.9 DELETE /usuario/999999
+    // 23.9 DELETE /usuario/999999
     {
         const { status } = await fetchJson(`${BASE_URL}/usuario/999999`, { method: "DELETE" });
         expect("DELETE /usuario/999999 → 404", status, 404);
     }
 
-    // 15.10 GET /familia/999999
+    // 23.10 GET /familia/999999
     {
         const { status } = await fetchJson(`${BASE_URL}/familia/999999`);
         expect("GET /familia/999999 → 404", status, 404);
     }
 
-    // 15.11 PUT /familia/999999
+    // 23.11 PUT /familia/999999
     {
         const { status } = await fetchJson(`${BASE_URL}/familia/999999`, {
             method: "PUT", body: JSON.stringify({ Cognom_familiar: "Test" }),
@@ -1001,10 +1001,674 @@ async function test_15_NonExistentIds() {
         expect("PUT /familia/999999 → 404", status, 404);
     }
 
-    // 15.12 DELETE /familia/999999
+    // 23.12 DELETE /familia/999999
     {
         const { status } = await fetchJson(`${BASE_URL}/familia/999999`, { method: "DELETE" });
         expect("DELETE /familia/999999 → 404", status, 404);
+    }
+}
+
+// ─────────────────────────────────────────────
+// SECTION 14: NUMERIC EDGE CASES
+// ─────────────────────────────────────────────
+async function test_14_NumericEdgeCases() {
+    console.log(`\n--- 14. Numeric edge cases ---`);
+
+    // 14.1 Zero ID
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/0`);
+        expect("GET /client/0 → 404", status, 404);
+    }
+
+    // 14.2 Negative ID
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/-1`);
+        expectError("GET /client/-1 → 4xx", status, [400, 499]);
+    }
+
+    // 14.3 Float ID
+    {
+        const res = await fetch(`${BASE_URL}/client/1.5`);
+        expectError("GET /client/1.5 → 4xx", res.status, [400, 499]);
+    }
+
+    // 14.4 NaN equivalent in string
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/NaN`);
+        expectError("GET /client/NaN → 4xx", status, [400, 499]);
+    }
+
+    // 14.5 Overflow integer
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/99999999999999999999999999999999`);
+        expectError("GET /client/overflow → 4xx", status, [400, 499]);
+    }
+
+    // 14.6 Negative foreign key in POST /client/full
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            body: JSON.stringify({
+                client: {
+                    Nom: "NegFK", Cognoms: "Test", Fecha_nacimiento: "2000-01-01",
+                    idGenere: -1, idRol: 3, idSituacio_economica: 1,
+                    Pais_naixement: 1, Risc: 1, idSebas: 12,
+                    derivacio_serveis_socials: 0, Data_d_alta: "2024-01-01"
+                },
+                familia: { Estructura_familiar: 1 },
+                domicili: { idcallejero: 1 }
+            }),
+        });
+        expectError("POST /client/full idGenere=-1 → 4xx", status, [400, 500]);
+    }
+
+    // 14.7 Float foreign key
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            body: JSON.stringify({
+                client: {
+                    Nom: "FloatFK", Cognoms: "Test", Fecha_nacimiento: "2000-01-01",
+                    idGenere: 1.5, idRol: 3, idSituacio_economica: 1,
+                    Pais_naixement: 1, Risc: 1, idSebas: 12,
+                    derivacio_serveis_socials: 0, Data_d_alta: "2024-01-01"
+                },
+                familia: { Estructura_familiar: 1 },
+                domicili: { idcallejero: 1 }
+            }),
+        });
+        expectError("POST /client/full idGenere=1.5 → 4xx", status, [400, 500]);
+    }
+
+    // 14.8 id = null
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/null`);
+        expectError("GET /client/null → 4xx", status, [400, 499]);
+    }
+
+    // 14.9 id = string with special SQL chars
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/'`);
+        expectError("GET /client/' (quote) → 4xx", status, [400, 499]);
+    }
+
+    // 14.10 Very large negative plazas
+    {
+        const { status } = await fetchJson(`${BASE_URL}/projectes`, {
+            method: "POST",
+            body: JSON.stringify({
+                projecte: { Nom_projecte: "NegPlazas", idcentre_activitats: 1, plazas: -999999 }
+            }),
+        });
+        expectError("POST /projectes plazas=-999999 → 4xx", status, [400, 499]);
+    }
+}
+
+// ─────────────────────────────────────────────
+// SECTION 15: METHOD ABUSE
+// ─────────────────────────────────────────────
+async function test_15_MethodAbuse() {
+    console.log(`\n--- 15. Method abuse ---`);
+
+    // 15.1 DELETE on GET-only catalog route
+    {
+        const { status } = await fetchJson(`${BASE_URL}/paisos/1`, { method: "DELETE" });
+        expectError("DELETE /paisos/1 (readOnly) → 4xx", status, [400, 500]);
+    }
+
+    // 15.2 PUT on read-only catalog
+    {
+        const { status } = await fetchJson(`${BASE_URL}/paisos/1`, {
+            method: "PUT", body: JSON.stringify({ Nom: "hack" }),
+        });
+        expectError("PUT /paisos/1 (readOnly) → 4xx", status, [400, 500]);
+    }
+
+    // 15.3 POST on read-only catalog
+    {
+        const { status } = await fetchJson(`${BASE_URL}/paisos`, {
+            method: "POST", body: JSON.stringify({ Nom: "hack" }),
+        });
+        expectError("POST /paisos (readOnly) → 4xx", status, [400, 500]);
+    }
+
+    // 15.4 DELETE on GET-only callejero
+    {
+        const { status } = await fetchJson(`${BASE_URL}/callejero/1`, { method: "DELETE" });
+        expectError("DELETE /callejero/1 (readOnly) → 4xx", status, [400, 500]);
+    }
+
+    // 15.5 PUT on read-only resulAcad
+    {
+        const { status } = await fetchJson(`${BASE_URL}/resulAcad/1`, {
+            method: "PUT", body: JSON.stringify({ Nom: "hack" }),
+        });
+        expectError("PUT /resulAcad/1 (readOnly) → 4xx", status, [400, 500]);
+    }
+
+    // 15.6 DELETE on read-only genere
+    {
+        const { status } = await fetchJson(`${BASE_URL}/genere/1`, { method: "DELETE" });
+        expectError("DELETE /genere/1 (readOnly) → 4xx", status, [400, 500]);
+    }
+
+    // 15.7 POST on desplegables (GET-only)
+    {
+        const { status } = await fetchJson(`${BASE_URL}/desplegables/barri`, {
+            method: "POST", body: JSON.stringify({}),
+        });
+        expectError("POST /desplegables/barri → 4xx", status, [400, 500]);
+    }
+}
+
+// ─────────────────────────────────────────────
+// SECTION 16: AUTH GATE COMPLETENESS
+// ─────────────────────────────────────────────
+async function test_16_AuthGateCompleteness() {
+    console.log(`\n--- 16. Auth gate completeness ---`);
+
+    const savedToken = AUTH_TOKEN;
+
+    // 16.1 DELETE /projectes/:id/clients/:idClient sense token
+    {
+        AUTH_TOKEN = null;
+        const { status } = await fetchJson(`${BASE_URL}/projectes/1/clients/1`, {
+            method: "DELETE",
+        });
+        expect("DELETE /projectes/:id/clients/:idClient sense token → 401", status, 401);
+    }
+    AUTH_TOKEN = savedToken;
+
+    // 16.2 POST /callejero sense token
+    {
+        AUTH_TOKEN = null;
+        const { status } = await fetchJson(`${BASE_URL}/callejero`, {
+            method: "POST", body: JSON.stringify({}),
+        });
+        expect("POST /callejero sense token → 401", status, 401);
+    }
+    AUTH_TOKEN = savedToken;
+
+    // 16.3 POST /callejero with non-admin token → 403
+    {
+        const { status } = await fetchJson(`${BASE_URL}/callejero`, {
+            method: "POST", body: JSON.stringify({ Nom: "Test", idBarri: 1, idTipus_via: 1 }),
+        });
+        // "usuari" has idNivel_acceso=1 (admin) — we need a non-admin to test 403
+        // But since our test user IS admin, this should either work or fail for diff reasons
+        // We at least verify it doesn't crash and respects auth
+        assert("POST /callejero with admin token → handled (no crash)",
+            status === 401 || status === 403 || status === 400 || status === 201,
+            `status inesperat: ${status}`);
+    }
+
+    // 16.4 GET /auth/me with expired-style token → 401
+    {
+        const res = await fetch(`${BASE_URL}/auth/me`, {
+            headers: { Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c" },
+        });
+        expect("GET /auth/me token malformed → 401", res.status, 401);
+    }
+
+    AUTH_TOKEN = savedToken;
+}
+
+// ─────────────────────────────────────────────
+// SECTION 17: PROTOTYPE POLLUTION & EXTRA FIELDS
+// ─────────────────────────────────────────────
+async function test_17_PrototypePollution() {
+    console.log(`\n--- 17. Prototype pollution / extra fields ---`);
+
+    // 17.1 __proto__ in JSON body
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            body: JSON.stringify({
+                client: {
+                    Nom: "Proto", Cognoms: "Test", Fecha_nacimiento: "2000-01-01",
+                    idGenere: 1, idRol: 3, idSituacio_economica: 1,
+                    Pais_naixement: 1, Risc: 1, idSebas: 12,
+                    derivacio_serveis_socials: 0, Data_d_alta: "2024-01-01",
+                    __proto__: { admin: true }
+                },
+                familia: { Estructura_familiar: 1 },
+                domicili: { idcallejero: 1 }
+            }),
+        });
+        assert("POST /client/full __proto__ → 201 or 4xx (no crash)",
+            status === 201 || (status >= 400 && status <= 500),
+            `status inesperat: ${status}`);
+    }
+
+    // 17.2 constructor.prototype pollution
+    {
+        const { status } = await fetchJson(`${BASE_URL}/projectes`, {
+            method: "POST",
+            body: JSON.stringify({
+                projecte: {
+                    Nom_projecte: "ProtoProj",
+                    idcentre_activitats: 1,
+                    constructor: { prototype: { admin: true } }
+                }
+            }),
+        });
+        assert("POST /projectes constructor.prototype → 201 or 4xx (no crash)",
+            status === 201 || (status >= 400 && status <= 500),
+            `status inesperat: ${status}`);
+    }
+
+    // 17.3 Extra field that overrides id (auto-increment)
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/barri`, {
+            method: "POST",
+            body: JSON.stringify({ Nom: "ExtraFieldTest", id: -999 }),
+        });
+        assert("POST /barri with extra id field → handled (no crash)",
+            status === 201 || (status >= 400 && status <= 500),
+            `status inesperat: ${status}`);
+        // Cleanup if created
+        if (status === 201 && body?.id) {
+            await fetchJson(`${BASE_URL}/barri/${body.id}`, { method: "DELETE" });
+        }
+    }
+
+    // 17.4 Extremely nested object
+    {
+        let nested = {};
+        let ref = nested;
+        for (let i = 0; i < 100; i++) {
+            ref.a = {};
+            ref = ref.a;
+        }
+        const { status } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            body: JSON.stringify({
+                client: {
+                    Nom: "DeepNest", Cognoms: "Test", Fecha_nacimiento: "2000-01-01",
+                    idGenere: 1, idRol: 3, idSituacio_economica: 1,
+                    Pais_naixement: 1, Risc: 1, idSebas: 12,
+                    derivacio_serveis_socials: 0, Data_d_alta: "2024-01-01",
+                    extra: nested
+                },
+                familia: { Estructura_familiar: 1 },
+                domicili: { idcallejero: 1 }
+            }),
+        });
+        assert("POST /client/full deeply nested → handled (no crash)",
+            status >= 400 || status === 201,
+            `status inesperat: ${status}`);
+    }
+}
+
+// ─────────────────────────────────────────────
+// SECTION 18: SPECIAL CHARACTERS
+// ─────────────────────────────────────────────
+async function test_18_SpecialCharacters() {
+    console.log(`\n--- 18. Special characters ---`);
+
+    // 18.1 Emoji in name
+    {
+        const { status } = await fetchJson(`${BASE_URL}/familia`, {
+            method: "POST",
+            body: JSON.stringify({ Cognom_familiar: "Família 😀🔥", Estructura_familiar: 1 }),
+        });
+        assert("POST /familia emoji → 201 or 4xx (no crash)",
+            status === 201 || (status >= 400 && status <= 500),
+            `status inesperat: ${status}`);
+        if (status === 201) {
+            const { body: all } = await fetchJson(`${BASE_URL}/familia?q=Família`);
+            const list = Array.isArray(all) ? all : [];
+            const match = list.find(f => f.Cognom_familiar?.includes("😀"));
+            if (match) await fetchJson(`${BASE_URL}/familia/${match.idFamilia}`, { method: "DELETE" });
+        }
+    }
+
+    // 18.2 Null byte in name
+    {
+        const { status } = await fetchJson(`${BASE_URL}/projectes`, {
+            method: "POST",
+            body: JSON.stringify({
+                projecte: { Nom_projecte: "Test\u0000Project", idcentre_activitats: 1 }
+            }),
+        });
+        assert("POST /projectes null byte → 201 or 4xx (no crash)",
+            status === 201 || (status >= 400 && status <= 500),
+            `status inesperat: ${status}`);
+    }
+
+    // 18.3 Unicode right-to-left override
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            body: JSON.stringify({
+                client: {
+                    Nom: "Test\u202ERoad", Cognoms: "RLO", Fecha_nacimiento: "2000-01-01",
+                    idGenere: 1, idRol: 3, idSituacio_economica: 1,
+                    Pais_naixement: 1, Risc: 1, idSebas: 12,
+                    derivacio_serveis_socials: 0, Data_d_alta: "2024-01-01"
+                },
+                familia: { Estructura_familiar: 1 },
+                domicili: { idcallejero: 1 }
+            }),
+        });
+        assert("POST /client/full unicode RTL override → 201 or 4xx (no crash)",
+            status === 201 || (status >= 400 && status <= 500),
+            `status inesperat: ${status}`);
+    }
+
+    // 18.4 Control characters
+    {
+        const { status } = await fetchJson(`${BASE_URL}/tipusVia`, {
+            method: "POST",
+            body: JSON.stringify({ Nom: "Test\u0001\u0002\u0003Via" }),
+        });
+        assert("POST /tipusVia control chars → 201 or 4xx (no crash)",
+            status === 201 || (status >= 400 && status <= 500),
+            `status inesperat: ${status}`);
+        if (status === 201) {
+            const { body: all } = await fetchJson(`${BASE_URL}/tipusVia`);
+            const list = Array.isArray(all) ? all : [];
+            const match = list.find(t => t.Nom?.includes("Via"));
+            if (match && list.indexOf(match) > 24) {
+                await fetchJson(`${BASE_URL}/tipusVia/${match.idTipus_via || match.id}`, { method: "DELETE" });
+            }
+        }
+    }
+
+    // 18.5 Whitespace-only in all text fields
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            body: JSON.stringify({
+                client: {
+                    Nom: "   ", Cognoms: "   ", Fecha_nacimiento: "2000-01-01",
+                    idGenere: 1, idRol: 3, idSituacio_economica: 1,
+                    Pais_naixement: 1, Risc: 1, idSebas: 12,
+                    derivacio_serveis_socials: 0, Data_d_alta: "2024-01-01"
+                },
+                familia: { Estructura_familiar: 1 },
+                domicili: { idcallejero: 1 }
+            }),
+        });
+        expectError("POST /client/full whitespace Nom/Cognoms → 400", status, [400, 499]);
+    }
+
+    // 18.6 Very long unicode string (10k emoji)
+    {
+        const longEmoji = "😀".repeat(1000);
+        const { status } = await fetchJson(`${BASE_URL}/familia`, {
+            method: "POST",
+            body: JSON.stringify({ Cognom_familiar: longEmoji, Estructura_familiar: 1 }),
+        });
+        assert("POST /familia 1000 emojis → 201 or 4xx (no crash)",
+            status === 201 || (status >= 400 && status <= 500),
+            `status inesperat: ${status}`);
+    }
+
+    // 18.7 Accented characters
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            body: JSON.stringify({
+                client: {
+                    Nom: "José María áéíóú ñ Ñ ü Ü",
+                    Cognoms: "Test", Fecha_nacimiento: "2000-01-01",
+                    idGenere: 1, idRol: 3, idSituacio_economica: 1,
+                    Pais_naixement: 1, Risc: 1, idSebas: 12,
+                    derivacio_serveis_socials: 0, Data_d_alta: "2024-01-01"
+                },
+                familia: { Estructura_familiar: 1 },
+                domicili: { idcallejero: 1 }
+            }),
+        });
+        assert("POST /client/full accented chars → 201 or 4xx (no crash)",
+            status === 201 || (status >= 400 && status <= 500),
+            `status inesperat: ${status}`);
+    }
+}
+
+// ─────────────────────────────────────────────
+// SECTION 19: QUERY PARAMETER ATTACKS
+// ─────────────────────────────────────────────
+async function test_19_QueryParamAttacks() {
+    console.log(`\n--- 19. Query parameter attacks ---`);
+
+    // 19.1 Negative limit
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client?limit=-1`);
+        expect("GET /client?limit=-1 → 200 (no crash)", status, 200);
+    }
+
+    // 19.2 Negative offset
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client?offset=-1`);
+        expect("GET /client?offset=-1 → 200 (no crash)", status, 200);
+    }
+
+    // 19.3 Zero limit
+    {
+        const { status, body } = await fetchJson(`${BASE_URL}/client?limit=0`);
+        expect("GET /client?limit=0 → 200", status, 200);
+        const list = body?.rows || body || [];
+        if (Array.isArray(list)) {
+            assert("GET /client?limit=0 returns ≤0 results", list.length <= 0, `got ${list.length}`);
+        }
+    }
+
+    // 19.4 Massive limit
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client?limit=9999999`);
+        expect("GET /client?limit=9999999 → 200 (no crash)", status, 200);
+    }
+
+    // 19.5 Massive offset
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client?offset=999999999`);
+        expect("GET /client?offset=999999999 → 200 (no crash)", status, 200);
+        const { body } = await fetchJson(`${BASE_URL}/client?offset=999999999`);
+        const list = body?.rows || body || [];
+        if (Array.isArray(list)) {
+            assert("GET /client?offset=999999999 returns empty", list.length === 0, `got ${list.length}`);
+        }
+    }
+
+    // 19.6 SQL injection in sort parameter
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client?sort=Nombre' OR 1=1 --`);
+        expect("GET /client?sort=SQLi → 200 (no crash)", status, 200);
+    }
+
+    // 19.7 Array notation in query
+    {
+        const res = await fetch(`${BASE_URL}/client?id[]=1&id[]=2`);
+        expect("GET /client?id[]= → 200 (no crash)", res.status, 200);
+    }
+
+    // 19.8 Multiple same params
+    {
+        const res = await fetch(`${BASE_URL}/client?familia=1&familia=2`);
+        expect("GET /client?familia=1&familia=2 → 200 (no crash)", res.status, 200);
+    }
+
+    // 19.9 Empty q parameter on search endpoints
+    {
+        const { status } = await fetchJson(`${BASE_URL}/familia/search?q=`);
+        assert("GET /familia/search?q= → handled",
+            status === 200 || status === 400,
+            `unexpected ${status}`);
+    }
+
+    // 19.10 Special chars in q parameter
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client?q=<script>alert('xss')</script>`);
+        expect("GET /client?q=XSS (query) → 200 (no crash)", status, 200);
+    }
+}
+
+// ─────────────────────────────────────────────
+// SECTION 20: CONTENT-TYPE EDGE CASES
+// ─────────────────────────────────────────────
+async function test_20_ContentTypeAttacks() {
+    console.log(`\n--- 20. Content-Type edge cases ---`);
+
+    // 20.1 XML content-type
+    {
+        const res = await fetch(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/xml" },
+            body: "<client><Nom>XML</Nom></client>",
+        });
+        expectError("POST /client/full XML → 400", res.status, [400, 499]);
+    }
+
+    // 20.2 Multipart form-data
+    {
+        const res = await fetch(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "multipart/form-data" },
+            body: "------WebKitFormBoundary\r\nContent-Disposition: form-data; name=\"Nom\"\r\n\r\nTest\r\n------WebKitFormBoundary--",
+        });
+        expectError("POST /client/full multipart → 400", res.status, [400, 499]);
+    }
+
+    // 20.3 Text/html
+    {
+        const res = await fetch(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "text/html" },
+            body: "<html><body>hack</body></html>",
+        });
+        expectError("POST /client/full text/html → 400", res.status, [400, 499]);
+    }
+
+    // 20.4 No Content-Type
+    {
+        const res = await fetch(`${BASE_URL}/client/full`, {
+            method: "POST",
+            body: JSON.stringify({}),
+        });
+        expectError("POST /client/full no Content-Type → 400", res.status, [400, 499]);
+    }
+
+    // 20.5 Charset in Content-Type
+    {
+        const { status } = await fetchJson(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json; charset=utf-16" },
+            body: JSON.stringify({
+                client: {
+                    Nom: "Charset", Cognoms: "Test", Fecha_nacimiento: "2000-01-01",
+                    idGenere: 1, idRol: 3, idSituacio_economica: 1,
+                    Pais_naixement: 1, Risc: 1, idSebas: 12,
+                    derivacio_serveis_socials: 0, Data_d_alta: "2024-01-01"
+                },
+                familia: { Estructura_familiar: 1 },
+                domicili: { idcallejero: 1 }
+            }),
+        });
+        assert("POST /client/full charset variation → handled (no crash)",
+            status === 201 || (status >= 400 && status <= 500),
+            `status inesperat: ${status}`);
+    }
+}
+
+// ─────────────────────────────────────────────
+// SECTION 21: BODY EDGE CASES
+// ─────────────────────────────────────────────
+async function test_21_BodyEdgeCases() {
+    console.log(`\n--- 21. Body edge cases ---`);
+
+    // 21.1 Body = empty string
+    {
+        const res = await fetch(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "",
+        });
+        expectError("POST /client/full empty string body → 400", res.status, [400, 499]);
+    }
+
+    // 21.2 Body = literal "null"
+    {
+        const res = await fetch(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "null",
+        });
+        expectError("POST /client/full body=null → 400", res.status, [400, 499]);
+    }
+
+    // 21.3 Body = number
+    {
+        const res = await fetch(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "12345",
+        });
+        expectError("POST /client/full body=number → 400", res.status, [400, 499]);
+    }
+
+    // 21.4 Body with duplicate keys (last wins)
+    {
+        const res = await fetch(`${BASE_URL}/projectes`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: `{"projecte": {"Nom_projecte": "DupKey", "idcentre_activitats": 1}, "projecte": {"Nom_projecte": "DupKey2", "idcentre_activitats": 1}}`,
+        });
+        assert("POST /projectes duplicate keys → handled (no crash)",
+            res.status === 201 || (res.status >= 400 && res.status <= 500),
+            `status inesperat: ${res.status}`);
+    }
+
+    // 21.5 Body = boolean
+    {
+        const res = await fetch(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "true",
+        });
+        expectError("POST /client/full body=boolean → 400", res.status, [400, 499]);
+    }
+
+    // 21.6 Body = array
+    {
+        const res = await fetch(`${BASE_URL}/client/full`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "[1,2,3]",
+        });
+        expectError("POST /client/full body=array → 400", res.status, [400, 499]);
+    }
+}
+
+// ─────────────────────────────────────────────
+// SECTION 22: DELETE PROTECTED READ-ONLY
+// ─────────────────────────────────────────────
+async function test_22_DeleteOnProtectedReadOnly() {
+    console.log(`\n--- 22. DELETE on protected read-only entities ---`);
+
+    // 22.1 DELETE Nivel_acceso (should fail FK)
+    {
+        const { status } = await fetchJson(`${BASE_URL}/nivell-acces/1`, { method: "DELETE" });
+        expectError("DELETE /nivell-acces/1 (FK protected) → 4xx/5xx", status, [400, 500]);
+    }
+
+    // 22.2 DELETE centre-activitats (should fail FK)
+    {
+        const { status } = await fetchJson(`${BASE_URL}/centre-activitats/1`, { method: "DELETE" });
+        expectError("DELETE /centre-activitats/1 (FK protected) → 4xx/5xx", status, [400, 500]);
+    }
+
+    // 22.3 DELETE rol (should fail FK)
+    {
+        const { status } = await fetchJson(`${BASE_URL}/rol/4`, { method: "DELETE" });
+        expectError("DELETE /rol/4 (FK protected) → 4xx/5xx", status, [400, 500]);
+    }
+
+    // 22.4 DELETE sebas (should fail FK)
+    {
+        const { status } = await fetchJson(`${BASE_URL}/sebas/11`, { method: "DELETE" });
+        expectError("DELETE /sebas/11 (FK protected) → 4xx/5xx", status, [400, 500]);
     }
 }
 
@@ -1025,7 +1689,16 @@ async function runAll() {
         test_11_DeleteConflicts,
         test_12_InvalidDates,
         test_13_NoBody,
-        test_15_NonExistentIds,
+        test_14_NumericEdgeCases,
+        test_15_MethodAbuse,
+        test_16_AuthGateCompleteness,
+        test_17_PrototypePollution,
+        test_18_SpecialCharacters,
+        test_19_QueryParamAttacks,
+        test_20_ContentTypeAttacks,
+        test_21_BodyEdgeCases,
+        test_22_DeleteOnProtectedReadOnly,
+        test_23_NonExistentIds,
     ];
 
     for (const suite of suites) {

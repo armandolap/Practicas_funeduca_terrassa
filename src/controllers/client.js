@@ -1,11 +1,21 @@
 const repo = require("../repositories/client");
 const { isValidDate, isFutureDate, parseDate } = require("../helpers/validators");
 
+function sanitizeLimit(val) {
+    const n = parseInt(val);
+    return Number.isFinite(n) && n >= 0 ? n : 15;
+}
+
 async function getAllClients(req, res) {
     try {
         const { q, familia, genere, barri, edatMin, edatMax, offset, limit } = req.query;
-        if (q || familia || genere || barri || edatMin !== undefined || edatMax !== undefined || offset !== undefined || limit !== undefined) {
-            const result = await repo.getFiltered({ q, familia, genere, barri, edatMin, edatMax, offset, limit });
+        const parsedOffset = offset !== undefined ? Math.max(0, parseInt(offset) || 0) : undefined;
+        const parsedLimit = limit !== undefined ? sanitizeLimit(limit) : undefined;
+        const parsedFamilia = Array.isArray(familia) ? familia[0] : familia;
+        const parsedGenere = Array.isArray(genere) ? genere[0] : genere;
+        const parsedBarri = Array.isArray(barri) ? barri[0] : barri;
+        if (q || parsedFamilia || parsedGenere || parsedBarri || edatMin !== undefined || edatMax !== undefined || parsedOffset !== undefined || parsedLimit !== undefined) {
+            const result = await repo.getFiltered({ q, familia: parsedFamilia, genere: parsedGenere, barri: parsedBarri, edatMin, edatMax, offset: parsedOffset, limit: parsedLimit });
             return res.json(result);
         }
         const clients = await repo.getAll();

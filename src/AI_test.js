@@ -1116,6 +1116,31 @@ async function testStaticInserts() {
     }
 }
 
+function writeManualTestsToSequentSteps() {
+    if (RESULTS.manual.length === 0) return;
+    const fp = path.join(__dirname, "..", "docs", "AI_seguents_passos.md");
+    let existing = "";
+    try { existing = fs.readFileSync(fp, "utf8"); } catch { existing = ""; }
+    const sectionHeader = "## Tests manuals";
+    const sectionStart = existing.indexOf(sectionHeader);
+    const newSection = [sectionHeader, "", ...RESULTS.manual.flatMap(m => [
+        `### ${m.label}`,
+        ...m.steps.map(s => `- [ ] ${s}`),
+        ""
+    ])].join("\n");
+    if (sectionStart !== -1) {
+        const before = existing.substring(0, sectionStart);
+        existing = before + newSection + "\n";
+    } else {
+        existing = existing.trimEnd() + "\n\n" + newSection + "\n";
+    }
+    fs.writeFileSync(fp, existing, "utf8");
+}
+
+function stripAnsi(str) {
+    return str.replace(/\x1b\[\d+m/g, "");
+}
+
 function generateReport() {
     const lines = [];
     lines.push(`# AI Test Report`);
@@ -1134,7 +1159,7 @@ function generateReport() {
     lines.push(``);
     lines.push("```");
     for (const t of RESULTS.tests) {
-        lines.push(t);
+        lines.push(stripAnsi(t));
     }
     lines.push("```");
     lines.push(``);
@@ -1142,16 +1167,6 @@ function generateReport() {
         lines.push(`✅ **All automated tests passed**`);
     } else {
         lines.push(`❌ **${RESULTS.fail} test(s) failed**`);
-    }
-    lines.push(``);
-    lines.push(`## Manual Tests (user)`);
-    lines.push(``);
-    for (const m of RESULTS.manual) {
-        lines.push(`### ${m.label}`);
-        for (const s of m.steps) {
-            lines.push(`- [ ] ${s}`);
-        }
-        lines.push(``);
     }
     return lines.join("\n");
 }
@@ -1175,7 +1190,8 @@ function generateSolutions() {
         lines.push(`## Possibles problemes i solucions`);
         lines.push(``);
         for (const f of failed) {
-            const match = f.match(/✗ (.+?) — (.+)/);
+            const cleaned = stripAnsi(f);
+            const match = cleaned.match(/✗ (.+?) — (.+)/);
             if (match) {
                 const [, label, detail] = match;
                 lines.push(`### ${label}`);
@@ -1187,16 +1203,6 @@ function generateSolutions() {
                 lines.push(``);
             }
         }
-    }
-    lines.push(``);
-    lines.push(`## Tests manuals pendents`);
-    lines.push(``);
-    for (const m of RESULTS.manual) {
-        lines.push(`### ${m.label}`);
-        for (const s of m.steps) {
-            lines.push(`- [ ] ${s}`);
-        }
-        lines.push(``);
     }
     lines.push(`---`);
     lines.push(`*Aquest fitxer es sobrescriu en cada execució dels tests.*`);
@@ -1315,6 +1321,8 @@ async function main() {
         const informPath = path.join(testsDir, "AI_TEST_inform.md");
         fs.writeFileSync(informPath, generateSolutions(), "utf8");
         console.log(`Solucions guardades a docs/AI_TESTS/AI_TEST_inform.md`);
+
+        writeManualTestsToSequentSteps();
 
     } finally {
         serverProcess.kill();

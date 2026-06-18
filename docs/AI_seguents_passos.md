@@ -14,7 +14,8 @@
 | Suite | Tests | Passats | Fallats |
 |---|---|---|---|
 | `AI_test.js` | 314 automàtics | 314 | 0 |
-| `DEVIL_tests.js` | 84 caixa negra | 84 | 0 |
+| `AI_test_advanced.js` | 105 constraint/workflow | 105 | 0 |
+| `DEVIL_tests.js` | 143 caixa negra | 143 | 0 |
 
 ---
 
@@ -22,7 +23,7 @@
 
 ### Prioritat Alta
 - **Autenticació i autorització de rols**: Protegir endpoints CRUD per rol. Actualment `requireAuth` existeix però `requireRole` i `requireTotal` estan implementats però no aplicats a totes les rutes.
-- **Revisar tests manuals**: `resultat_test.md` té 7 blocs manuals sobre el cercador de carrers (`callejero`) que no s'executen automàticament.
+- **Executar tests manuals** (vegeu secció «Tests manuals» més avall): 7 blocs sobre el cercador de carrers (`callejero`) que requereixen interacció visual al navegador.
 
 ### Prioritat Mitjana
 - **Pàgines CRUD visuals per a catàlegs**: `tipus_via`, `barri`, `codi_postal` tenen endpoints però no interfície d'usuari per gestionar-los.
@@ -48,3 +49,35 @@
 - **Unificar estils de controllers catàleg** (25 fitxers, risc alt, benefici estètic).
 - **Mantenir `idCodi_postal`/`idCodiPostal`** a `callejero.js` — workaround necessari.
 - **Mantenir noms `NESES`/`SEBAS`** en majúscules.
+
+## Tests manuals
+
+### Obrir http://localhost:3000 al navegador
+- [ ] Comprovar que es mostra el títol «Cercador de carrers»
+- [ ] Comprovar que el desplegable «Tipus de via» té 24 opcions
+- [ ] Comprovar que la barra de previsualització (preview-bar) és visible
+
+### Escriure «ABAT» al camp «Nom del carrer»
+- [ ] Comprovar que després de 500ms apareix un menú desplegable
+- [ ] Comprovar que les opcions mostren el nom complet del carrer
+- [ ] Comprovar que si hi ha noms repetits, es mostra «barri · CP» en lletra petita
+
+### Fer clic a una opció del desplegable
+- [ ] Comprovar que el camp «Barri» s'emplena automàticament
+- [ ] Comprovar que el camp «Codi postal» s'emplena automàticament
+- [ ] Comprovar que la barra de previsualització mostra: (tipus_via) nom [barri] <CP>
+- [ ] Comprovar que el menú desplegable es tanca
+
+### Seleccionar un tipus de via del filtre
+- [ ] Comprovar que la llista de resultats es filtra pel tipus de via seleccionat
+
+### Fer clic fora del camp de cerca
+- [ ] Comprovar que el menú desplegable es tanca
+
+### Escriure menys de 3 caràcters
+- [ ] Comprovar que NO apareix el menú desplegable
+
+### Comprovar responsivitat (provar amb Chrome DevTools o mòbil)
+- [ ] Comprovar que el formulari es veu correctament en mòbil
+- [ ] Comprovar que el menú desplegable no surt de la pantalla
+
