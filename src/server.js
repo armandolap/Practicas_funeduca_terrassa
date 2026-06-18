@@ -127,18 +127,18 @@ async function startServer() {
             path.join(__dirname, "sql", "Base_datos.sql")
         );
         // 5. Ejecutar datos estáticos
-        console.log("Ejecutando inserts_tablas_estaticas.sql...");
+        //  console.log("Ejecutando inserts_tablas_estaticas.sql...");
 
-        await runSQLFile(
-            bootstrap,
-            path.join(__dirname, "sql", "inserts_tablas_estaticas.sql")
-        );
+        //  await runSQLFile(
+        //      bootstrap,
+        //      path.join(__dirname, "sql", "inserts_tablas_estaticas.sql")
+        //  );
 
         // 6. Cargar datos de prueba (clients, famílies, domicilis)
-        console.log("Insertant dades de prova...");
+        // console.log("Insertant dades de prova...");
 
-        const { insertTestData } = require("./seeder/seeder");
-        await insertTestData(bootstrap);
+        // const { insertTestData } = require("./seeder/seeder");
+        // await insertTestData(bootstrap);
 
         await bootstrap.end();
 
