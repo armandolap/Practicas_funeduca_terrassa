@@ -1,0 +1,7 @@
+1.- el boton de editar me lleva a la pagina de crear usuario,
+    pero no me carga los campos,con los campos vacios ni recuerdo los datos de la persona
+    entonces al darle actualizar tendra variacion en campos que no querian variar
+2.- la lista de personas (http://localhost:3000/clients.html) aun muestra proyectos pasados,
+     en la vista de persona-detalle(http://localhost:3000/client.html?id=14 :id ) 
+    es donde ahora sale activo en vez de tots
+
