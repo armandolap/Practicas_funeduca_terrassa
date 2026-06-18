@@ -179,7 +179,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`familia` (
   `idFamilia` INT NOT NULL AUTO_INCREMENT,
-  `Cognom_familiar` VARCHAR(45) NOT NULL,
+  `Cognom_familiar` VARCHAR(120) NOT NULL,
   `Estructura_familiar` INT NOT NULL,
   PRIMARY KEY (`idFamilia`),
   UNIQUE INDEX `Cognom_familiar_UNIQUE` (`Cognom_familiar` ASC) VISIBLE,
@@ -438,9 +438,12 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`usuario_app` (
   `idNivel_acceso` INT NOT NULL UNIQUE,
   `Nom` VARCHAR(45) NOT NULL,
   `Cognoms` VARCHAR(45) NOT NULL,
-  `email` VARCHAR(45) NOT NULL,
+  `username` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(45) NULL DEFAULT NULL,
   `Telefon` VARCHAR(45) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
   PRIMARY KEY (`idUsuario_APP`, `idNivel_acceso`),
+  UNIQUE INDEX `username_UNIQUE` (`username` ASC) VISIBLE,
   INDEX `fk_usuario_app_Nivel_acceso1_idx` (`idNivel_acceso` ASC) VISIBLE,
   CONSTRAINT `fk_usuario_app_Nivel_acceso1`
     FOREIGN KEY (`idNivel_acceso`)
@@ -480,6 +483,7 @@ DEFAULT CHARACTER SET = utf8mb3;
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`Responsables` (
   `proyectos_idProyecto` INT NOT NULL,
   `idUsuario_APP` INT NOT NULL,
+  `tipus_responsable` TINYINT NOT NULL DEFAULT 1 COMMENT '1=zona, 2=projecte, 3=treballador',
   PRIMARY KEY (`proyectos_idProyecto`, `idUsuario_APP`),
   INDEX `fk_proyectos_has_usuario_app_usuario_app1_idx` (`idUsuario_APP` ASC) VISIBLE,
   INDEX `fk_proyectos_has_usuario_app_proyectos1_idx` (`proyectos_idProyecto` ASC) VISIBLE,

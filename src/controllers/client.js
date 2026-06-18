@@ -1,127 +1,81 @@
-const clientRepository = require("../repositories/client");
+const repo = require("../repositories/client");
 
-// GET /client
 async function getAllClients(req, res) {
     try {
-        const clients = await clientRepository.getAll();
-
-        res.status(200).json(clients);
+        const { q, familia, genere, barri, edatMin, edatMax, offset, limit } = req.query;
+        if (q || familia || genere || barri || edatMin !== undefined || edatMax !== undefined || offset !== undefined || limit !== undefined) {
+            const result = await repo.getFiltered({ q, familia, genere, barri, edatMin, edatMax, offset, limit });
+            return res.json(result);
+        }
+        const clients = await repo.getAll();
+        res.json(clients);
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error obtenint clients"
-        });
+        res.status(500).json({ message: "Error obtenint clients" });
     }
 }
 
-// GET /client/:id
 async function getClientById(req, res) {
     try {
-        const { id } = req.params;
-
-        const client = await clientRepository.getById(id);
-
-        if (!client) {
-            return res.status(404).json({
-                message: "Client no trobat"
-            });
-        }
-
-        res.status(200).json(client);
-
+        const { filter } = req.query;
+        const client = await repo.getDetailById(req.params.id);
+        if (!client) return res.status(404).json({ message: "Client no trobat" });
+        const projectes = await repo.getProjectsByClient(req.params.id, filter || "tots");
+        res.json({ ...client, projectes });
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error obtenint client"
-        });
+        res.status(500).json({ message: "Error obtenint client" });
     }
 }
 
-// POST /client
 async function createClient(req, res) {
     try {
-        const clientData = req.body;
-
-        const id = await clientRepository.create(clientData);
-
-        res.status(201).json({
-            message: "Client creat",
-            id
-        });
-
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ message: "Dades de client obligatòries" });
+        }
+        const { Nom, Cognoms } = req.body;
+        if (!Nom?.trim() || !Cognoms?.trim()) {
+            return res.status(400).json({ message: "Nom i Cognoms obligatoris" });
+        }
+        const id = await repo.create(req.body);
+        res.status(201).json({ message: "Client creat", id });
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error creant client"
-        });
+        res.status(500).json({ message: "Error creant client" });
     }
 }
 
-// PUT /client/:id
 async function updateClient(req, res) {
     try {
-        const { id } = req.params;
-        const clientData = req.body;
-
-        // Recalculate C_edad if Fecha_nacimiento provided
-        if (clientData.Fecha_nacimiento) {
-            const nac = new Date(clientData.Fecha_nacimiento);
+        const existing = await repo.getDetailById(req.params.id);
+        if (!existing) return res.status(404).json({ message: "Client no trobat" });
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ message: "Dades d'actualització obligatòries" });
+        }
+        if (req.body.Fecha_nacimiento) {
+            const nac = new Date(req.body.Fecha_nacimiento);
             const avui = new Date();
             let edad = avui.getFullYear() - nac.getFullYear();
             const m = avui.getMonth() - nac.getMonth();
-            if (m < 0 || (m === 0 && avui.getDate() < nac.getDate())) {
-                edad--;
-            }
-            clientData.C_edad = edad;
+            if (m < 0 || (m === 0 && avui.getDate() < nac.getDate())) edad--;
+            req.body.C_edad = edad;
         }
-
-        const affectedRows = await clientRepository.update(id, clientData);
-
-        if (affectedRows === 0) {
-            return res.status(404).json({
-                message: "Client no trobat"
-            });
-        }
-
-        res.status(200).json({
-            message: "Client actualitzat"
-        });
-
+        await repo.update(req.params.id, req.body);
+        res.json({ message: "Client actualitzat" });
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error actualitzant client"
-        });
+        res.status(500).json({ message: "Error actualitzant client" });
     }
 }
 
-// DELETE /client/:id
 async function deleteClient(req, res) {
     try {
-        const { id } = req.params;
-
-        const affectedRows = await clientRepository.remove(id);
-
-        if (affectedRows === 0) {
-            return res.status(404).json({
-                message: "Client no trobat"
-            });
-        }
-
-        res.status(200).json({
-            message: "Client eliminat"
-        });
-
+        const affected = await repo.remove(req.params.id);
+        if (affected === 0) return res.status(404).json({ message: "Client no trobat" });
+        res.json({ message: "Client eliminat" });
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error eliminant client"
-        });
+        res.status(500).json({ message: "Error eliminant client" });
     }
 }
 
@@ -136,35 +90,13 @@ function calcTempsEntitat(altaDateStr) {
     return "0";
 }
 
-// POST /client/full
 async function createFullClient(req, res) {
     try {
         const { client: clientData, familia, domicili } = req.body;
-
-        if (!clientData) {
-            return res.status(400).json({ message: "Dades de client obligatòries" });
-        }
-
-        const {
-            Nom,
-            Cognoms,
-            Fecha_nacimiento,
-            Data_d_alta,
-            idGenere,
-            Telefon,
-            Correu_electronic,
-            idRol,
-            idSituacio_economica,
-            Pais_naixement,
-            derivacio_serveis_socials,
-            Risc,
-            Resultat_academic,
-            Curs_actual,
-            idSebas,
-            idNecessitat_especial
-        } = clientData;
-
-        // Required fields
+        if (!clientData) return res.status(400).json({ message: "Dades de client obligatòries" });
+        const { Nom, Cognoms, Fecha_nacimiento, Data_d_alta, idGenere, Telefon, Correu_electronic,
+                idRol, idSituacio_economica, Pais_naixement, derivacio_serveis_socials,
+                Risc, Resultat_academic, Curs_actual, idSebas, idNecessitat_especial } = clientData;
         if (!Nom?.trim()) return res.status(400).json({ message: "Nom obligatori" });
         if (!Cognoms?.trim()) return res.status(400).json({ message: "Cognoms obligatoris" });
         if (!Fecha_nacimiento) return res.status(400).json({ message: "Fecha naixement obligatòria" });
@@ -172,82 +104,32 @@ async function createFullClient(req, res) {
         if (!idRol) return res.status(400).json({ message: "Rol obligatori" });
         if (!idSituacio_economica) return res.status(400).json({ message: "Situació econòmica obligatòria" });
         if (!Pais_naixement) return res.status(400).json({ message: "País naixement obligatori" });
-
-        // Validate family/domicile structure
         if (!familia?.idFamilia && !familia?.Estructura_familiar) {
             return res.status(400).json({ message: "Estructura familiar obligatòria si no s'assigna una família existent" });
         }
         if (!domicili?.idDomicili && !domicili?.idcallejero) {
             return res.status(400).json({ message: "Dades de domicili obligatòries si no s'assigna un d'existent" });
         }
-
-        // Calculate age from Fecha_nacimiento
         const nac = new Date(Fecha_nacimiento);
         const avui = new Date();
         let C_edad = avui.getFullYear() - nac.getFullYear();
         const m = avui.getMonth() - nac.getMonth();
-        if (m < 0 || (m === 0 && avui.getDate() < nac.getDate())) {
-            C_edad--;
-        }
-
-        // Default IDs from static inserts (ordered as in inserts_tablas_estaticas.sql)
-        const RISK_SENSE_RISC = 1;
-        const SEBAS_NO_SEBAS = 12;
-        const CURS_NO_APLICA = 26;
-
+        if (m < 0 || (m === 0 && avui.getDate() < nac.getDate())) C_edad--;
+        const RISK_SENSE_RISC = 1, SEBAS_NO_SEBAS = 12, CURS_NO_APLICA = 26;
         const altaDate = Data_d_alta || new Date().toISOString().split("T")[0];
         const temps = calcTempsEntitat(altaDate);
-
         const payload = {
             domicili: domicili || {},
-            familia: {
-                idFamilia: familia?.idFamilia || null,
-                Cognom_familiar: familia?.Cognom_familiar || Cognoms,
-                Estructura_familiar: familia?.Estructura_familiar || null
-            },
-            client: {
-                Nom,
-                Cognoms,
-                Telefon: Telefon || null,
-                Correu_electronic: Correu_electronic || null,
-                Data_d_alta: altaDate,
-                C_temps_a_lentitat: temps,
-                Fecha_nacimiento,
-                C_edad,
-                idGenere,
-                idRol,
-                idSituacio_economica,
-                Pais_naixement,
-                derivacio_serveis_socials: derivacio_serveis_socials ?? 0,
-                Risc: Risc ?? RISK_SENSE_RISC,
-                Resultat_academic: Resultat_academic ?? null,
-                Curs_actual: Curs_actual ?? CURS_NO_APLICA,
-                idSebas: idSebas ?? SEBAS_NO_SEBAS,
-                idNecessitat_especial: idNecessitat_especial ?? null
-            },
+            familia: { idFamilia: familia?.idFamilia || null, Cognom_familiar: familia?.Cognom_familiar || Cognoms, Estructura_familiar: familia?.Estructura_familiar || null },
+            client: { Nom, Cognoms, Telefon: Telefon || null, Correu_electronic: Correu_electronic || null, Data_d_alta: altaDate, C_temps_a_lentitat: temps, Fecha_nacimiento, C_edad, idGenere, idRol, idSituacio_economica, Pais_naixement, derivacio_serveis_socials: derivacio_serveis_socials ?? 0, Risc: Risc ?? RISK_SENSE_RISC, Resultat_academic: Resultat_academic ?? null, Curs_actual: Curs_actual ?? CURS_NO_APLICA, idSebas: idSebas ?? SEBAS_NO_SEBAS, idNecessitat_especial: idNecessitat_especial ?? null },
             nacionalitat: Pais_naixement
         };
-
-        const id = await clientRepository.createFull(payload);
-
-        res.status(201).json({
-            message: "Client creat correctament",
-            id
-        });
-
+        const id = await repo.createFull(payload);
+        res.status(201).json({ message: "Client creat correctament", id });
     } catch (error) {
         console.error(error);
-        res.status(500).json({
-            message: "Error creant client complet"
-        });
+        res.status(500).json({ message: "Error creant client complet" });
     }
 }
 
-module.exports = {
-    getAllClients,
-    getClientById,
-    createClient,
-    updateClient,
-    deleteClient,
-    createFullClient
-};
+module.exports = { getAllClients, getClientById, createClient, updateClient, deleteClient, createFullClient };

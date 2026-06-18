@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Persona — FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <div id="clientContent"></div>
+</main>
+<div class="toast" id="toast"></div>
+<script src="/js/sidebar.js"></script>
+<script>
+const clientId = new URLSearchParams(location.search).get('id');
+let currentProjFilter = 'tots';
+
+async function loadClient() {
+    if (!requireAuth()) return;
+    try {
+        const res = await fetch(`/client/${clientId}?filter=${currentProjFilter}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const c = await res.json();
+        if (!c || !c.idClient) { document.getElementById('clientContent').innerHTML = '<p>Client no trobat</p>'; return; }
+
+        const role = getRole();
+        const canEdit = role === 1 || role === 2 || role === 3;
+        const canAssignProj = role === 1 || role === 2 || role === 3 || role === 4;
+
+        document.getElementById('clientContent').innerHTML = `
+            <a class="back-link" href="/clients.html">← Tornar</a>
+            <div class="detail-header">
+                <h1>${c.Nom || ''} ${c.Cognoms || ''}</h1>
+                <div class="subtitle">
+                    ${canEdit ? `<button class="btn btn-sm btn-secondary" style="float:right">Editar</button>` : ''}
+                </div>
+            </div>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="detail-section"><div class="label">Edat</div><div class="value">${c.C_edad || 0} anys</div></div>
+                    <div class="detail-section"><div class="label">Gènere</div><div class="value">${c.Nom_genere || ''}</div></div>
+                    <div class="detail-section"><div class="label">Temps a l'entitat</div><div class="value">${c.C_temps_a_lentitat || '0'}</div></div>
+                    <div class="detail-section"><div class="label">Activitats fetes</div><div class="value">${c.num_activitats || 0}</div></div>
+                    <div class="detail-section"><div class="label">Rol familiar</div><div class="value">${c.Nom_rol || ''}</div></div>
+                    <div class="detail-section"><div class="label">NESE</div><div class="value">${c.Nom_necessitat || 'No'}</div></div>
+                    <div class="detail-section"><div class="label">Risc</div><div class="value">${c.risc_nivell || 'Sense risc'}</div></div>
+                </div>
+                <div class="card">
+                    <div class="detail-section"><div class="label">Família</div><div class="value"><a href="/familia.html?id=${c.idFamilia}">${c.Cognom_familiar || ''}</a></div></div>
+                    <div class="detail-section"><div class="label">Estructura familiar</div><div class="value">${c.estructura_familiar_nom || ''}</div></div>
+                    <div class="detail-section"><div class="label">Domicili</div><div class="value">
+                        ${c.tipus_via ? `<a href="/domicili.html?id=${c.idDomicili}">${c.tipus_via} ${c.Nom_calle || ''}, ${c.Num_calle || ''}${c.Pis ? `, ${c.Pis}${c.Escala ? `${c.Escala}` : ''}` : ''}</a>` : 'Sense domicili'}
+                    </div></div>
+                    <div class="detail-section"><div class="label">Telèfon</div><div class="value">${c.Telefon || '-'}</div></div>
+                    <div class="detail-section"><div class="label">Correu</div><div class="value">${c.Correu_electronic || '-'}</div></div>
+                    <div class="detail-section"><div class="label">Data d'alta</div><div class="value">${c.Data_d_alta ? new Date(c.Data_d_alta).toLocaleDateString() : '-'}</div></div>
+                    ${c.Baixa ? `<div class="detail-section"><div class="label">Data baixa</div><div class="value">${c.Data_baixa ? new Date(c.Data_baixa).toLocaleDateString() : '-'} (${c.Nom_motiu_baixa || ''})</div></div>` : ''}
+                </div>
+            </div>
+            <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h3>Projectes</h3>
+                    <div style="display:flex;gap:8px;">
+                        ${['tots','actius','futur','passats'].map(f =>
+                            `<button class="btn btn-sm ${currentProjFilter === f ? 'btn-primary' : 'btn-secondary'}" onclick="setProjFilter('${f}')">${f.charAt(0).toUpperCase() + f.slice(1)}</button>`
+                        ).join('')}
+                        ${canAssignProj ? `<button class="btn btn-sm btn-success" onclick="showAssignProject()">+ Assignar</button>` : ''}
+                    </div>
+                </div>
+                <table>
+                    <thead><tr><th>Projecte</th><th>Estat</th><th>Inici</th><th>Fi</th>${canAssignProj ? '<th></th>' : ''}</tr></thead>
+                    <tbody id="projectsBody"></tbody>
+                </table>
+            </div>
+        `;
+        renderProjects(c.projectes || [], canAssignProj);
+    } catch (err) { console.error(err); document.getElementById('clientContent').innerHTML = '<p>Error carregant client</p>'; }
+}
+
+function renderProjects(projects, canRemove) {
+    const tbody = document.getElementById('projectsBody');
+    if (!projects.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">Cap projecte</td></tr>';
+        return;
+    }
+    tbody.innerHTML = projects.map(p => `
+        <tr>
+            <td><a href="/projecte.html?id=${p.idProyecto}">${p.Nom_projecte || ''}</a></td>
+            <td><span class="badge ${p.estat_projecte === 'actiu' ? 'badge-green' : p.estat_projecte === 'futur' ? 'badge-blue' : 'badge-gray'}">${p.estat_projecte === 'actiu' ? 'Actiu' : p.estat_projecte === 'futur' ? 'Futur' : 'Tancat'}</span></td>
+            <td>${p.fecha_inicio_act ? new Date(p.fecha_inicio_act).toLocaleDateString() : '-'}</td>
+            <td>${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</td>
+            ${canRemove ? `<td><button class="btn btn-sm btn-danger" onclick="removeFromProj(${p.idProyecto})">Treure</button></td>` : ''}
+        </tr>
+    `).join('');
+}
+
+function setProjFilter(f) {
+    currentProjFilter = f;
+    loadClient();
+}
+
+async function removeFromProj(projId) {
+    if (!confirm('Treure aquest client del projecte?')) return;
+    try {
+        const res = await fetch(`/projectes/${projId}/clients/${clientId}`, {
+            method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.ok) { showToast('Client tret del projecte', 'success'); loadClient(); }
+        else { showToast('Error', 'error'); }
+    } catch (e) { showToast('Error de connexió', 'error'); }
+}
+
+async function showAssignProject() {
+    const role = getRole();
+    const projName = prompt('Nom del projecte a assignar:');
+    if (!projName || projName.trim().length < 2) return;
+    try {
+        const params = new URLSearchParams({ q: projName.trim() });
+        if (role === 4) params.set('filter', 'actiu_futur');
+        const res = await fetch(`/projectes?${params}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const projects = await res.json();
+        if (!projects.length) { showToast('Projecte no trobat', 'error'); return; }
+        const ids = projects.map(p => `${p.idProyecto}: ${p.Nom_projecte}`).join('\n');
+        const choice = prompt(`Selecciona ID del projecte:\n${ids}`);
+        if (!choice) return;
+        const projId = parseInt(choice.split(':')[0]);
+        if (!projId) return;
+        const addRes = await fetch(`/projectes/${projId}/clients`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: JSON.stringify({ clientIds: [parseInt(clientId)] })
+        });
+        if (addRes.ok) { showToast('Assignat correctament', 'success'); loadClient(); }
+        else { showToast('Error assignant', 'error'); }
+    } catch (e) { showToast('Error de connexió', 'error'); }
+}
+
+function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = `toast ${type} show`;
+    setTimeout(() => t.className = 'toast', 3000);
+}
+
+renderSidebar('clients');
+if (!clientId) document.getElementById('clientContent').innerHTML = '<p>ID de client no proporcionat</p>';
+else loadClient();
+</script>
+</body>
+</html>

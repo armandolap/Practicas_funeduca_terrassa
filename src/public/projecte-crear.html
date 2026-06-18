@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${isEdit ? 'Editar' : 'Crear'} Projecte — FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>.autocomplete-dropdown { position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:0 0 6px 6px;max-height:200px;overflow-y:auto;z-index:100; }</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1 id="formTitle">Crear Projecte</h1>
+  <form id="projectForm" onsubmit="return saveProject(event)" style="max-width:700px">
+    <div class="card">
+      <div class="form-group">
+        <label>Nom del projecte *</label>
+        <input type="text" id="nomProjecte" required>
+      </div>
+      <div class="form-group">
+        <label>Descripció</label>
+        <textarea id="descripcio" rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Places</label>
+          <input type="number" id="plazas" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>Data inici</label>
+          <input type="date" id="fechaInicio">
+        </div>
+        <div class="form-group">
+          <label>Data fi</label>
+          <input type="date" id="fechaFin">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Centre d'activitats</h3>
+      <div class="form-group">
+        <label>Cerca per nom o adreça</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="centreSearch" placeholder="Escriu almenys 2 caràcters..." autocomplete="off">
+          <div class="autocomplete-dropdown" id="centreDropdown" style="display:none"></div>
+        </div>
+      </div>
+      <div id="centreInfo" style="display:none;padding:10px;background:#f0fdf4;border-radius:6px;margin-bottom:12px;">
+        <p id="centreNameDisplay"></p>
+        <p id="centreAddressDisplay" style="font-size:13px;color:#64748b;"></p>
+      </div>
+      <div id="newCentreForm" style="display:none">
+        <div class="form-group"><label>Nom del centre *</label><input type="text" id="newCentreName"></div>
+        <div class="form-group">
+          <label>Cerca carrer</label>
+          <div class="autocomplete-wrap">
+            <input type="text" id="newStreetSearch" placeholder="Escriu nom del carrer..." autocomplete="off">
+            <div class="autocomplete-dropdown" id="newStreetDropdown" style="display:none"></div>
+          </div>
+        </div>
+        <div id="newSelectedStreet" style="display:none;padding:10px;background:#f0fdf4;border-radius:6px;margin-bottom:12px;">
+          <p id="newStreetDisplay" style="font-weight:600;"></p>
+          <p id="newStreetDetails" style="font-size:13px;color:#64748b;"></p>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Número *</label><input type="text" id="newNumCalle"></div>
+          <div class="form-group"><label>Pis</label><input type="text" id="newPis"></div>
+          <div class="form-group"><label>Escala</label><input type="text" id="newEscala"></div>
+        </div>
+        <input type="hidden" id="newIdCallejero">
+      </div>
+      <input type="hidden" id="idCentreActivitats">
+    </div>
+
+    <div class="card">
+      <h3>Responsables</h3>
+
+      <div class="form-group">
+        <label>Responsable de zona *</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="zonaSearch" placeholder="Cerca responsable de zona..." autocomplete="off">
+          <div class="autocomplete-dropdown" id="zonaDropdown" style="display:none"></div>
+        </div>
+        <div id="zonaSelected" style="display:none;margin-top:6px;padding:8px 12px;background:#f0fdf4;border-radius:6px;">
+          <span id="zonaSelectedName" style="font-weight:600;"></span>
+          <span id="zonaRemoveBtn" style="cursor:pointer;color:#ef4444;margin-left:8px;font-size:13px;" onclick="removeZona()">✕</span>
+        </div>
+        <input type="hidden" id="responsableZona">
+      </div>
+
+      <div class="form-group" style="margin-top:16px">
+        <label>Responsables de projecte</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="projRespSearch" placeholder="Cerca responsables de projecte..." autocomplete="off">
+          <div class="autocomplete-dropdown" id="projRespDropdown" style="display:none"></div>
+        </div>
+        <div id="projRespTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+      </div>
+
+      <div class="form-group" style="margin-top:16px">
+        <label>Treballadors</label>
+        <div class="autocomplete-wrap">
+          <input type="text" id="trebSearch" placeholder="Cerca treballadors..." autocomplete="off">
+          <div class="autocomplete-dropdown" id="trebDropdown" style="display:none"></div>
+        </div>
+        <div id="trebTags" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;"></div>
+      </div>
+    </div>
+
+    <div class="form-actions" style="display:flex;gap:10px;">
+      <button type="submit" class="btn btn-primary" id="btnSave">Guardar Projecte</button>
+      <button type="button" class="btn btn-secondary" onclick="window.location.href='/projectes.html'">Cancel·lar</button>
+    </div>
+  </form>
+</main>
+<script src="/js/sidebar.js"></script>
+<script>
+const isEdit = new URLSearchParams(location.search).get('id');
+let selectedCentreId = null;
+let centreSearchTimeout;
+let _zonaUsers = [], _projRespUsers = [], _trebUsers = [];
+let _zonaSelected = null, _projRespSelected = [], _trebSelected = [];
+let _projRespExisting = [], _trebExisting = [];
+
+const TOKEN = () => localStorage.getItem('token');
+const AUTH_HEADERS = () => ({ 'Authorization': `Bearer ${TOKEN()}` });
+
+async function initForm() {
+    if (!requireAuth()) return;
+    const role = getRole();
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (role !== 1 && role !== 2 && !(role === 3 && isEdit)) {
+        alert('No tens permís per crear projectes');
+        window.location.href = '/projectes.html';
+        return;
+    }
+    renderSidebar('projectes');
+
+    await loadUserLists();
+    initTagInputs();
+
+    if (isEdit) {
+        document.getElementById('formTitle').textContent = 'Editar Projecte';
+        document.getElementById('btnSave').textContent = 'Actualitzar Projecte';
+        await loadProject(isEdit);
+    } else {
+        if (role === 2) {
+            const match = _zonaUsers.find(u => u.idUsuario_APP === user.idUsuario_APP);
+            if (match) selectZona(match);
+        }
+    }
+}
+
+async function loadUserLists() {
+    try {
+        const [zonaRes, projRes, trebRes] = await Promise.all([
+            fetch('/projectes/usuaris-per-nivell?min=1&max=2', { headers: AUTH_HEADERS() }),
+            fetch('/projectes/usuaris-per-nivell?min=2&max=3', { headers: AUTH_HEADERS() }),
+            fetch('/projectes/usuaris-per-nivell?min=4&max=4', { headers: AUTH_HEADERS() })
+        ]);
+        _zonaUsers = await zonaRes.json();
+        _projRespUsers = await projRes.json();
+        _trebUsers = await trebRes.json();
+    } catch (e) { console.error(e); }
+}
+
+function initTagInputs() {
+    setupSearch('zonaSearch', 'zonaDropdown', _zonaUsers, 'zona');
+    setupSearch('projRespSearch', 'projRespDropdown', _projRespUsers, 'projResp');
+    setupSearch('trebSearch', 'trebDropdown', _trebUsers, 'treb');
+}
+
+function setupSearch(inputId, dropdownId, users, type) {
+    const input = document.getElementById(inputId);
+    const dropdown = document.getElementById(dropdownId);
+    input.addEventListener('input', function() {
+        const q = this.value.trim().toLowerCase();
+        if (q.length < 1) { dropdown.style.display = 'none'; return; }
+        const filtered = users.filter(u =>
+            (u.Nom + ' ' + u.Cognoms + ' ' + (u.nivell_nom || '')).toLowerCase().includes(q)
+        );
+        if (filtered.length) {
+            dropdown.innerHTML = filtered.map(u =>
+                `<div onclick="select${capitalize(type)}(${JSON.stringify(u).replace(/"/g, "'")})" style="cursor:pointer;padding:6px 10px;border-bottom:1px solid #f1f5f9;">
+                    ${u.Nom} ${u.Cognoms} <span style="color:#64748b;font-size:12px;">(${u.nivell_nom || ''})</span>
+                </div>`
+            ).join('');
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">Cap resultat</div>';
+            dropdown.style.display = 'block';
+        }
+    });
+    input.addEventListener('blur', () => setTimeout(() => dropdown.style.display = 'none', 200));
+    input.addEventListener('focus', () => { if (input.value.trim()) input.dispatchEvent(new Event('input')); });
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ── Zona ──
+
+function selectZona(user) {
+    const data = typeof user === 'object' ? user : JSON.parse(user);
+    _zonaSelected = data;
+    document.getElementById('responsableZona').value = data.idUsuario_APP;
+    document.getElementById('zonaSearch').value = data.Nom + ' ' + data.Cognoms;
+    document.getElementById('zonaSelected').style.display = 'block';
+    document.getElementById('zonaSelectedName').textContent = data.Nom + ' ' + data.Cognoms + ' (' + (data.nivell_nom || '') + ')';
+    document.getElementById('zonaDropdown').style.display = 'none';
+    const role = getRole();
+    const canRemove = isEdit ? role === 1 : role === 1;
+    document.getElementById('zonaRemoveBtn').style.display = canRemove ? '' : 'none';
+    if (isEdit && role === 3) {
+        document.getElementById('zonaSearch').disabled = true;
+        document.getElementById('zonaSearch').style.cursor = 'not-allowed';
+    }
+}
+
+function removeZona() {
+    _zonaSelected = null;
+    document.getElementById('responsableZona').value = '';
+    document.getElementById('zonaSearch').value = '';
+    document.getElementById('zonaSelected').style.display = 'none';
+}
+
+// ── Projecte resp ──
+
+function selectProjResp(user) {
+    const data = typeof user === 'object' ? user : JSON.parse(user);
+    if (_projRespSelected.some(u => u.idUsuario_APP === data.idUsuario_APP) ||
+        _projRespExisting.some(u => u.idUsuario_APP === data.idUsuario_APP)) return;
+    _projRespSelected.push(data);
+    renderProjRespTags();
+    document.getElementById('projRespSearch').value = '';
+    document.getElementById('projRespDropdown').style.display = 'none';
+}
+
+function removeProjResp(id) {
+    _projRespSelected = _projRespSelected.filter(u => u.idUsuario_APP !== id);
+    renderProjRespTags();
+}
+
+function renderProjRespTags() {
+    const role = getRole();
+    const container = document.getElementById('projRespTags');
+    let html = '';
+    if (isEdit && role === 3) {
+        html += _projRespExisting.map(u =>
+            `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e0f2fe;border-radius:20px;font-size:13px;opacity:0.6;">
+                ${u.Nom} ${u.Cognoms}
+            </span>`
+        ).join('');
+    }
+    html += _projRespSelected.map(u =>
+        `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e0f2fe;border-radius:20px;font-size:13px;">
+            ${u.Nom} ${u.Cognoms}
+            <span onclick="removeProjResp(${u.idUsuario_APP})" style="cursor:pointer;color:#ef4444;font-weight:700;">✕</span>
+        </span>`
+    ).join('');
+    container.innerHTML = html;
+}
+
+// ── Treballadors ──
+
+function selectTreb(user) {
+    const data = typeof user === 'object' ? user : JSON.parse(user);
+    if (_trebSelected.some(u => u.idUsuario_APP === data.idUsuario_APP) ||
+        _trebExisting.some(u => u.idUsuario_APP === data.idUsuario_APP)) return;
+    _trebSelected.push(data);
+    renderTrebTags();
+    document.getElementById('trebSearch').value = '';
+    document.getElementById('trebDropdown').style.display = 'none';
+}
+
+function removeTreb(id) {
+    _trebSelected = _trebSelected.filter(u => u.idUsuario_APP !== id);
+    renderTrebTags();
+}
+
+function renderTrebTags() {
+    const role = getRole();
+    const container = document.getElementById('trebTags');
+    let html = '';
+    if (isEdit && role === 3) {
+        html += _trebExisting.map(u =>
+            `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fef3c7;border-radius:20px;font-size:13px;opacity:0.6;">
+                ${u.Nom} ${u.Cognoms}
+            </span>`
+        ).join('');
+    }
+    html += _trebSelected.map(u =>
+        `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fef3c7;border-radius:20px;font-size:13px;">
+            ${u.Nom} ${u.Cognoms}
+            <span onclick="removeTreb(${u.idUsuario_APP})" style="cursor:pointer;color:#ef4444;font-weight:700;">✕</span>
+        </span>`
+    ).join('');
+    container.innerHTML = html;
+}
+
+// ── Load / Save ──
+
+async function loadProject(id) {
+    try {
+        const res = await fetch(`/projectes/${id}`, { headers: AUTH_HEADERS() });
+        const p = await res.json();
+        document.getElementById('nomProjecte').value = p.Nom_projecte || '';
+        document.getElementById('descripcio').value = p.Descripcio || '';
+        document.getElementById('plazas').value = p.plazas || 0;
+        document.getElementById('fechaInicio').value = p.fecha_inicio_act ? p.fecha_inicio_act.split('T')[0] : '';
+        document.getElementById('fechaFin').value = p.fecha_fin_act ? p.fecha_fin_act.split('T')[0] : '';
+        if (p.idcentre_activitats) {
+            selectedCentreId = p.idcentre_activitats;
+            document.getElementById('idCentreActivitats').value = p.idcentre_activitats;
+            document.getElementById('centreSearch').value = p.nom_centre_activitats || '';
+            document.getElementById('centreInfo').style.display = 'block';
+            document.getElementById('centreNameDisplay').textContent = p.nom_centre_activitats || '';
+            document.getElementById('centreAddressDisplay').textContent = p.tipus_via ? `${p.tipus_via} ${p.Nom_calle || ''}, ${p.Num_calle || ''}` : '';
+        }
+
+        const role = getRole();
+        const responsables = p.responsables || [];
+        const zona = responsables.find(r => r.tipus_responsable === 1);
+        const projs = responsables.filter(r => r.tipus_responsable === 2);
+        const trebs = responsables.filter(r => r.tipus_responsable === 3);
+
+        if (zona) selectZona(zona);
+
+        if (role === 3) {
+            _projRespExisting = projs;
+            _trebExisting = trebs;
+            renderProjRespTags();
+            renderTrebTags();
+        } else {
+            projs.forEach(r => {
+                const found = _projRespUsers.find(u => u.idUsuario_APP === r.idUsuario_APP);
+                if (found) selectProjResp(found);
+            });
+            trebs.forEach(r => {
+                const found = _trebUsers.find(u => u.idUsuario_APP === r.idUsuario_APP);
+                if (found) selectTreb(found);
+            });
+        }
+    } catch (e) { console.error(e); }
+}
+
+async function saveProject(e) {
+    e.preventDefault();
+    if (!requireAuth()) return;
+    const role = getRole();
+    const nom = document.getElementById('nomProjecte').value.trim();
+    if (!nom) { alert('El nom del projecte és obligatori'); return; }
+
+    let idCentre = selectedCentreId;
+
+    if (!idCentre && document.getElementById('newCentreForm').style.display === 'block') {
+        const centreName = document.getElementById('newCentreName').value.trim();
+        if (!centreName) { alert('Nom del centre obligatori'); return; }
+        const idCallejero = document.getElementById('newIdCallejero').value;
+        const numCalle = document.getElementById('newNumCalle').value.trim();
+        if (!idCallejero) { alert('Cal seleccionar un carrer de la llista'); return; }
+        if (!numCalle) { alert('Cal indicar el número'); return; }
+        const pis = document.getElementById('newPis').value.trim();
+        const escala = document.getElementById('newEscala').value.trim();
+
+        try {
+            const centreRes = await fetch('/centre-activitats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...AUTH_HEADERS() },
+                body: JSON.stringify({
+                    nom_centre_activitats: centreName,
+                    direccio: { idcallejero: parseInt(idCallejero), Num_calle: numCalle, Pis: pis || null, Escala: escala || null }
+                })
+            });
+            const centreData = await centreRes.json();
+            if (!centreRes.ok) { alert(centreData.message || 'Error creant centre'); return; }
+            idCentre = centreData.id;
+        } catch (err) { alert('Error creant centre'); console.error(err); return; }
+    }
+
+    if (!idCentre) { alert('Cal seleccionar o crear un centre d\'activitats'); return; }
+
+    const payload = {
+        projecte: {
+            Nom_projecte: nom,
+            Descripcio: document.getElementById('descripcio').value.trim() || null,
+            plazas: parseInt(document.getElementById('plazas').value) || 0,
+            fecha_inicio_act: document.getElementById('fechaInicio').value || null,
+            fecha_fin_act: document.getElementById('fechaFin').value || null,
+            idcentre_activitats: parseInt(idCentre)
+        }
+    };
+
+    if (role === 3) {
+        // Add-only mode
+        payload.projecte.responsables_projecte_add = _projRespSelected.map(u => u.idUsuario_APP);
+        payload.projecte.treballadors_add = _trebSelected.map(u => u.idUsuario_APP);
+    } else {
+        const zonaId = document.getElementById('responsableZona').value;
+        if (!zonaId) { alert('Cal seleccionar un responsable de zona'); return; }
+        payload.projecte.responsable_zona = parseInt(zonaId);
+        payload.projecte.responsables_projecte = _projRespSelected.map(u => u.idUsuario_APP);
+        payload.projecte.treballadors = _trebSelected.map(u => u.idUsuario_APP);
+    }
+
+    try {
+        const url = isEdit ? `/projectes/${isEdit}` : '/projectes';
+        const method = isEdit ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json', ...AUTH_HEADERS() },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert(isEdit ? 'Projecte actualitzat' : 'Projecte creat');
+            window.location.href = `/projecte.html?id=${data.id || isEdit}`;
+        } else {
+            alert(data.message || 'Error');
+        }
+    } catch (err) { alert('Error de connexió'); console.error(err); }
+}
+
+// ── Centre search (unchanged) ──
+
+async function searchCentres() {
+    const q = document.getElementById('centreSearch').value.trim();
+    const dropdown = document.getElementById('centreDropdown');
+    if (q.length < 2) { dropdown.style.display = 'none'; return; }
+    try {
+        const res = await fetch(`/centre-activitats/search?q=${encodeURIComponent(q)}`, { headers: AUTH_HEADERS() });
+        const data = await res.json();
+        if (data.length) {
+            dropdown.innerHTML = data.map(c => `<div onclick="selectCentre(${c.idcentre_activitats}, '${c.nom_centre_activitats.replace(/'/g, "\\'")}', '${(c.tipus_via || '') + ' ' + (c.Nom_calle || '')}')">${c.nom_centre_activitats} — ${c.tipus_via || ''} ${c.Nom_calle || ''}</div>`).join('');
+            dropdown.innerHTML += `<hr style="margin:4px 0"><div onclick="showNewCentreForm()" style="color:#2563eb;font-weight:600;">+ Crear nou centre</div>`;
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.innerHTML = `<div onclick="showNewCentreForm()" style="color:#2563eb;font-weight:600;">+ Crear nou centre</div>`;
+            dropdown.style.display = 'block';
+        }
+    } catch (e) { console.error(e); }
+}
+
+document.getElementById('centreSearch').addEventListener('input', function() {
+    clearTimeout(centreSearchTimeout);
+    centreSearchTimeout = setTimeout(searchCentres, 300);
+});
+
+document.getElementById('newStreetSearch').addEventListener('input', function() {
+    clearTimeout(centreSearchTimeout);
+    centreSearchTimeout = setTimeout(searchNewStreets, 300);
+});
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.autocomplete-wrap')) {
+        document.getElementById('centreDropdown').style.display = 'none';
+        document.getElementById('newStreetDropdown').style.display = 'none';
+        document.getElementById('zonaDropdown').style.display = 'none';
+        document.getElementById('projRespDropdown').style.display = 'none';
+        document.getElementById('trebDropdown').style.display = 'none';
+    }
+});
+
+function selectCentre(id, name, address) {
+    selectedCentreId = id;
+    document.getElementById('idCentreActivitats').value = id;
+    document.getElementById('centreSearch').value = name;
+    document.getElementById('centreInfo').style.display = 'block';
+    document.getElementById('centreNameDisplay').textContent = name;
+    document.getElementById('centreAddressDisplay').textContent = address;
+    document.getElementById('newCentreForm').style.display = 'none';
+    document.getElementById('centreDropdown').style.display = 'none';
+}
+
+function showNewCentreForm() {
+    document.getElementById('centreDropdown').style.display = 'none';
+    document.getElementById('newCentreForm').style.display = 'block';
+    document.getElementById('centreInfo').style.display = 'none';
+    document.getElementById('idCentreActivitats').value = '';
+    selectedCentreId = null;
+    document.getElementById('newSelectedStreet').style.display = 'none';
+    document.getElementById('newStreetSearch').value = '';
+    document.getElementById('newIdCallejero').value = '';
+}
+
+async function searchNewStreets() {
+    const q = document.getElementById('newStreetSearch').value.trim();
+    const dropdown = document.getElementById('newStreetDropdown');
+    if (q.length < 2) { dropdown.style.display = 'none'; return; }
+    try {
+        const res = await fetch(`/callejero?q=${encodeURIComponent(q)}`, { headers: AUTH_HEADERS() });
+        const data = await res.json();
+        if (data.length) {
+            dropdown.innerHTML = data.map(s =>
+                `<div onclick="selectNewStreet(${s.idcallejero}, '${s.tipus_via.replace(/'/g, "\\'")}', '${s.Nom_calle.replace(/'/g, "\\'")}', '${s.barri.replace(/'/g, "\\'")}', '${s.codi_postal}')">
+                    ${s.tipus_via} ${s.Nom_calle} — ${s.barri} (${s.codi_postal})
+                </div>`
+            ).join('');
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">No s\'ha trobat cap carrer.</div>';
+            dropdown.style.display = 'block';
+        }
+    } catch (e) { console.error(e); }
+}
+
+function selectNewStreet(id, tipusVia, nomCalle, barri, cp) {
+    document.getElementById('newIdCallejero').value = id;
+    document.getElementById('newStreetSearch').value = `${tipusVia} ${nomCalle}`;
+    document.getElementById('newSelectedStreet').style.display = 'block';
+    document.getElementById('newStreetDisplay').textContent = `${tipusVia} ${nomCalle}`;
+    document.getElementById('newStreetDetails').textContent = `${barri} (${cp})`;
+    document.getElementById('newStreetDropdown').style.display = 'none';
+}
+
+initForm();
+</script>
+</body>
+</html>

@@ -2,12 +2,22 @@ const callejeroRepository = require("../repositories/callejero");
 
 async function searchCallejero(req, res) {
     try {
-        const { tipus_via, q } = req.query;
-        const result = await callejeroRepository.search({ tipus_via, q });
+        const { tipus_via, q, nom_calle, idBarri, idCodi_postal, idCodiPostal } = req.query;
+        const result = await callejeroRepository.search({ tipus_via, q, nom_calle, idBarri, idCodi_postal: idCodi_postal || idCodiPostal });
         res.status(200).json(result);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error cercant carrers" });
+    }
+}
+
+async function createCallejero(req, res) {
+    try {
+        const id = await callejeroRepository.create(req.body);
+        res.status(201).json({ id });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error creant carrer" });
     }
 }
 
@@ -27,5 +37,6 @@ async function getCallejeroById(req, res) {
 
 module.exports = {
     searchCallejero,
-    getCallejeroById
+    getCallejeroById,
+    createCallejero
 };

@@ -27,7 +27,7 @@ async function getBarriById(req, res) {
 async function createBarri(req, res) {
     try {
         const { Nom } = req.body;
-        if (!Nom) {
+        if (!Nom?.trim()) {
             return res.status(400).json({ message: "El nom del barri és obligatori" });
         }
         const id = await barriRepository.create(Nom);

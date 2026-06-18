@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Família — FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <div id="familyContent"></div>
+</main>
+<script src="/js/sidebar.js"></script>
+<script>
+const familyId = new URLSearchParams(location.search).get('id');
+
+async function loadFamily() {
+    if (!requireAuth()) return;
+    try {
+        const res = await fetch(`/familia/${familyId}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const f = await res.json();
+        if (!f || !f.idFamilia) {
+            document.getElementById('familyContent').innerHTML = '<p>Família no trobada</p>';
+            return;
+        }
+
+        document.getElementById('familyContent').innerHTML = `
+            <a class="back-link" href="/families.html">← Tornar</a>
+            <div class="detail-header">
+                <h1>Família ${f.Cognom_familiar || ''}</h1>
+                <div class="subtitle">${f.estructura_familiar_nom || ''}</div>
+            </div>
+
+            <div class="card">
+                <h3>Domicilis</h3>
+                ${(f.domicilis || []).map(d => `
+                    <div style="padding:8px 0;border-bottom:1px solid #f1f5f9;">
+                        <a href="/domicili.html?id=${d.idDomicili}">${d.tipus_via || ''} ${d.Nom_calle || ''}, ${d.Num_calle || ''}${d.Pis ? `, ${d.Pis}${d.Escala ? ` ${d.Escala}` : ''}` : ''}</a>
+                        <span style="font-size:12px;color:#64748b;margin-left:8px;">(${d.Nom_domicili || ''})</span>
+                    </div>
+                `).join('') || '<p style="color:#94a3b8;">Sense domicilis</p>'}
+            </div>
+
+            <div class="card">
+                <h3>Membres (${(f.membres || []).length})</h3>
+                <table>
+                    <thead><tr><th>Nom</th><th>Cognoms</th><th>Edat</th><th>Rol</th><th>Gènere</th><th>Projectes</th></tr></thead>
+                    <tbody>
+                        ${(f.membres || []).map(m => `
+                            <tr class="clickable" onclick="window.location.href='/client.html?id=${m.idClient}'">
+                                <td>${m.Nom || ''}</td>
+                                <td>${m.Cognoms || ''}</td>
+                                <td>${m.C_edad || 0}</td>
+                                <td>${m.Nom_rol || ''}</td>
+                                <td>${m.Nom_genere || ''}</td>
+                                <td>${m.num_projectes || 0}</td>
+                            </tr>
+                        `).join('') || '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">Sense membres</td></tr>'}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Projectes familiars</h3>
+                ${(f.projectes || []).map(p => `
+                    <div style="padding:6px 0;"><a href="/projecte.html?id=${p.idProyecto}">${p.Nom_projecte || ''}</a></div>
+                `).join('') || '<p style="color:#94a3b8;">Cap projecte</p>'}
+            </div>
+        `;
+    } catch (err) { console.error(err); document.getElementById('familyContent').innerHTML = '<p>Error carregant família</p>'; }
+}
+
+renderSidebar('families');
+if (!familyId) document.getElementById('familyContent').innerHTML = '<p>ID de família no proporcionat</p>';
+else loadFamily();
+</script>
+</body>
+</html>

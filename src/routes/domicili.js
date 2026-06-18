@@ -1,13 +1,12 @@
 const router = require("express").Router();
-const domicili = require("../controllers/domicili");
+const ctrl = require("../controllers/domicili");
 
-router.get("/", domicili.getAllDomicilis);
-router.get("/search", domicili.searchDomicilisCarrer);
-router.get("/byFamily/:idFamilia", domicili.getDomicilisByFamily);
-router.post("/", domicili.createDomicili);
-
-router.get("/:id", domicili.getDomiciliById);
-router.put("/:id", domicili.updateDomicili);
-router.delete("/:id", domicili.deleteDomicili);
+router.get("/", ctrl.getAllDomicilis);
+router.get("/search", ctrl.searchDomicilisCarrer);
+router.get("/byFamily/:idFamilia", ctrl.getDomicilisByFamily);
+router.post("/", ctrl.createDomicili);
+router.get("/:id", ctrl.getDomiciliById);
+router.put("/:id", ctrl.updateDomicili);
+router.delete("/:id", ctrl.deleteDomicili);
 
 module.exports = router;

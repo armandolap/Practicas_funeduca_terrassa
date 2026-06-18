@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear Usuari — FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1>Crear Usuari de l'App</h1>
+  <form id="userForm" onsubmit="return saveUser(event)" style="max-width:500px">
+    <div class="card">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom *</label>
+          <input type="text" id="nom" required>
+        </div>
+        <div class="form-group">
+          <label>Cognoms *</label>
+          <input type="text" id="cognoms" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Nom d'usuari *</label>
+        <input type="text" id="username" required>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email">
+      </div>
+      <div class="form-group">
+        <label>Telèfon</label>
+        <input type="text" id="telefon">
+      </div>
+      <div class="form-group">
+        <label>Nivell d'accés *</label>
+        <select id="nivellAcces" required></select>
+      </div>
+      <div class="form-group">
+        <label>Contrasenya *</label>
+        <input type="password" id="password" required minlength="6">
+      </div>
+    </div>
+    <div class="form-actions" style="display:flex;gap:10px;">
+      <button type="submit" class="btn btn-primary">Crear Usuari</button>
+      <button type="button" class="btn btn-secondary" onclick="window.location.href='/usuaris.html'">Cancel·lar</button>
+    </div>
+  </form>
+</main>
+<script src="/js/sidebar.js"></script>
+<script>
+async function init() {
+    if (!requireAuth()) return;
+    const role = getRole();
+    if (role !== 1) { alert('No tens permís per crear usuaris'); window.location.href = '/usuaris.html'; return; }
+    renderSidebar('usuaris');
+    try {
+        const res = await fetch('/desplegables/nivells-acces', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const levels = await res.json();
+        const sel = document.getElementById('nivellAcces');
+        sel.innerHTML = '<option value="">-- Selecciona --</option>' + levels.map(l => `<option value="${l.idNivel_acceso}">${l.Nom}</option>`).join('');
+    } catch (e) {
+        // Fallback: fetch Nivel_acceso directly
+        try {
+            const res = await fetch('/desplegables', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            // Try to get from the generic endpoint or just hardcode
+            const fallbackRes = await fetch('/paisos', {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const sel = document.getElementById('nivellAcces');
+            sel.innerHTML = '<option value="">-- Selecciona --</option><option value="1">Total</option><option value="2">Responsable de zona</option><option value="3">Viewer</option><option value="4">Treballador</option>';
+        } catch (e2) {
+            const sel = document.getElementById('nivellAcces');
+            sel.innerHTML = '<option value="">-- Selecciona --</option><option value="1">Total</option><option value="2">Responsable de zona</option><option value="3">Viewer</option><option value="4">Treballador</option>';
+        }
+    }
+}
+
+async function saveUser(e) {
+    e.preventDefault();
+    const nom = document.getElementById('nom').value.trim();
+    const cognoms = document.getElementById('cognoms').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const telefon = document.getElementById('telefon').value.trim();
+    const idNivel_acceso = document.getElementById('nivellAcces').value;
+    const password = document.getElementById('password').value;
+
+    if (!nom || !cognoms || !username || !idNivel_acceso || !password) {
+        alert('Omple tots els camps obligatoris'); return;
+    }
+
+    try {
+        const res = await fetch('/usuario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: JSON.stringify({ Nom: nom, Cognoms: cognoms, username, email: email || null, Telefon: telefon, idNivel_acceso: parseInt(idNivel_acceso), password })
+        });
+        const data = await res.json();
+        if (res.ok) { alert('Usuari creat correctament'); window.location.href = `/usuari.html?id=${data.id}`; }
+        else { alert(data.error || 'Error creant usuari'); }
+    } catch (err) { alert('Error de connexió'); console.error(err); }
+}
+
+init();
+</script>
+</body>
+</html>

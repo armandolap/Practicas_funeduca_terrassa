@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Persones — FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1>Persones</h1>
+  <div class="filters">
+    <input type="text" id="searchQ" placeholder="Nom o cognoms..." oninput="debounceSearch()">
+    <label>Edat</label>
+    <select id="edatSegment" onchange="loadClients()">
+      <option value="">Totes</option>
+      <option value="0-3">0-3</option>
+      <option value="4-6">4-6</option>
+      <option value="7-9">7-9</option>
+      <option value="10-12">10-12</option>
+      <option value="13-15">13-15</option>
+      <option value="16-18">16-18</option>
+      <option value="19-30">19-30</option>
+      <option value="31-65">31-65</option>
+      <option value="65+">+65</option>
+    </select>
+    <label>Gènere</label>
+    <select id="genereFilter" onchange="loadClients()"><option value="">Tots</option></select>
+    <label>Família</label>
+    <select id="familiaFilter" onchange="loadClients()"><option value="">Totes</option></select>
+    <label>Barri</label>
+    <select id="barriFilter" onchange="loadClients()"><option value="">Tots</option></select>
+    <button class="btn btn-success btn-sm" id="btnCrearClient" onclick="window.location.href='/crear-persona.html'" style="display:none">+ Nou client</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Nom</th><th>Cognoms</th><th>Edat</th><th>Gènere</th><th>Família</th><th>Projectes</th></tr></thead>
+      <tbody id="clientList"></tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</main>
+<script src="/js/sidebar.js"></script>
+<script>
+let currentPage = 0;
+const PAGE_SIZE = 15;
+let searchTimeout;
+
+function debounceSearch() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => { currentPage = 0; loadClients(); }, 300);
+}
+
+async function loadFilterOptions() {
+    try {
+        const [genRes, famRes, barriRes] = await Promise.all([
+            fetch('/genere', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+            fetch('/familia', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+            fetch('/barri', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+        ]);
+        const generes = await genRes.json();
+        const families = await famRes.json();
+        const barris = await barriRes.json();
+
+        const genereSel = document.getElementById('genereFilter');
+        genereSel.innerHTML = '<option value="">Tots</option>' + generes.map(g => `<option value="${g.idGenere}">${g.Nom_genere}</option>`).join('');
+
+        const famSel = document.getElementById('familiaFilter');
+        famSel.innerHTML = '<option value="">Totes</option>' + (families.rows || families).map(f => `<option value="${f.idFamilia}">${f.Cognom_familiar}</option>`).join('');
+
+        const barriSel = document.getElementById('barriFilter');
+        barriSel.innerHTML = '<option value="">Tots</option>' + barris.map(b => `<option value="${b.idBarri}">${b.Nom}</option>`).join('');
+    } catch (e) { console.error(e); }
+}
+
+async function loadClients() {
+    if (!requireAuth()) return;
+    const q = document.getElementById('searchQ').value.trim();
+    const edatSeg = document.getElementById('edatSegment').value;
+    const genere = document.getElementById('genereFilter').value;
+    const familia = document.getElementById('familiaFilter').value;
+    const barri = document.getElementById('barriFilter').value;
+
+    const params = new URLSearchParams({ offset: currentPage * PAGE_SIZE, limit: PAGE_SIZE });
+    if (q) params.set('q', q);
+    if (genere) params.set('genere', genere);
+    if (familia) params.set('familia', familia);
+    if (barri) params.set('barri', barri);
+    if (edatSeg) {
+        const [min, max] = edatSeg.split('-');
+        if (max) { params.set('edatMin', min); params.set('edatMax', max); }
+        else { params.set('edatMin', min); }
+    }
+
+    try {
+        const res = await fetch(`/client?${params}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const data = await res.json();
+        const rows = data.rows || data || [];
+        const total = data.total || rows.length;
+        const tbody = document.getElementById('clientList');
+        if (!rows.length) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha clients</td></tr>';
+            document.getElementById('pagination').innerHTML = '';
+            return;
+        }
+        tbody.innerHTML = rows.map(c => `
+            <tr class="clickable" onclick="window.location.href='/client.html?id=${c.idClient}'">
+                <td>${c.Nom || ''}</td>
+                <td>${c.Cognoms || ''}</td>
+                <td>${c.C_edad || 0}</td>
+                <td>${c.Nom_genere || ''}</td>
+                <td>${c.Cognom_familiar || ''}</td>
+                <td style="font-size:12px;color:#64748b;">${c.projectes || ''}</td>
+            </tr>
+        `).join('');
+
+        const totalPages = Math.ceil(total / PAGE_SIZE);
+        let pagHtml = `<button onclick="goPage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>Anterior</button>`;
+        pagHtml += `<span>Pàg ${currentPage + 1} de ${totalPages || 1} (${total} total)</span>`;
+        pagHtml += `<button onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Següent</button>`;
+        document.getElementById('pagination').innerHTML = pagHtml;
+    } catch (err) { console.error(err); }
+}
+
+function goPage(page) {
+    if (page < 0) return;
+    currentPage = page;
+    loadClients();
+}
+
+function checkCreateRole() {
+    const role = getRole();
+    if (role === 1 || role === 2 || role === 3) {
+        document.getElementById('btnCrearClient').style.display = 'inline-flex';
+    }
+}
+
+renderSidebar('clients');
+checkCreateRole();
+loadFilterOptions();
+loadClients();
+</script>
+</body>
+</html>

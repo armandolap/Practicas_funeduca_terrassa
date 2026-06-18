@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inici de Sessió — FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+<style>
+body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #1e293b; }
+.login-box { background: #fff; padding: 40px; border-radius: 12px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.login-box h1 { text-align: center; margin-bottom: 24px; font-size: 22px; color: #1e293b; }
+.login-box .form-group { margin-bottom: 18px; }
+.login-box label { font-size: 13px; font-weight: 600; color: #374151; }
+.login-box input { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+.login-box input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.2); outline: none; }
+.login-box .btn { width: 100%; padding: 10px; font-size: 15px; justify-content: center; }
+.login-box .error { color: #ef4444; font-size: 13px; margin-bottom: 12px; display: none; }
+</style>
+</head>
+<body>
+<div class="login-box">
+  <h1>FunEduca CRM</h1>
+  <div class="error" id="errorMsg"></div>
+  <div class="form-group">
+    <label for="username">Usuari</label>
+    <input type="text" id="username" placeholder="usuari" autofocus>
+  </div>
+  <div class="form-group">
+    <label for="password">Contrasenya</label>
+    <input type="password" id="password" placeholder="admin123">
+  </div>
+  <button class="btn btn-primary" id="btnLogin" onclick="login()">Iniciar Sessió</button>
+</div>
+<script>
+async function login() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const errorEl = document.getElementById('errorMsg');
+  if (!username || !password) {
+    errorEl.textContent = 'Usuari i contrasenya obligatoris';
+    errorEl.style.display = 'block';
+    return;
+  }
+  try {
+    const res = await fetch('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errorEl.textContent = data.message || 'Error al iniciar sessió';
+      errorEl.style.display = 'block';
+      return;
+    }
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    if (data.user.idNivel_acceso === 2 || data.user.idNivel_acceso === 3) {
+      window.location.href = '/meus-projectes.html';
+    } else {
+      window.location.href = '/clients.html';
+    }
+  } catch (err) {
+    errorEl.textContent = 'Error de connexió';
+    errorEl.style.display = 'block';
+  }
+}
+if (localStorage.getItem('token')) {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (user.idNivel_acceso === 2 || user.idNivel_acceso === 3) {
+    window.location.href = '/meus-projectes.html';
+  } else {
+    window.location.href = '/clients.html';
+  }
+}
+</script>
+</body>
+</html>

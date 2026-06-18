@@ -1,180 +1,91 @@
-const domiciliRepository = require("../repositories/domicili");
+const repo = require("../repositories/domicili");
 
-// GET /domicili
 async function getAllDomicilis(req, res) {
     try {
-        const domicilis = await domiciliRepository.getAll();
-
-        res.status(200).json(domicilis);
+        const { barri, tipus, offset, limit } = req.query;
+        if (barri || tipus) {
+            const result = await repo.getFiltered({ barri, tipus, offset, limit });
+            return res.json(result);
+        }
+        const domicilis = await repo.getAll();
+        res.json(domicilis);
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error obtenint domicilis"
-        });
+        res.status(500).json({ message: "Error obtenint domicilis" });
     }
 }
 
-// GET /domicili/:id
 async function getDomiciliById(req, res) {
     try {
-        const { id } = req.params;
-
-        const domicili = await domiciliRepository.getById(id);
-
-        if (!domicili) {
-            return res.status(404).json({
-                message: "Domicili no trobat"
-            });
-        }
-
-        res.status(200).json(domicili);
-
+        const domicili = await repo.getDetailById(req.params.id);
+        if (!domicili) return res.status(404).json({ message: "Domicili no trobat" });
+        res.json(domicili);
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error obtenint domicili"
-        });
+        res.status(500).json({ message: "Error obtenint domicili" });
     }
 }
 
-// POST /domicili
 async function createDomicili(req, res) {
     try {
-        const {
-            Tipus_domicili,
-            Direccio
-        } = req.body;
-
-        const id = await domiciliRepository.create(
-            Tipus_domicili,
-            Direccio
-        );
-
-        res.status(201).json({
-            message: "Domicili creat",
-            id
-        });
-
+        const { Tipus_domicili, Direccio } = req.body || {};
+        if (!Tipus_domicili || !Direccio) {
+            return res.status(400).json({ message: "Tipus_domicili i Direccio obligatoris" });
+        }
+        const id = await repo.create(Tipus_domicili, Direccio);
+        res.status(201).json({ message: "Domicili creat", id });
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error creant domicili"
-        });
+        res.status(500).json({ message: "Error creant domicili" });
     }
 }
 
-// PUT /domicili/:id
 async function updateDomicili(req, res) {
     try {
-        const { id } = req.params;
-
-        const {
-            Tipus_domicili,
-            Direccio
-        } = req.body;
-
-        const affectedRows =
-            await domiciliRepository.update(
-                id,
-                Tipus_domicili,
-                Direccio
-            );
-
-        if (affectedRows === 0) {
-            return res.status(404).json({
-                message: "Domicili no trobat"
-            });
+        const existing = await repo.getById(req.params.id);
+        if (!existing) return res.status(404).json({ message: "Domicili no trobat" });
+        const { Tipus_domicili, Direccio } = req.body || {};
+        if (!Tipus_domicili || !Direccio) {
+            return res.status(400).json({ message: "Tipus_domicili i Direccio obligatoris" });
         }
-
-        res.status(200).json({
-            message: "Domicili actualitzat"
-        });
-
+        await repo.update(req.params.id, Tipus_domicili, Direccio);
+        res.json({ message: "Domicili actualitzat" });
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error actualitzant domicili"
-        });
+        res.status(500).json({ message: "Error actualitzant domicili" });
     }
 }
 
-//DELETE /domicili/:id
 async function deleteDomicili(req, res) {
     try {
-        const { id } = req.params;
-
-        const affectedRows =
-            await domiciliRepository.remove(id);
-
-        if (affectedRows === 0) {
-            return res.status(404).json({
-                message: "Domicili no trobat"
-            });
-        }
-
-        res.status(200).json({
-            message: "Domicili eliminat"
-        });
-
+        const affected = await repo.remove(req.params.id);
+        if (affected === 0) return res.status(404).json({ message: "Domicili no trobat" });
+        res.json({ message: "Domicili eliminat" });
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error eliminant domicili"
-        });
+        res.status(500).json({ message: "Error eliminant domicili" });
     }
 }
 
-// GET /domicili/byFamily/:idFamilia
 async function getDomicilisByFamily(req, res) {
     try {
-        const { idFamilia } = req.params;
-
-        const domicilis = await domiciliRepository.getByFamily(idFamilia);
-
-        res.status(200).json(domicilis);
-
+        const domicilis = await repo.getByFamily(req.params.idFamilia);
+        res.json(domicilis);
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error obtenint domicilis de la família"
-        });
+        res.status(500).json({ message: "Error obtenint domicilis de la família" });
     }
 }
 
-// GET /domicili/search
 async function searchDomicilisCarrer(req, res) {
     try {
         const { q, tipus_via, idFamilia } = req.query;
-
-        const results = await domiciliRepository.searchCombined({
-            q: q || "",
-            tipus_via: tipus_via || null,
-            idFamilia: idFamilia || null
-        });
-
-        res.status(200).json(results);
-
+        const results = await repo.searchCombined({ q: q || "", tipus_via: tipus_via || null, idFamilia: idFamilia || null });
+        res.json(results);
     } catch (error) {
         console.error(error);
-
-        res.status(500).json({
-            message: "Error cercant domicilis i carrers"
-        });
+        res.status(500).json({ message: "Error cercant domicilis i carrers" });
     }
 }
 
-module.exports = {
-    getAllDomicilis,
-    getDomiciliById,
-    createDomicili,
-    updateDomicili,
-    deleteDomicili,
-    getDomicilisByFamily,
-    searchDomicilisCarrer
-};
+module.exports = { getAllDomicilis, getDomiciliById, createDomicili, updateDomicili, deleteDomicili, getDomicilisByFamily, searchDomicilisCarrer };

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuració — FunEduca CRM</title>
+<link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+<aside class="sidebar" id="sidebar"></aside>
+<main class="main-content">
+  <h1>Configuració (Taules Estàtiques)</h1>
+  <div class="filters">
+    <label>Selecciona taula</label>
+    <select id="tableSelect" onchange="loadTable()">
+      <option value="">-- Selecciona --</option>
+      <option value="estructura_familiar">Estructura Familiar</option>
+      <option value="paisos">Països</option>
+      <option value="sebas">SEBAS</option>
+      <option value="motiuBaixa">Motiu Baixa</option>
+      <option value="risc">Risc</option>
+      <option value="genere">Gènere</option>
+      <option value="rol">Rol</option>
+      <option value="sitEco">Situació Econòmica</option>
+      <option value="neses">Necessitats Especials</option>
+      <option value="curso">Curs Actual</option>
+      <option value="resulAcad">Resultat Acadèmic</option>
+      <option value="tipusDom">Tipus Domicili</option>
+      <option value="barri">Barri</option>
+      <option value="codiPostal">Codi Postal</option>
+      <option value="tipusVia">Tipus Via</option>
+      <option value="estFamilia">Estructura Familiar</option>
+      <option value="nivellAcces">Nivell Accés</option>
+    </select>
+  </div>
+  <div class="card">
+    <div id="configContent">
+      <p style="color:#94a3b8;text-align:center;padding:40px;">Selecciona una taula per gestionar-la</p>
+    </div>
+  </div>
+</main>
+<script src="/js/sidebar.js"></script>
+<script>
+const FIELD_MAP = {
+    paisos: { label: 'Nom_pais', valueField: 'idPais' },
+    sebas: { label: 'Nom', valueField: 'idSebas' },
+    motiuBaixa: { label: 'Nom_motiu_baixa', valueField: 'idMotiu_baixa' },
+    risc: { label: 'Nivel', valueField: 'idRisc' },
+    genere: { label: 'Nom_genere', valueField: 'idGenere' },
+    rol: { label: 'Nom_rol', valueField: 'idRol' },
+    sitEco: { label: 'Nom', valueField: 'idSituacio_economica' },
+    neses: { label: 'Nom_necessitat', valueField: 'idNecessitat_especial' },
+    curso: { label: 'Nom', valueField: 'idCurs_actual' },
+    resulAcad: { label: 'Nom_resultat_acad', valueField: 'idResultat_academic' },
+    tipusDom: { label: 'Nom_domicili', valueField: 'idTipus_domicili' },
+    barri: { label: 'Nom', valueField: 'idBarri' },
+    codiPostal: { label: 'Codi', valueField: 'idCodi_postal' },
+    tipusVia: { label: 'Nom', valueField: 'idTipus_via' },
+    estructura_familiar: { label: 'Nom_est_fam', valueField: 'idEstructura_familiar' },
+    estFamilia: { label: 'Nom_est_fam', valueField: 'idEstructura_familiar' },
+    nivellAcces: { label: 'Nom', valueField: 'idNivel_acceso' },
+};
+
+const ENDPOINT_MAP = {
+    estructura_familiar: 'estFamilia',
+    estFamilia: 'estFamilia',
+    paisos: 'paisos',
+    sebas: 'sebas',
+    motiuBaixa: 'motiuBaixa',
+    risc: 'risc',
+    genere: 'genere',
+    rol: 'rol',
+    sitEco: 'sitEco',
+    neses: 'neses',
+    curso: 'curso',
+    resulAcad: 'resulAcad',
+    tipusDom: 'tipusDom',
+    barri: 'barri',
+    codiPostal: 'codiPostal',
+    tipusVia: 'tipusVia',
+    nivellAcces: 'nivell-acces',
+};
+
+async function loadTable() {
+    if (!requireAuth()) return;
+    const table = document.getElementById('tableSelect').value;
+    if (!table) { document.getElementById('configContent').innerHTML = '<p style="color:#94a3b8;text-align:center;padding:40px;">Selecciona una taula</p>'; return; }
+
+    const endpoint = ENDPOINT_MAP[table] || table;
+    const fields = FIELD_MAP[table] || { label: 'Nom', valueField: 'id' };
+
+    try {
+        const res = await fetch(`/${endpoint}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await res.json();
+        const items = Array.isArray(data) ? data : [];
+        const div = document.getElementById('configContent');
+        div.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                <h3>${table}</h3>
+                <button class="btn btn-sm btn-success" onclick="addRecord('${table}')">+ Afegir</button>
+            </div>
+            <table>
+                <thead><tr><th>ID</th><th>Valor</th><th></th></tr></thead>
+                <tbody>
+                    ${items.map(item => `
+                        <tr>
+                            <td>${item[fields.valueField] || ''}</td>
+                            <td>${item[fields.label] || ''}</td>
+                            <td><button class="btn btn-sm btn-danger" onclick="deleteRecord('${table}', ${item[fields.valueField]})">Eliminar</button></td>
+                        </tr>
+                    `).join('') || '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">Sense registres</td></tr>'}
+                </tbody>
+            </table>
+        `;
+    } catch (err) {
+        document.getElementById('configContent').innerHTML = '<p style="color:#ef4444;">Error carregant taula</p>';
+        console.error(err);
+    }
+}
+
+async function addRecord(table) {
+    const endpoint = ENDPOINT_MAP[table] || table;
+    const fields = FIELD_MAP[table] || { label: 'Nom', valueField: 'id' };
+    const name = prompt(`Nou valor per a ${table}:`);
+    if (!name || !name.trim()) return;
+    try {
+        const body = {};
+        body[fields.label] = name.trim();
+        const res = await fetch(`/${endpoint}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            body: JSON.stringify(body)
+        });
+        if (res.ok) { alert('Registre afegit'); loadTable(); }
+        else { alert('Error afegint registre'); }
+    } catch (err) { alert('Error de connexió'); }
+}
+
+async function deleteRecord(table, id) {
+    if (!confirm('Eliminar aquest registre?')) return;
+    const endpoint = ENDPOINT_MAP[table] || table;
+    try {
+        const res = await fetch(`/${endpoint}/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.ok) { alert('Registre eliminat'); loadTable(); }
+        else { alert('Error eliminant registre'); }
+    } catch (err) { alert('Error de connexió'); }
+}
+
+// Check auth + role
+const role = getRole();
+if (role !== 1) { alert('No tens permís per accedir a la configuració'); window.location.href = '/projectes.html'; }
+else { renderSidebar('config'); }
+</script>
+</body>
+</html>

@@ -396,10 +396,11 @@ function buildPayload(name) {
                 inscritos: 0,
                 fecha_inicio_act: "2026-06-16",
                 fecha_fin_act: "2026-12-31",
-                idcentre_activitats: 1
+                idcentre_activitats: 1,
+                responsable: 1
             }
         },
-        "/usuario": {idNivel_acceso: 1,Nom: "Test",Cognoms: "User",email: "test@test.com",Telefon: "600000000"},
+        "/usuario": {idNivel_acceso: 1,Nom: "Test",Cognoms: "User",email: "test_auto@test.com",Telefon: "600000000", password: "Test1234!"},
         "/domicili": { Tipus_domicili: 1, Direccio: 1 },
         "/familia": { Cognom_familiar: "Test", idDomicili: 1, Estructura_familiar: 1 },
         "/tipusVia": { Nom: "TEST VIA" },
@@ -413,6 +414,7 @@ function buildPayload(name) {
             Pais_naixement: 1, Risc: 1, Resultat_academic: 1,
             idSituacio_economica: 1, idSebas: 1,
             derivacio_serveis_socials: 0,
+            idDomicili: 1, Baixa: 0,
         },
     };
     return payloads[name] || null;
@@ -423,14 +425,16 @@ function buildUpdatePayload(name) {
     if (!base) return null;
     if (name === "/client") return { ...base, Nom: "Maria Actualitzada" };
     if (name === "/projectes") return {
-        Nom_projecte: "Projecte Test 2 Actualitzat",
-        Descripcio: "...",
-        plazas: 20,
-        inscritos: 3,
-        fecha_inicio_act: "2026-06-16",
-        fecha_fin_act: "2026-12-31",
-        idcentre_activitats: 1
-
+        projecte: {
+            Nom_projecte: "Projecte Test 2 Actualitzat",
+            Descripcio: "...",
+            plazas: 20,
+            inscritos: 3,
+            fecha_inicio_act: "2026-06-16",
+            fecha_fin_act: "2026-12-31",
+            idcentre_activitats: 1,
+            responsable: 2
+        }
     };
     if (name === "/domicili") return { ...base };
     if (name === "/familia") return { ...base };
@@ -573,12 +577,23 @@ async function testCallejeroSearch() {
 async function testStaticFiles() {
     console.log(`\n--- Fitxers estàtics ---`);
 
-    // GET / (index.html)
+    // GET / (login.html)
     {
         const res = await fetch(`${BASE_URL}/`);
         const text = await res.text();
         assert(
             `GET / → ${res.status}`,
+            res.status === 200 && text.includes("email"),
+            `expected 200 + login page, got ${res.status}`
+        );
+    }
+
+    // GET /crear-persona.html (client creation form)
+    {
+        const res = await fetch(`${BASE_URL}/crear-persona.html`);
+        const text = await res.text();
+        assert(
+            `GET /crear-persona.html → ${res.status}`,
             res.status === 200 && text.includes("Creació de Client"),
             `expected 200 + "Creació de Client", got ${res.status}`
         );
