@@ -27,8 +27,8 @@ async function loadClient() {
         if (!c || !c.idClient) { document.getElementById('clientContent').innerHTML = '<p>Client no trobat</p>'; return; }
 
         const role = getRole();
-        const canEdit = role === 1 || role === 2;
-        const canAssignProj = role === 1 || role === 2 || role === 4;
+        const canEdit = role === 1 || role === 2 || role === 3;
+        const canAssignProj = role === 1 || role === 2 || role === 3 || role === 4;
 
         document.getElementById('clientContent').innerHTML = `
             <a class="back-link" href="/clients.html">← Tornar</a>
@@ -114,10 +114,13 @@ async function removeFromProj(projId) {
 }
 
 async function showAssignProject() {
+    const role = getRole();
     const projName = prompt('Nom del projecte a assignar:');
     if (!projName || projName.trim().length < 2) return;
     try {
-        const res = await fetch(`/projectes?q=${encodeURIComponent(projName.trim())}`, {
+        const params = new URLSearchParams({ q: projName.trim() });
+        if (role === 4) params.set('filter', 'actiu_futur');
+        const res = await fetch(`/projectes?${params}`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         const projects = await res.json();

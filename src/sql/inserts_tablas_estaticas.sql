@@ -2103,4 +2103,4 @@ INSERT INTO callejero (idTipus_via, Nom_calle, idBarri, idCodi_postal) VALUES (3
 -- ============================================================
 -- Nivell d'accés (per usuaris de l'app)
 -- ============================================================
-INSERT INTO Nivel_acceso (Nom) VALUES ('Total'), ('Responsable de zona'), ('Viewer'), ('Treballador');
+INSERT INTO Nivel_acceso (Nom) VALUES ('Admin'), ('Responsable de zona'), ('Responsable de projectes'), ('Treballador'), ('Visitant');

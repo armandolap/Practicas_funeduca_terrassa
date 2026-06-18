@@ -64,8 +64,9 @@ async function insertTestData(conn) {
     await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (1, 'Usuari', 'Test', 'usuari', 'test@test.com', '600000000', '${PWH}')`);
     await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (1, 'Admin', 'Sistema', 'admin', 'admin@test.com', '600000001', '${PWH}')`);
     await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (2, 'Supervisor', 'CRM', 'supervisor', 'supervisor@test.com', '600000002', '${PWH}')`);
-    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (3, 'Visitant', 'Anònim', 'visitant', 'visitant@test.com', '600000003', '${PWH}')`);
+    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (3, 'Projectes', 'CRM', 'projectes', 'projectes@test.com', '600000003', '${PWH}')`);
     await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (4, 'Treballador', 'Test', 'treballador', 'treballador@test.com', '600000004', '${PWH}')`);
+    await conn.query(`INSERT INTO usuario_app (idNivel_acceso, Nom, Cognoms, username, email, Telefon, password) VALUES (5, 'Visitant', 'Anònim', 'visitant', 'visitant@test.com', '600000005', '${PWH}')`);
 
     // ── Centres d'activitats ──
     await conn.query(`INSERT INTO centre_activitats (nom_centre_activitats, direccio_idDireccio) VALUES ('Centre Test', 1)`);

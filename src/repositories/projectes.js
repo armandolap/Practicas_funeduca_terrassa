@@ -36,6 +36,8 @@ async function getAll(filter = "todos", q = "", responsable_id, idCentre) {
         sql += ` AND p.fecha_inicio_act IS NOT NULL AND p.fecha_inicio_act > CURDATE()`;
     } else if (filter === "pasados") {
         sql += ` AND p.fecha_fin_act IS NOT NULL AND p.fecha_fin_act < CURDATE()`;
+    } else if (filter === "actiu_futur") {
+        sql += ` AND (p.fecha_fin_act IS NULL OR p.fecha_fin_act >= CURDATE())`;
     }
 
     if (q && q.trim()) {

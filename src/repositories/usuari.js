@@ -19,7 +19,7 @@ async function getAll(filter = "tots", q = "") {
     const params = [];
 
     if (filter === "responsables") {
-        sql += ` AND u.idNivel_acceso IN (1, 2, 4)`;
+        sql += ` AND u.idNivel_acceso IN (1, 2, 3, 4)`;
     } else if (filter === "trabajadores") {
         sql += ` AND u.idNivel_acceso = 4`;
     }

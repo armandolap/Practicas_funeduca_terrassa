@@ -62,12 +62,14 @@ Every entity has the same CRUD pattern: `getAll`, `getById`, `create`, `update`,
 
 ## Seed users (password: `1234` for all)
 
-| Email               | Password | Rol (idNivel_acceso) | Nom        |
-|---------------------|----------|----------------------|------------|
-| test@test.com       | 1234     | Total (1)            | Usuari     |
-| admin@test.com      | 1234     | Total (1)            | Admin      |
-| supervisor@test.com | 1234     | Responsable zona (2) | Supervisor |
-| visitant@test.com   | 1234     | Viewer (3)           | Visitant   |
+| Email                 | Password | Rol (idNivel_acceso) | Nom          |
+|-----------------------|----------|----------------------|--------------|
+| test@test.com         | 1234     | Admin (1)            | Usuari       |
+| admin@test.com        | 1234     | Admin (1)            | Admin        |
+| supervisor@test.com   | 1234     | Responsable zona (2) | Supervisor   |
+| projectes@test.com    | 1234     | Responsable projectes (3) | Projectes |
+| treballador@test.com  | 1234     | Treballador (4)      | Treballador  |
+| visitant@test.com     | 1234     | Visitant (5)         | Visitant     |
 
 ## Auth
 
@@ -77,5 +79,5 @@ Every entity has the same CRUD pattern: `getAll`, `getById`, `create`, `update`,
 - `GET /auth/me` returns current user (requires Bearer token)
 - Frontend stores token + user in `localStorage`
 - `sidebar.js` provides `requireAuth()` (redirects to `/login.html` if no token), `logout()`, and `renderSidebar(activePage)`
-- After login, redirects to `/clients.html`
-- UI role gating: "Configuració" only for Total (1), "Nou projecte" for Total (1) + Responsable (2), etc.
+- After login, redirects to `/meus-projectes.html` for roles 2 & 3, otherwise `/clients.html`
+- UI role gating: "Configuració" only for Admin (1), "Nou projecte" for Admin (1) + Resp zona (2), "Crear persona" for 1/2/3, etc.

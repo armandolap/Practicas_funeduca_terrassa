@@ -21,7 +21,7 @@ async function login() {
         }
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        if (data.user.idNivel_acceso === 2) {
+        if (data.user.idNivel_acceso === 2 || data.user.idNivel_acceso === 3) {
             window.location.href = '/meus-projectes.html';
         } else {
             window.location.href = '/clients.html';
@@ -34,7 +34,7 @@ async function login() {
 
 if (localStorage.getItem('token')) {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (user.idNivel_acceso === 2) {
+    if (user.idNivel_acceso === 2 || user.idNivel_acceso === 3) {
         window.location.href = '/meus-projectes.html';
     } else {
         window.location.href = '/clients.html';

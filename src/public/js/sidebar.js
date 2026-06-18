@@ -26,12 +26,12 @@ function renderSidebar(activePage) {
     let html = `<div class="logo">FunEduca</div>`;
 
     const mainItems = [
-        { label: 'Persones', href: '/clients.html', id: 'clients', roles: [1, 2, 3, 4] },
-        { label: 'Families', href: '/families.html', id: 'families', roles: [1, 2, 3, 4] },
-        { label: 'Projectes', href: '/projectes.html', id: 'projectes', roles: [1, 2, 3, 4] },
+        { label: 'Persones', href: '/clients.html', id: 'clients', roles: [1, 2, 3, 4, 5] },
+        { label: 'Families', href: '/families.html', id: 'families', roles: [1, 2, 3, 4, 5] },
+        { label: 'Projectes', href: '/projectes.html', id: 'projectes', roles: [1, 2, 3, 4, 5] },
         { label: 'Centres activitats', href: '/centres.html', id: 'centres', roles: [1, 2] },
         { label: 'Usuaris App', href: '/usuaris.html', id: 'usuaris', roles: [1] },
-        { label: 'Els meus projectes', href: '/meus-projectes.html', id: 'meus-projectes', roles: [2] },
+        { label: 'Els meus projectes', href: '/meus-projectes.html', id: 'meus-projectes', roles: [2, 3] },
     ];
     mainItems.forEach(item => {
         if (item.roles.includes(role)) {
