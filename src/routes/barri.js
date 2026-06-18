@@ -1,10 +1,11 @@
 const router = require("express").Router();
 const barri = require("../controllers/barri");
+const { requireAuth } = require("../middlewares/auth");
 
-router.get("/", barri.getAllBarri);
-router.post("/", barri.createBarri);
-router.get("/:id", barri.getBarriById);
-router.put("/:id", barri.updateBarri);
-router.delete("/:id", barri.deleteBarri);
+router.get("/", requireAuth, barri.getAllBarri);
+router.post("/", requireAuth, barri.createBarri);
+router.get("/:id", requireAuth, barri.getBarriById);
+router.put("/:id", requireAuth, barri.updateBarri);
+router.delete("/:id", requireAuth, barri.deleteBarri);
 
 module.exports = router;

@@ -1,8 +1,9 @@
 const router = require("express").Router();
 const sebas = require("../controllers/SEBAS");
+const { requireAuth } = require("../middlewares/auth");
 
-router.get("/", sebas.getAllSEBAS);
+router.get("/", requireAuth, sebas.getAllSEBAS);
 
-router.get("/:id", sebas.getSEBASById);
+router.get("/:id", requireAuth, sebas.getSEBASById);
 
 module.exports = router;

@@ -10,6 +10,7 @@
     "DEVIL_test": "node DEVIL_tests.js",
     "all_tests": "bash run_tests.sh",
     "dev": "node --watch server.js",
+    "seed": "node seeder/seeder.js",
     "config": "node ../setup.js"
   },
   "keywords": [],

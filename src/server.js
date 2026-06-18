@@ -93,6 +93,24 @@ server.use("/reports", reports);
 server.use("/genere", genere);
 server.use("/nivell-acces", nivelAcceso);
 
+async function ensureDatabase(bootstrap) {
+    const dbName = process.env.DB_NAME;
+    await bootstrap.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+    await bootstrap.query(`USE \`${dbName}\``);
+    const [rows] = await bootstrap.query(
+        `SELECT COUNT(*) AS cnt FROM information_schema.tables WHERE table_schema = ?`,
+        [dbName]
+    );
+    if (rows[0].cnt > 0) {
+        console.log(`BD "${dbName}" ja te taules — s'omet esquema i inserts`);
+        return;
+    }
+    console.log("Ejecutando Base_datos.sql...");
+    await runSQLFile(bootstrap, path.join(__dirname, "sql", "Base_datos.sql"));
+    console.log("Ejecutando inserts_tablas_estaticas.sql...");
+    await runSQLFile(bootstrap, path.join(__dirname, "sql", "inserts_tablas_estaticas.sql"));
+}
+
 async function startServer() {
     try {
         const bootstrap = await mysql.createConnection({
@@ -102,16 +120,7 @@ async function startServer() {
             password: process.env.DB_PASSWORD,
         });
         console.log("MySQL conectado");
-        await bootstrap.query(`DROP DATABASE IF EXISTS \`${process.env.DB_NAME}\``);
-        await bootstrap.query(`CREATE DATABASE \`${process.env.DB_NAME}\``);
-        await bootstrap.query(`USE \`${process.env.DB_NAME}\``);
-        console.log("Ejecutando Base_datos.sql...");
-        await runSQLFile(bootstrap, path.join(__dirname, "sql", "Base_datos.sql"));
-        console.log("Ejecutando inserts_tablas_estaticas.sql...");
-        await runSQLFile(bootstrap, path.join(__dirname, "sql", "inserts_tablas_estaticas.sql"));
-        console.log("Insertant dades de prova...");
-        const { insertTestData } = require("./seeder/seeder");
-        await insertTestData(bootstrap);
+        await ensureDatabase(bootstrap);
         await bootstrap.end();
         console.log("Base de datos preparada");
         const { createPool } = require("./config/database");

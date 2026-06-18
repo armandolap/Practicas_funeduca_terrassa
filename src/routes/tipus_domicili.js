@@ -1,8 +1,9 @@
 const router = require("express").Router();
-const tipusDomicili= require("../controllers/tipus_domicili");
+const tipusDomicili = require("../controllers/tipus_domicili");
+const { requireAuth } = require("../middlewares/auth");
 
-router.get("/", tipusDomicili.getAlltipus_domicili);
+router.get("/", requireAuth, tipusDomicili.getAlltipus_domicili);
 
-router.get("/:id", tipusDomicili.getTipus_domiciliById);
+router.get("/:id", requireAuth, tipusDomicili.getTipus_domiciliById);
 
 module.exports = router;

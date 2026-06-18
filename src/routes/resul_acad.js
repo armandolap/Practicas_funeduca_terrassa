@@ -1,8 +1,9 @@
 const router = require("express").Router();
 const resulAcad = require("../controllers/resul_acad");
+const { requireAuth } = require("../middlewares/auth");
 
-router.get("/", resulAcad.getAllResul_acad);
+router.get("/", requireAuth, resulAcad.getAllResul_acad);
 
-router.get("/:id", resulAcad.getResul_acadById);
+router.get("/:id", requireAuth, resulAcad.getResul_acadById);
 
 module.exports = router;
