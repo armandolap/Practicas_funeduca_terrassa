@@ -2,7 +2,15 @@ const { createPool } = require("../config/database");
 
 const pool = createPool();
 
-async function search({ tipus_via, q }) {
+async function create({ idTipus_via, Nom_calle, idBarri, idCodi_postal }) {
+    const [result] = await pool.query(
+        `INSERT INTO callejero (idTipus_via, Nom_calle, idBarri, idCodi_postal) VALUES (?, ?, ?, ?)`,
+        [idTipus_via, Nom_calle, idBarri, idCodi_postal]
+    );
+    return result.insertId;
+}
+
+async function search({ tipus_via, q, nom_calle, idBarri, idCodi_postal }) {
     let sql = `
         SELECT
             c.idcallejero,
@@ -25,6 +33,21 @@ async function search({ tipus_via, q }) {
     if (tipus_via) {
         sql += ` AND c.idTipus_via = ?`;
         params.push(tipus_via);
+    }
+
+    if (nom_calle) {
+        sql += ` AND c.Nom_calle = ?`;
+        params.push(nom_calle);
+    }
+
+    if (idBarri) {
+        sql += ` AND c.idBarri = ?`;
+        params.push(idBarri);
+    }
+
+    if (idCodi_postal) {
+        sql += ` AND c.idCodi_postal = ?`;
+        params.push(idCodi_postal);
     }
 
     if (q && q.length >= 3) {
@@ -64,5 +87,6 @@ async function getById(id) {
 
 module.exports = {
     search,
-    getById
+    getById,
+    create
 };

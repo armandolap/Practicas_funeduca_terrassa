@@ -52,19 +52,23 @@
       </div>
       <div id="newCentreForm" style="display:none">
         <div class="form-group"><label>Nom del centre *</label><input type="text" id="newCentreName"></div>
-        <div class="form-group"><label>Tipus via</label><select id="newTipusVia"></select></div>
-        <div class="form-row">
-          <div class="form-group"><label>Carrer</label><input type="text" id="newNomCalle"></div>
-          <div class="form-group"><label>Número</label><input type="text" id="newNumCalle"></div>
+        <div class="form-group">
+          <label>Cerca carrer</label>
+          <div class="autocomplete-wrap">
+            <input type="text" id="newStreetSearch" placeholder="Escriu nom del carrer..." autocomplete="off">
+            <div class="autocomplete-dropdown" id="newStreetDropdown" style="display:none"></div>
+          </div>
+        </div>
+        <div id="newSelectedStreet" style="display:none;padding:10px;background:#f0fdf4;border-radius:6px;margin-bottom:12px;">
+          <p id="newStreetDisplay" style="font-weight:600;"></p>
+          <p id="newStreetDetails" style="font-size:13px;color:#64748b;"></p>
         </div>
         <div class="form-row">
+          <div class="form-group"><label>Número *</label><input type="text" id="newNumCalle"></div>
           <div class="form-group"><label>Pis</label><input type="text" id="newPis"></div>
           <div class="form-group"><label>Escala</label><input type="text" id="newEscala"></div>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label>Barri</label><select id="newBarri"></select></div>
-          <div class="form-group"><label>CP</label><select id="newCodiPostal"></select></div>
-        </div>
+        <input type="hidden" id="newIdCallejero">
       </div>
       <input type="hidden" id="idCentreActivitats">
     </div>
@@ -103,37 +107,7 @@ async function initForm() {
         document.getElementById('btnSave').textContent = 'Actualitzar Projecte';
         await loadProject(isEdit);
     }
-    await loadTipusVia();
-    await loadBarris();
-    await loadCodisPostals();
     await loadResponsables();
-}
-
-async function loadTipusVia() {
-    try {
-        const res = await fetch('/tipusVia', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
-        const data = await res.json();
-        const sel = document.getElementById('newTipusVia');
-        sel.innerHTML = '<option value="">-- Selecciona --</option>' + data.map(t => `<option value="${t.idTipus_via}">${t.Nom}</option>`).join('');
-    } catch (e) {}
-}
-
-async function loadBarris() {
-    try {
-        const res = await fetch('/barri', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
-        const data = await res.json();
-        const sel = document.getElementById('newBarri');
-        sel.innerHTML = '<option value="">-- Selecciona --</option>' + data.map(b => `<option value="${b.idBarri}">${b.Nom}</option>`).join('');
-    } catch (e) {}
-}
-
-async function loadCodisPostals() {
-    try {
-        const res = await fetch('/codiPostal', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
-        const data = await res.json();
-        const sel = document.getElementById('newCodiPostal');
-        sel.innerHTML = '<option value="">-- Selecciona --</option>' + data.map(c => `<option value="${c.idCodi_postal}">${c.Codi}</option>`).join('');
-    } catch (e) {}
 }
 
 async function loadResponsables() {
@@ -191,9 +165,15 @@ document.getElementById('centreSearch').addEventListener('input', function() {
     centreSearchTimeout = setTimeout(searchCentres, 300);
 });
 
+document.getElementById('newStreetSearch').addEventListener('input', function() {
+    clearTimeout(centreSearchTimeout);
+    centreSearchTimeout = setTimeout(searchNewStreets, 300);
+});
+
 document.addEventListener('click', function(e) {
     if (!e.target.closest('.autocomplete-wrap')) {
         document.getElementById('centreDropdown').style.display = 'none';
+        document.getElementById('newStreetDropdown').style.display = 'none';
     }
 });
 
@@ -214,6 +194,41 @@ function showNewCentreForm() {
     document.getElementById('centreInfo').style.display = 'none';
     document.getElementById('idCentreActivitats').value = '';
     selectedCentreId = null;
+    document.getElementById('newSelectedStreet').style.display = 'none';
+    document.getElementById('newStreetSearch').value = '';
+    document.getElementById('newIdCallejero').value = '';
+}
+
+async function searchNewStreets() {
+    const q = document.getElementById('newStreetSearch').value.trim();
+    const dropdown = document.getElementById('newStreetDropdown');
+    if (q.length < 2) { dropdown.style.display = 'none'; return; }
+    try {
+        const res = await fetch(`/callejero?q=${encodeURIComponent(q)}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const data = await res.json();
+        if (data.length) {
+            dropdown.innerHTML = data.map(s =>
+                `<div onclick="selectNewStreet(${s.idcallejero}, '${s.tipus_via.replace(/'/g, "\\'")}', '${s.Nom_calle.replace(/'/g, "\\'")}', '${s.barri.replace(/'/g, "\\'")}', '${s.codi_postal}')">
+                    ${s.tipus_via} ${s.Nom_calle} — ${s.barri} (${s.codi_postal})
+                </div>`
+            ).join('');
+            dropdown.style.display = 'block';
+        } else {
+            dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">No s\'ha trobat cap carrer. Només usuaris amb accés Total poden crear-ne de nous.</div>';
+            dropdown.style.display = 'block';
+        }
+    } catch (e) { console.error(e); }
+}
+
+function selectNewStreet(id, tipusVia, nomCalle, barri, cp) {
+    document.getElementById('newIdCallejero').value = id;
+    document.getElementById('newStreetSearch').value = `${tipusVia} ${nomCalle}`;
+    document.getElementById('newSelectedStreet').style.display = 'block';
+    document.getElementById('newStreetDisplay').textContent = `${tipusVia} ${nomCalle}`;
+    document.getElementById('newStreetDetails').textContent = `${barri} (${cp})`;
+    document.getElementById('newStreetDropdown').style.display = 'none';
 }
 
 async function saveProject(e) {
@@ -228,42 +243,20 @@ async function saveProject(e) {
     if (!idCentre && document.getElementById('newCentreForm').style.display === 'block') {
         const centreName = document.getElementById('newCentreName').value.trim();
         if (!centreName) { alert('Nom del centre obligatori'); return; }
-        const tipusVia = document.getElementById('newTipusVia').value;
-        const nomCalle = document.getElementById('newNomCalle').value.trim();
+        const idCallejero = document.getElementById('newIdCallejero').value;
         const numCalle = document.getElementById('newNumCalle').value.trim();
+        if (!idCallejero) { alert('Cal seleccionar un carrer de la llista'); return; }
+        if (!numCalle) { alert('Cal indicar el número'); return; }
         const pis = document.getElementById('newPis').value.trim();
         const escala = document.getElementById('newEscala').value.trim();
-        const idBarri = document.getElementById('newBarri').value;
-        const idCodiPostal = document.getElementById('newCodiPostal').value;
-        if (!tipusVia || !nomCalle || !numCalle) { alert('Cal omplir via, carrer i número'); return; }
-        if (!idBarri || !idCodiPostal) { alert('Cal seleccionar barri i CP'); return; }
 
         try {
-            // First get or create callejero
-            let callejeroRes = await fetch(`/callejero?tipus_via=${tipusVia}&nom_calle=${encodeURIComponent(nomCalle)}&idBarri=${idBarri}&idCodiPostal=${idCodiPostal}`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-            let callejeroData = await callejeroRes.json();
-            let idCallejero;
-            if (Array.isArray(callejeroData) && callejeroData.length) {
-                idCallejero = callejeroData[0].idcallejero;
-            } else {
-                // Create callejero entry
-                const createCallejeroRes = await fetch('/callejero', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
-                    body: JSON.stringify({ idTipus_via: tipusVia, Nom_calle: nomCalle, idBarri, idCodi_postal: idCodiPostal })
-                });
-                const callejeroResult = await createCallejeroRes.json();
-                idCallejero = callejeroResult.id;
-            }
-
             const centreRes = await fetch('/centre-activitats', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
                 body: JSON.stringify({
                     nom_centre_activitats: centreName,
-                    direccio: { idcallejero: idCallejero, Num_calle: numCalle, Pis: pis, Escala: escala }
+                    direccio: { idcallejero: parseInt(idCallejero), Num_calle: numCalle, Pis: pis || null, Escala: escala || null }
                 })
             });
             const centreData = await centreRes.json();

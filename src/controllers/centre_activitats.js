@@ -2,7 +2,8 @@ const repo = require("../repositories/centre_activitats");
 
 async function getAll(req, res) {
     try {
-        const items = await repo.getAll();
+        const { q } = req.query;
+        const items = q ? await repo.search({ q }) : await repo.getAll();
         res.json(items);
     } catch (error) {
         console.error(error);

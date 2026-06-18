@@ -3,6 +3,7 @@ const ctrl = require("../controllers/projectes");
 
 router.get("/", ctrl.getAllProjectes);
 router.post("/", ctrl.createProject);
+router.get("/centre/:id", ctrl.getProjectesByCentre);
 router.get("/:id", ctrl.getProjectesById);
 router.put("/:id", ctrl.updateProject);
 router.delete("/:id", ctrl.deleteProject);

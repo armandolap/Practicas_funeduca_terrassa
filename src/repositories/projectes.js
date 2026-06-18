@@ -1,7 +1,7 @@
 const { createPool } = require("../config/database");
 const pool = createPool();
 
-async function getAll(filter = "todos", q = "", responsable_id) {
+async function getAll(filter = "todos", q = "", responsable_id, idCentre) {
     let sql = `
         SELECT p.*,
                u.idUsuario_APP AS responsable,
@@ -18,6 +18,11 @@ async function getAll(filter = "todos", q = "", responsable_id) {
         WHERE 1=1
     `;
     const params = [];
+
+    if (idCentre) {
+        sql += ` AND p.idcentre_activitats = ?`;
+        params.push(idCentre);
+    }
 
     if (responsable_id) {
         sql += ` AND r.idUsuario_APP = ?`;

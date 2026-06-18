@@ -11,6 +11,17 @@ async function getAllProjectes(req, res) {
     }
 }
 
+async function getProjectesByCentre(req, res) {
+    try {
+        const { q = "" } = req.query;
+        const items = await repo.getAll("todos", q, null, req.params.id);
+        res.json(items);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error obtenint projectes del centre" });
+    }
+}
+
 async function getProjectesById(req, res) {
     try {
         const projecte = await repo.getById(req.params.id);
@@ -97,4 +108,4 @@ async function removeClient(req, res) {
     }
 }
 
-module.exports = { getAllProjectes, getProjectesById, createProject, updateProject, deleteProject, addClients, removeClient };
+module.exports = { getAllProjectes, getProjectesById, getProjectesByCentre, createProject, updateProject, deleteProject, addClients, removeClient };

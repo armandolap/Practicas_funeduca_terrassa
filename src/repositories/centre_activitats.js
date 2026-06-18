@@ -8,7 +8,8 @@ async function getAll() {
                c.idcallejero, c.Nom_calle,
                tv.idTipus_via, tv.Nom AS tipus_via,
                b.idBarri, b.Nom AS barri,
-               cp.idCodi_postal, cp.Codi AS codi_postal
+               cp.idCodi_postal, cp.Codi AS codi_postal,
+               (SELECT COUNT(*) FROM proyectos p WHERE p.idcentre_activitats = ca.idcentre_activitats) AS num_projectes
         FROM centre_activitats ca
         JOIN direccio dir ON ca.direccio_idDireccio = dir.idDireccio
         JOIN callejero c ON dir.idcallejero = c.idcallejero
@@ -27,7 +28,8 @@ async function getById(id) {
                c.idcallejero, c.Nom_calle,
                tv.idTipus_via, tv.Nom AS tipus_via,
                b.idBarri, b.Nom AS barri,
-               cp.idCodi_postal, cp.Codi AS codi_postal
+               cp.idCodi_postal, cp.Codi AS codi_postal,
+               (SELECT COUNT(*) FROM proyectos p WHERE p.idcentre_activitats = ca.idcentre_activitats) AS num_projectes
         FROM centre_activitats ca
         JOIN direccio dir ON ca.direccio_idDireccio = dir.idDireccio
         JOIN callejero c ON dir.idcallejero = c.idcallejero
@@ -46,7 +48,8 @@ async function search({ q }) {
                c.idcallejero, c.Nom_calle,
                tv.idTipus_via, tv.Nom AS tipus_via,
                b.idBarri, b.Nom AS barri,
-               cp.idCodi_postal, cp.Codi AS codi_postal
+               cp.idCodi_postal, cp.Codi AS codi_postal,
+               (SELECT COUNT(*) FROM proyectos p WHERE p.idcentre_activitats = ca.idcentre_activitats) AS num_projectes
         FROM centre_activitats ca
         JOIN direccio dir ON ca.direccio_idDireccio = dir.idDireccio
         JOIN callejero c ON dir.idcallejero = c.idcallejero
