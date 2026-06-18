@@ -132,4 +132,61 @@ async function createFullClient(req, res) {
     }
 }
 
-module.exports = { getAllClients, getClientById, createClient, updateClient, deleteClient, createFullClient };
+async function updateFullClient(req, res) {
+    try {
+        const existing = await repo.getDetailById(req.params.id);
+        if (!existing) return res.status(404).json({ message: "Client no trobat" });
+
+        const { client: clientData, familia, domicili } = req.body;
+        if (!clientData) return res.status(400).json({ message: "Dades de client obligatòries" });
+
+        const { Nom, Cognoms, Fecha_nacimiento, idGenere } = clientData;
+        if (!Nom?.trim()) return res.status(400).json({ message: "Nom obligatori" });
+        if (!Cognoms?.trim()) return res.status(400).json({ message: "Cognoms obligatoris" });
+        if (!Fecha_nacimiento) return res.status(400).json({ message: "Fecha naixement obligatòria" });
+        if (!idGenere) return res.status(400).json({ message: "Gènere obligatori" });
+
+        const nac = new Date(Fecha_nacimiento);
+        const avui = new Date();
+        let C_edad = avui.getFullYear() - nac.getFullYear();
+        const m = avui.getMonth() - nac.getMonth();
+        if (m < 0 || (m === 0 && avui.getDate() < nac.getDate())) C_edad--;
+
+        const RISK_SENSE_RISC = 1, SEBAS_NO_SEBAS = 12, CURS_NO_APLICA = 26;
+        const altaDate = clientData.Data_d_alta || existing.Data_d_alta || new Date().toISOString().split("T")[0];
+        const temps = calcTempsEntitat(altaDate);
+
+        const payload = {
+            domicili: domicili || {},
+            familia: {
+                idFamilia: familia?.idFamilia || null,
+                Cognom_familiar: familia?.Cognom_familiar || Cognoms,
+                Estructura_familiar: familia?.Estructura_familiar || null
+            },
+            client: {
+                idRol: clientData.idRol, idGenere, Nom, Cognoms,
+                Telefon: clientData.Telefon || null,
+                Correu_electronic: clientData.Correu_electronic || null,
+                Data_d_alta: altaDate, C_temps_a_lentitat: temps,
+                Fecha_nacimiento, C_edad,
+                Pais_naixement: clientData.Pais_naixement,
+                Risc: clientData.Risc ?? RISK_SENSE_RISC,
+                Resultat_academic: clientData.Resultat_academic ?? null,
+                idSituacio_economica: clientData.idSituacio_economica,
+                idSebas: clientData.idSebas ?? SEBAS_NO_SEBAS,
+                idNecessitat_especial: clientData.idNecessitat_especial ?? null,
+                derivacio_serveis_socials: clientData.derivacio_serveis_socials ?? 0,
+                Curs_actual: clientData.Curs_actual ?? CURS_NO_APLICA,
+                Baixa: clientData.Baixa ?? existing.Baixa ?? 0
+            }
+        };
+
+        await repo.updateFull(req.params.id, payload);
+        res.json({ message: "Client actualitzat correctament" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error actualitzant client complet" });
+    }
+}
+
+module.exports = { getAllClients, getClientById, createClient, updateClient, deleteClient, createFullClient, updateFullClient };

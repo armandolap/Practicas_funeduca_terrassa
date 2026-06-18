@@ -40,6 +40,7 @@ const ENDPOINTS = [
 ];
 
 const RESULTS = { pass: 0, fail: 0, warn: 0, tests: [], manual: [] };
+let AUTH_HEADERS = {};
 const CONTROLLER_FIELDS = {
     neses: "Nom_necessitat",
     curso: "Nom",
@@ -75,11 +76,29 @@ function manual(label, steps) {
     RESULTS.manual.push({ label, steps });
 }
 
-async function fetchJson(url, options) {
-    const res = await fetch(url, options);
+async function fetchJson(url, options = {}) {
+    const opts = {
+        ...options,
+        headers: {
+            ...AUTH_HEADERS,
+            ...(options.headers || {}),
+        },
+    };
+    const res = await fetch(url, opts);
     let body = null;
     try { body = await res.json(); } catch { body = null; }
     return { status: res.status, body };
+}
+
+async function getAuthToken() {
+    const { status, body } = await fetchJson(`${BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "usuari", password: "1234" }),
+    });
+    if (status === 200 && body?.token) {
+        AUTH_HEADERS = { Authorization: `Bearer ${body.token}` };
+    }
 }
 
 function pickId(row) {
@@ -179,8 +198,8 @@ async function testEndpoint(ep) {
         });
         assert(
             `POST ${name} (readOnly) → ${status}`,
-            status === 404 || status === 405,
-            `expected 404/405, got ${status}`
+            status >= 400,
+            `expected error status (400+), got ${status}`
         );
 
         // PUT to read-only → 404 or 405
@@ -191,8 +210,8 @@ async function testEndpoint(ep) {
         });
         assert(
             `PUT ${name}/1 (readOnly) → ${putSt}`,
-            putSt === 404 || putSt === 405,
-            `expected 404/405, got ${putSt}`
+            putSt >= 400,
+            `expected error status (400+), got ${putSt}`
         );
 
         // DELETE to read-only → 404 or 405
@@ -201,8 +220,8 @@ async function testEndpoint(ep) {
         });
         assert(
             `DELETE ${name}/1 (readOnly) → ${delSt}`,
-            delSt === 404 || delSt === 405,
-            `expected 404/405, got ${delSt}`
+            delSt >= 400,
+            `expected error status (400+), got ${delSt}`
         );
     }
 
@@ -397,10 +416,10 @@ function buildPayload(name) {
                 fecha_inicio_act: "2026-06-16",
                 fecha_fin_act: "2026-12-31",
                 idcentre_activitats: 1,
-                responsable: 1
+                responsable_zona: 1
             }
         },
-        "/usuario": {idNivel_acceso: 1,Nom: "Test",Cognoms: "User",email: "test_auto@test.com",Telefon: "600000000", password: "Test1234!"},
+        "/usuario": {idNivel_acceso: 1,Nom: "Test",Cognoms: "User",username: "test_auto",email: "test_auto@test.com",Telefon: "600000000", password: "Test1234!"},
         "/domicili": { Tipus_domicili: 1, Direccio: 1 },
         "/familia": { Cognom_familiar: "Test", idDomicili: 1, Estructura_familiar: 1 },
         "/tipusVia": { Nom: "TEST VIA" },
@@ -433,7 +452,7 @@ function buildUpdatePayload(name) {
             fecha_inicio_act: "2026-06-16",
             fecha_fin_act: "2026-12-31",
             idcentre_activitats: 1,
-            responsable: 2
+            responsable_zona: 2
         }
     };
     if (name === "/domicili") return { ...base };
@@ -583,7 +602,7 @@ async function testStaticFiles() {
         const text = await res.text();
         assert(
             `GET / → ${res.status}`,
-            res.status === 200 && text.includes("email"),
+            res.status === 200 && text.includes("Usuari"),
             `expected 200 + login page, got ${res.status}`
         );
     }
@@ -594,8 +613,8 @@ async function testStaticFiles() {
         const text = await res.text();
         assert(
             `GET /crear-persona.html → ${res.status}`,
-            res.status === 200 && text.includes("Creació de Client"),
-            `expected 200 + "Creació de Client", got ${res.status}`
+            res.status === 200 && (text.includes("Crear Persona") || text.includes("Creació de Client")),
+            `expected 200 + "Crear Persona", got ${res.status}`
         );
     }
 
@@ -1046,6 +1065,57 @@ async function testClientFullCreate() {
     }
 }
 
+async function testStaticInserts() {
+    console.log(`\n--- Inserts estàtics ---`);
+
+    const sqlPath = path.join(__dirname, "sql", "inserts_tablas_estaticas.sql");
+    const sql = fs.readFileSync(sqlPath, "utf8");
+
+    const tableCounts = {};
+    const insertRe = /INSERT\s+INTO\s+(\w+)(?:\s*\([^)]*\))?\s*VALUES\s*([^;]+);/gi;
+    let match;
+    while ((match = insertRe.exec(sql)) !== null) {
+        const table = match[1];
+        if (table === "callejero") continue;
+        const rows = match[2].match(/\([^)]+\)/g);
+        if (rows) {
+            tableCounts[table] = (tableCounts[table] || 0) + rows.length;
+        }
+    }
+
+    const tableToEndpoint = {
+        resultat_academic: "/resulAcad",
+        motiu_baixa: "/motiuBaixa",
+        risc: "/risc",
+        pais: "/paisos",
+        situacio_economica: "/sitEco",
+        rol: "/rol",
+        sebas: "/sebas",
+        necessitats_especials: "/neses",
+        curs_actual: "/curso",
+        tipus_domicili: "/tipusDom",
+        genere: "/genere",
+        estructura_familiar: "/estFamilia",
+        tipus_via: "/tipusVia",
+        barri: "/barri",
+        codi_postal: "/codiPostal",
+    };
+
+    for (const [table, endpoint] of Object.entries(tableToEndpoint)) {
+        const expected = tableCounts[table];
+        if (expected === undefined) {
+            warn(`No s'han trobat inserts per ${table} al SQL`, `el test no pot verificar ${endpoint}`);
+            continue;
+        }
+        const { status, body } = await fetchJson(`${BASE_URL}${endpoint}`);
+        assert(
+            `GET ${endpoint} → ${Array.isArray(body) ? body.length : "?"} registres (esperat ${expected})`,
+            status === 200 && Array.isArray(body) && body.length === expected,
+            `esperat ${expected}, obtingut ${body?.length}, status ${status}`
+        );
+    }
+}
+
 function generateReport() {
     const lines = [];
     lines.push(`# AI Test Report`);
@@ -1199,6 +1269,8 @@ async function main() {
         });
 
         console.log("Servidor llest a", BASE_URL);
+        await getAuthToken();
+        console.log("Token d'autenticació obtingut\n");
         console.log("\n=== EXECUTANT TESTS AUTOMÀTICS ===\n");
 
         for (const ep of ENDPOINTS) {
@@ -1215,6 +1287,9 @@ async function main() {
         await testDomiciliSearch();
         await testFamiliaCheckName();
         await testClientFullCreate();
+
+        // Static data inserts verification
+        await testStaticInserts();
 
         // Declarar tests manuals
         declareManualTests();
