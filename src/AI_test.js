@@ -1214,17 +1214,6 @@ function suggestFix(label, detail) {
     return "Revisa el codi de l'endpoint: ruta → controlador → repositori. Comprova que el seeder insereix les dades necessàries.";
 }
 
-function getNextReportNumber() {
-    const dir = path.join(__dirname, "..", "docs", "AI_TESTS");
-    if (!fs.existsSync(dir)) return 1;
-    const files = fs.readdirSync(dir);
-    const nums = files
-        .filter(f => /^AI_test_(\d+)\.md$/.test(f))
-        .map(f => parseInt(f.match(/^AI_test_(\d+)\.md$/)[1]))
-        .filter(n => !isNaN(n));
-    return nums.length > 0 ? Math.max(...nums) + 1 : 1;
-}
-
 async function main() {
     console.log("\n=== SEEDING DATABASE ===\n");
     try {
@@ -1319,16 +1308,13 @@ async function main() {
         const testsDir = path.join(__dirname, "..", "docs", "AI_TESTS");
         if (!fs.existsSync(testsDir)) fs.mkdirSync(testsDir, { recursive: true });
 
-        const report = generateReport();
-        const num = getNextReportNumber();
-        const filename = `AI_test_${String(num).padStart(3, "0")}.md`;
-        const reportPath = path.join(testsDir, filename);
-        fs.writeFileSync(reportPath, report, "utf8");
-        console.log(`\nInforme guardat a docs/AI_TESTS/${filename}`);
+        const lastPath = path.join(testsDir, "AI_TEST_last.md");
+        fs.writeFileSync(lastPath, generateReport(), "utf8");
+        console.log(`\nInforme guardat a docs/AI_TESTS/AI_TEST_last.md`);
 
-        const solutionsPath = path.join(testsDir, "resultat_test.md");
-        fs.writeFileSync(solutionsPath, generateSolutions(), "utf8");
-        console.log(`Solucions guardades a docs/AI_TESTS/resultat_test.md`);
+        const informPath = path.join(testsDir, "AI_TEST_inform.md");
+        fs.writeFileSync(informPath, generateSolutions(), "utf8");
+        console.log(`Solucions guardades a docs/AI_TESTS/AI_TEST_inform.md`);
 
     } finally {
         serverProcess.kill();

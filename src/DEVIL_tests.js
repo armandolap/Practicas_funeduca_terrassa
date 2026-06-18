@@ -1048,6 +1048,80 @@ async function runAll() {
         : `\n❌ ${RESULTS.fail} TEST(S) FALLATS`);
 }
 
+function stripAnsi(str) {
+    return str.replace(/\x1b\[\d+m/g, "");
+}
+
+function generateDevilReport() {
+    const lines = [];
+    lines.push(`# DEVIL Test Report`);
+    lines.push(``);
+    lines.push(`**Date:** ${new Date().toISOString()}`);
+    lines.push(``);
+    lines.push(`## Summary`);
+    lines.push(``);
+    lines.push(`- **Passed:** ${RESULTS.pass}`);
+    lines.push(`- **Failed:** ${RESULTS.fail}`);
+    lines.push(`- **Warnings:** ${RESULTS.warn}`);
+    lines.push(`- **Total:** ${RESULTS.pass + RESULTS.fail + RESULTS.warn}`);
+    lines.push(``);
+    lines.push(`## Results`);
+    lines.push(``);
+    lines.push("```");
+    for (const t of RESULTS.tests) {
+        lines.push(stripAnsi(t));
+    }
+    lines.push("```");
+    lines.push(``);
+    if (RESULTS.fail === 0) {
+        lines.push(`✅ **All DEVIL tests passed**`);
+    } else {
+        lines.push(`❌ **${RESULTS.fail} test(s) failed**`);
+    }
+    return lines.join("\n");
+}
+
+function generateDevilInform() {
+    const failed = RESULTS.tests.filter(t => t.includes("✗"));
+    const lines = [];
+    lines.push(`# DEVIL Test Errors`);
+    lines.push(``);
+    lines.push(`**Date:** ${new Date().toISOString()}`);
+    lines.push(``);
+    if (failed.length === 0) {
+        lines.push(`✅ Tots els tests han passat correctament.`);
+        lines.push(``);
+        lines.push(`## Possibles problemes i solucions`);
+        lines.push(``);
+        lines.push(`No s'han detectat problemes.`);
+    } else {
+        lines.push(`❌ **${failed.length} test(s) han fallat** (de ${RESULTS.tests.length} totals)`);
+        lines.push(``);
+        lines.push(`## Tests fallats`);
+        lines.push(``);
+        for (const f of failed) {
+            lines.push(`- ${stripAnsi(f)}`);
+        }
+    }
+    lines.push(``);
+    lines.push(`---`);
+    lines.push(`*Aquest fitxer es sobrescriu en cada execució dels tests.*`);
+    return lines.join("\n");
+}
+
+function writeDevilReports() {
+    const dir = path.join(__dirname, "..", "docs", "AI_TESTS");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
+    const lastPath = path.join(dir, "DEVIL_last.md");
+    fs.writeFileSync(lastPath, generateDevilReport(), "utf8");
+    console.log(`Informe guardat a docs/AI_TESTS/DEVIL_last.md`);
+
+    const informPath = path.join(dir, "DEVIL_inform.md");
+    fs.writeFileSync(informPath, generateDevilInform(), "utf8");
+    console.log(`Solucions guardades a docs/AI_TESTS/DEVIL_inform.md`);
+}
+
 // ── MAIN ──
 
 async function main() {
@@ -1084,6 +1158,8 @@ async function main() {
         }
 
         await runAll();
+
+        writeDevilReports();
 
     } catch (err) {
         console.error("Error:", err.message);
