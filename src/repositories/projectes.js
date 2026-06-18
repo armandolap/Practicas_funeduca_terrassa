@@ -146,6 +146,17 @@ async function syncResponsables(projectId, responsableZona, responsablesProjecte
     }
 }
 
+async function addResponsables(projectId, responsablesProjecte, treballadors) {
+    if (responsablesProjecte && responsablesProjecte.length) {
+        const values = responsablesProjecte.map(uId => [projectId, uId, 2]);
+        await pool.query(`INSERT IGNORE INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES ?`, [values]);
+    }
+    if (treballadors && treballadors.length) {
+        const values = treballadors.map(uId => [projectId, uId, 3]);
+        await pool.query(`INSERT IGNORE INTO Responsables (proyectos_idProyecto, idUsuario_APP, tipus_responsable) VALUES ?`, [values]);
+    }
+}
+
 async function remove(id) {
     await pool.query(`DELETE FROM Responsables WHERE proyectos_idProyecto = ?`, [id]);
     await pool.query(`DELETE FROM proyectos_has_client WHERE idProyecto = ?`, [id]);
@@ -171,4 +182,4 @@ async function removeClient(projectId, clientId) {
     return result.affectedRows;
 }
 
-module.exports = { getAll, getById, getResponsables, getUsuarisByNivell, getParticipants, create, update, syncResponsables, remove, addClients, removeClient };
+module.exports = { getAll, getById, getResponsables, getUsuarisByNivell, getParticipants, create, update, syncResponsables, addResponsables, remove, addClients, removeClient };

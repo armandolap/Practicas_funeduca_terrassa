@@ -56,16 +56,34 @@ async function createProject(req, res) {
 async function updateProject(req, res) {
     try {
         const projecte = req.body.projecte || {};
-        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, responsable_zona, responsables_projecte, treballadors } = projecte;
+        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, responsable_zona, responsables_projecte, treballadors, responsables_projecte_add, treballadors_add } = projecte;
 
         const existing = await repo.getById(req.params.id);
         if (!existing) return res.status(404).json({ message: "Projecte no trobat" });
+
+        const userRole = req.user?.idNivel_acceso;
+        if (userRole === 3) {
+            const responsables = await repo.getResponsables(req.params.id);
+            const isAssigned = responsables.some(r =>
+                r.idUsuario_APP === req.user.idUsuario_APP && (r.tipus_responsable === 1 || r.tipus_responsable === 2)
+            );
+            if (!isAssigned) {
+                return res.status(403).json({ message: "No tens permís per editar aquest projecte" });
+            }
+        } else if (userRole !== 1 && userRole !== 2) {
+            return res.status(403).json({ message: "Permís denegat" });
+        }
 
         if (!Nom_projecte?.trim()) return res.status(400).json({ message: "El nom del projecte és obligatori." });
         if (!idcentre_activitats) return res.status(400).json({ message: "idcentre_activitats és obligatori." });
 
         await repo.update(req.params.id, { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
-        await repo.syncResponsables(req.params.id, responsable_zona, responsables_projecte, treballadors);
+
+        if (userRole === 3) {
+            await repo.addResponsables(req.params.id, responsables_projecte_add, treballadors_add);
+        } else {
+            await repo.syncResponsables(req.params.id, responsable_zona, responsables_projecte, treballadors);
+        }
 
         res.json({ message: "Projecte actualitzat correctament" });
     } catch (error) {

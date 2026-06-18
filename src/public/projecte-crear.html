@@ -121,6 +121,7 @@ let selectedCentreId = null;
 let centreSearchTimeout;
 let _zonaUsers = [], _projRespUsers = [], _trebUsers = [];
 let _zonaSelected = null, _projRespSelected = [], _trebSelected = [];
+let _projRespExisting = [], _trebExisting = [];
 
 const TOKEN = () => localStorage.getItem('token');
 const AUTH_HEADERS = () => ({ 'Authorization': `Bearer ${TOKEN()}` });
@@ -128,7 +129,8 @@ const AUTH_HEADERS = () => ({ 'Authorization': `Bearer ${TOKEN()}` });
 async function initForm() {
     if (!requireAuth()) return;
     const role = getRole();
-    if (role !== 1 && role !== 2) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (role !== 1 && role !== 2 && !(role === 3 && isEdit)) {
         alert('No tens permís per crear projectes');
         window.location.href = '/projectes.html';
         return;
@@ -143,9 +145,7 @@ async function initForm() {
         document.getElementById('btnSave').textContent = 'Actualitzar Projecte';
         await loadProject(isEdit);
     } else {
-        // Auto-assign zone responsable if current user is level 2
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        if (user.idNivel_acceso === 2) {
+        if (role === 2) {
             const match = _zonaUsers.find(u => u.idUsuario_APP === user.idUsuario_APP);
             if (match) selectZona(match);
         }
@@ -164,8 +164,6 @@ async function loadUserLists() {
         _trebUsers = await trebRes.json();
     } catch (e) { console.error(e); }
 }
-
-// ── Tag input helpers ──
 
 function initTagInputs() {
     setupSearch('zonaSearch', 'zonaDropdown', _zonaUsers, 'zona');
@@ -211,7 +209,12 @@ function selectZona(user) {
     document.getElementById('zonaSelectedName').textContent = data.Nom + ' ' + data.Cognoms + ' (' + (data.nivell_nom || '') + ')';
     document.getElementById('zonaDropdown').style.display = 'none';
     const role = getRole();
-    document.getElementById('zonaRemoveBtn').style.display = role === 1 ? '' : 'none';
+    const canRemove = isEdit ? role === 1 : role === 1;
+    document.getElementById('zonaRemoveBtn').style.display = canRemove ? '' : 'none';
+    if (isEdit && role === 3) {
+        document.getElementById('zonaSearch').disabled = true;
+        document.getElementById('zonaSearch').style.cursor = 'not-allowed';
+    }
 }
 
 function removeZona() {
@@ -225,7 +228,8 @@ function removeZona() {
 
 function selectProjResp(user) {
     const data = typeof user === 'object' ? user : JSON.parse(user);
-    if (_projRespSelected.some(u => u.idUsuario_APP === data.idUsuario_APP)) return;
+    if (_projRespSelected.some(u => u.idUsuario_APP === data.idUsuario_APP) ||
+        _projRespExisting.some(u => u.idUsuario_APP === data.idUsuario_APP)) return;
     _projRespSelected.push(data);
     renderProjRespTags();
     document.getElementById('projRespSearch').value = '';
@@ -238,20 +242,31 @@ function removeProjResp(id) {
 }
 
 function renderProjRespTags() {
+    const role = getRole();
     const container = document.getElementById('projRespTags');
-    container.innerHTML = _projRespSelected.map(u =>
+    let html = '';
+    if (isEdit && role === 3) {
+        html += _projRespExisting.map(u =>
+            `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e0f2fe;border-radius:20px;font-size:13px;opacity:0.6;">
+                ${u.Nom} ${u.Cognoms}
+            </span>`
+        ).join('');
+    }
+    html += _projRespSelected.map(u =>
         `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e0f2fe;border-radius:20px;font-size:13px;">
             ${u.Nom} ${u.Cognoms}
             <span onclick="removeProjResp(${u.idUsuario_APP})" style="cursor:pointer;color:#ef4444;font-weight:700;">✕</span>
         </span>`
     ).join('');
+    container.innerHTML = html;
 }
 
 // ── Treballadors ──
 
 function selectTreb(user) {
     const data = typeof user === 'object' ? user : JSON.parse(user);
-    if (_trebSelected.some(u => u.idUsuario_APP === data.idUsuario_APP)) return;
+    if (_trebSelected.some(u => u.idUsuario_APP === data.idUsuario_APP) ||
+        _trebExisting.some(u => u.idUsuario_APP === data.idUsuario_APP)) return;
     _trebSelected.push(data);
     renderTrebTags();
     document.getElementById('trebSearch').value = '';
@@ -264,13 +279,23 @@ function removeTreb(id) {
 }
 
 function renderTrebTags() {
+    const role = getRole();
     const container = document.getElementById('trebTags');
-    container.innerHTML = _trebSelected.map(u =>
+    let html = '';
+    if (isEdit && role === 3) {
+        html += _trebExisting.map(u =>
+            `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fef3c7;border-radius:20px;font-size:13px;opacity:0.6;">
+                ${u.Nom} ${u.Cognoms}
+            </span>`
+        ).join('');
+    }
+    html += _trebSelected.map(u =>
         `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fef3c7;border-radius:20px;font-size:13px;">
             ${u.Nom} ${u.Cognoms}
             <span onclick="removeTreb(${u.idUsuario_APP})" style="cursor:pointer;color:#ef4444;font-weight:700;">✕</span>
         </span>`
     ).join('');
+    container.innerHTML = html;
 }
 
 // ── Load / Save ──
@@ -293,26 +318,36 @@ async function loadProject(id) {
             document.getElementById('centreAddressDisplay').textContent = p.tipus_via ? `${p.tipus_via} ${p.Nom_calle || ''}, ${p.Num_calle || ''}` : '';
         }
 
-        // Load responsables
+        const role = getRole();
         const responsables = p.responsables || [];
         const zona = responsables.find(r => r.tipus_responsable === 1);
         const projs = responsables.filter(r => r.tipus_responsable === 2);
         const trebs = responsables.filter(r => r.tipus_responsable === 3);
+
         if (zona) selectZona(zona);
-        projs.forEach(r => {
-            const found = _projRespUsers.find(u => u.idUsuario_APP === r.idUsuario_APP);
-            if (found) selectProjResp(found);
-        });
-        trebs.forEach(r => {
-            const found = _trebUsers.find(u => u.idUsuario_APP === r.idUsuario_APP);
-            if (found) selectTreb(found);
-        });
+
+        if (role === 3) {
+            _projRespExisting = projs;
+            _trebExisting = trebs;
+            renderProjRespTags();
+            renderTrebTags();
+        } else {
+            projs.forEach(r => {
+                const found = _projRespUsers.find(u => u.idUsuario_APP === r.idUsuario_APP);
+                if (found) selectProjResp(found);
+            });
+            trebs.forEach(r => {
+                const found = _trebUsers.find(u => u.idUsuario_APP === r.idUsuario_APP);
+                if (found) selectTreb(found);
+            });
+        }
     } catch (e) { console.error(e); }
 }
 
 async function saveProject(e) {
     e.preventDefault();
     if (!requireAuth()) return;
+    const role = getRole();
     const nom = document.getElementById('nomProjecte').value.trim();
     if (!nom) { alert('El nom del projecte és obligatori'); return; }
 
@@ -345,9 +380,6 @@ async function saveProject(e) {
 
     if (!idCentre) { alert('Cal seleccionar o crear un centre d\'activitats'); return; }
 
-    const zonaId = document.getElementById('responsableZona').value;
-    if (!zonaId) { alert('Cal seleccionar un responsable de zona'); return; }
-
     const payload = {
         projecte: {
             Nom_projecte: nom,
@@ -355,12 +387,21 @@ async function saveProject(e) {
             plazas: parseInt(document.getElementById('plazas').value) || 0,
             fecha_inicio_act: document.getElementById('fechaInicio').value || null,
             fecha_fin_act: document.getElementById('fechaFin').value || null,
-            idcentre_activitats: parseInt(idCentre),
-            responsable_zona: parseInt(zonaId),
-            responsables_projecte: _projRespSelected.map(u => u.idUsuario_APP),
-            treballadors: _trebSelected.map(u => u.idUsuario_APP)
+            idcentre_activitats: parseInt(idCentre)
         }
     };
+
+    if (role === 3) {
+        // Add-only mode
+        payload.projecte.responsables_projecte_add = _projRespSelected.map(u => u.idUsuario_APP);
+        payload.projecte.treballadors_add = _trebSelected.map(u => u.idUsuario_APP);
+    } else {
+        const zonaId = document.getElementById('responsableZona').value;
+        if (!zonaId) { alert('Cal seleccionar un responsable de zona'); return; }
+        payload.projecte.responsable_zona = parseInt(zonaId);
+        payload.projecte.responsables_projecte = _projRespSelected.map(u => u.idUsuario_APP);
+        payload.projecte.treballadors = _trebSelected.map(u => u.idUsuario_APP);
+    }
 
     try {
         const url = isEdit ? `/projectes/${isEdit}` : '/projectes';
