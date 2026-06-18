@@ -1,18 +1,7 @@
-// module.exports = {
-//     getAllClients,
-//     getClientById,
-//     createClient,
-//     updateClient,
-//     deleteClient
-// };
-const path = require("path");
-
-const  = require("../repositories/client");
-
-
-async clientViewFilter () {
-
-
-}; 
-
-module.exports = {clientViewFilter }
+// ═══════════════════════════════════════════════════
+// ESBORRANY — Fitxer no utilitzat
+// Aquest fitxer contenia un esborrany de visualització
+// de clients que mai es va completar.
+// Deixat com a registre històric.
+// Data: 2026-06-18
+// ═══════════════════════════════════════════════════

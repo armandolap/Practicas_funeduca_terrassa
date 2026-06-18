@@ -12,6 +12,7 @@ require("dotenv").config({ path: dotenvPath });
 
 const express = require("express");
 const server = express();
+const { runSQLFile } = require("./helpers/sqlRunner");
 const PORT = process.env.PORT || 3000;
 
 server.use(express.json());
@@ -65,7 +66,6 @@ const reports = require("./routes/reports");
 const genere = require("./routes/genere");
 const nivelAcceso = require("./routes/nivel_acceso");
 
-server.use(express.json());
 server.use("/paisos", paisos);
 server.use("/estFamilia", estFamiliar);
 server.use("/motiuBaixa", motiuBaixa);
@@ -92,25 +92,6 @@ server.use("/centre-activitats", centreActivitats);
 server.use("/reports", reports);
 server.use("/genere", genere);
 server.use("/nivell-acces", nivelAcceso);
-server.use(express.static(path.join(__dirname, "public")));
-
-async function runSQLFile(connection, filePath) {
-    const sql = fs.readFileSync(filePath, "utf8");
-    const statements = sql
-        .replace(/^USE\s+`?\w+`?\s*;/gim, "")
-        .split(";")
-        .map(s => s.trim())
-        .filter(Boolean);
-    for (const stmt of statements) {
-        try {
-            await connection.query(stmt);
-        } catch (err) {
-            if (![1050, 1060, 1061, 1062].includes(err.errno)) {
-                console.warn(`SQL warning: ${err.message}`);
-            }
-        }
-    }
-}
 
 async function startServer() {
     try {

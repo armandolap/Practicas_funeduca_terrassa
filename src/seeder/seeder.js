@@ -1,26 +1,9 @@
 const fs = require("fs");
 const path = require("path");
 const { createPool } = require("../config/database");
+const { runSQLFile } = require("../helpers/sqlRunner");
 
 const pool = createPool();
-
-async function runSQLFile(conn, filePath) {
-    const sql = fs.readFileSync(filePath, "utf8");
-    const statements = sql
-        .replace(/^use\s+`?\w+`?\s*;/gim, "")
-        .split(";")
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
-    for (const stmt of statements) {
-        try {
-            await conn.query(stmt);
-        } catch (err) {
-            if (err.errno !== 1061 && err.errno !== 1050 && err.errno !== 1060 && err.errno !== 1062) {
-                console.warn(`  SQL advertencia: ${err.message.slice(0, 80)}`);
-            }
-        }
-    }
-}
 
 async function insertTestData(conn) {
     await conn.query("SET FOREIGN_KEY_CHECKS = 0");
