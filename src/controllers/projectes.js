@@ -22,6 +22,7 @@ async function getProjectesByCentre(req, res) {
     }
 }
 
+// GET /projectes/:id
 async function getProjectesById(req, res) {
     try {
         const projecte = await repo.getById(req.params.id);
