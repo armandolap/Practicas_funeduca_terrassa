@@ -1,8 +1,14 @@
 const fs = require("fs");
 const path = require("path");
+
+// Carregar .env si s'executa directament (node seeder/seeder.js)
+const dotenvPath = path.resolve(__dirname, "..", "..", ".env");
+if (require.main === module && fs.existsSync(dotenvPath)) {
+    require("dotenv").config({ path: dotenvPath });
+}
+
 const { createPool } = require("../config/database");
 const { runSQLFile } = require("../helpers/sqlRunner");
-
 const pool = createPool();
 
 async function insertTestData(conn) {
