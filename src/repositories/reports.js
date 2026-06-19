@@ -145,28 +145,61 @@ async function cont() {
 
 async function neses() {
     const [rows] = await pool.query(`
-        SELECT ne.Nom_necessitat, g.Nom_genere, COUNT(*) AS total
-        FROM client cl
-        JOIN necessitats_especials ne ON cl.idNecessitat_especial = ne.idNecessitat_especial
-        JOIN genere g ON cl.idGenere = g.idGenere
-        WHERE cl.idNecessitat_especial IS NOT NULL AND cl.idNecessitat_especial != 3
-        GROUP BY ne.Nom_necessitat, g.Nom_genere
-        ORDER BY ne.Nom_necessitat, g.Nom_genere
+        SELECT ne.idNecessitat_especial, ne.Nom_necessitat,
+               SUM(CASE WHEN g.Nom_genere = 'Masculí' THEN 1 ELSE 0 END) AS homes,
+               SUM(CASE WHEN g.Nom_genere = 'Femení' THEN 1 ELSE 0 END) AS dones,
+               SUM(CASE WHEN g.Nom_genere = 'Non binari' THEN 1 ELSE 0 END) AS nb,
+               COUNT(cl.idClient) AS total
+        FROM necessitats_especials ne
+        LEFT JOIN client cl ON cl.idNecessitat_especial = ne.idNecessitat_especial
+        LEFT JOIN genere g ON cl.idGenere = g.idGenere
+        GROUP BY ne.idNecessitat_especial, ne.Nom_necessitat
+        ORDER BY ne.idNecessitat_especial
     `);
-    return rows;
+
+    const result = rows.map(r => ({
+        'NESE': r.Nom_necessitat,
+        'Total': Number(r.total),
+        'Dones': Number(r.dones),
+        'Homes': Number(r.homes),
+        'NB': Number(r.nb),
+    }));
+
+    const totals = { 'NESE': 'TOTAL', 'Total': 0, 'Dones': 0, 'Homes': 0, 'NB': 0 };
+    for (const r of result) {
+        totals.Total += r.Total;
+        totals.Dones += r.Dones;
+        totals.Homes += r.Homes;
+        totals.NB += r.NB;
+    }
+    result.push(totals);
+    return result;
 }
 
 async function sebasDev() {
-    const [ambSeguiment] = await pool.query(`
-        SELECT COUNT(*) AS total FROM client WHERE idSebas != 12
+    const [rows] = await pool.query(`
+        SELECT s.idSebas, s.Nom,
+               COUNT(cl.idClient) AS ambSeguiment,
+               SUM(CASE WHEN cl.derivacio_serveis_socials = 1 THEN 1 ELSE 0 END) AS derivacions
+        FROM sebas s
+        LEFT JOIN client cl ON cl.idSebas = s.idSebas
+        GROUP BY s.idSebas, s.Nom
+        ORDER BY s.idSebas
     `);
-    const [derivacions] = await pool.query(`
-        SELECT COUNT(*) AS total FROM client WHERE derivacio_serveis_socials = 1
-    `);
-    return {
-        amb_seguiment: ambSeguiment[0].total,
-        derivacions: derivacions[0].total
-    };
+
+    const result = rows.map(r => ({
+        'SEBAS': r.Nom,
+        'Total amb seguiment': Number(r.ambSeguiment),
+        'Total derivacions': Number(r.derivacions),
+    }));
+
+    const totals = { 'SEBAS': 'TOTAL', 'Total amb seguiment': 0, 'Total derivacions': 0 };
+    for (const r of result) {
+        totals['Total amb seguiment'] += r['Total amb seguiment'];
+        totals['Total derivacions'] += r['Total derivacions'];
+    }
+    result.push(totals);
+    return result;
 }
 
 async function cursAny(any) {

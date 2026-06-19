@@ -82,3 +82,20 @@ El informe Situacion economica/tipo usuario se filtra entre "usuarios adultos(to
  Estos son los campos,debe coger los nombre de la tabla "situacio_economica" de la base de datos, debe diferencia de los hijos y el resto de la familia , seria (fill/a , adults y al final un total )
 
 El informe de comptador inclou  tres files, usuaris unics, families uniques y bajas , i columnes  de home/dona/NB ( no binaris ) i un total . les dades s'extreuen de les taules del projecte. usuaris són el numero de persones apuntades, les families, és el nombre de families que tenim al sistema i baixes és el nombre de persones que tenen motiu de baixa ( o el camp corresponent de baixa, millor )
+
+per la taula de informe de NESE hem de mostrar l'informe amb el desglossat de la taula de NESES, son 5 files ( 6 amb el titol ) pels 4 possibloes valors i el total , desglossat per columnes total anual, homes, dones nobinari 
+similar a : 
+NESE | total | dones | homes| NB 
+amb diagnostis x x x x
+en proceés x x x x 
+...
+total x x x x
+
+El informe SEBAS: debe incluir en las filas todos los tipos de SEBAS (obtenidos de la tabla SEBAS en la base de datos) y como columna "total amb seguiment" son los usuarios dependiendo a que tipo de SEBAS tengan (sebas1,2.1,2.2,etc) y como otra columna "total derivacions" que son los usuarios que tienen el campo "derivacion serveis socials" activo
+al final como ultima fila debe ser un total de todos los registrados por columna
+
+
+FILAS: CURS ACTUAL	TOTALS ANY ACTUAL	PROMOCIONA	PERCENTATGE PROMOCIONA	REPETEIX	PERCENTATGE REPETEIX	ABANADONA ESTUDIS	PERCENTATGE ABANDONA	NO OPTÉ PLAÇA	PERCENTATGE SENSE PLAÇA	ACCEDEIX MÓN LABORAL	PERCENTATGE ACCÉS MÓN LABORAL
+
+(Una fila para cada curso actual sacado de la tabla curs_actual y el total es de las personas asociadas a estos cursos)	0	0	0,00%	0	0,00%	0	0,00%	0	0,00%	0	0,00%
+
