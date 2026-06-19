@@ -77,7 +77,7 @@ function calcEdad(fecha) {
 // ============ LOAD DROPDOWNS ============
 async function loadSelect(url, select, valueKey, labelKey) {
   try {
-    const res = await fetch(url);
+    const res = await authFetch(url);
     if (!res.ok) return;
     const items = await res.json();
     for (const item of items) {
@@ -161,7 +161,7 @@ cognoms.addEventListener("blur", async () => {
   familiaName.value = c;
   // Auto-suggest: search and select if exact match
   try {
-    const res = await fetch(`/familia/search?q=${encodeURIComponent(c)}`);
+    const res = await authFetch(`/familia/search?q=${encodeURIComponent(c)}`);
     if (res.ok) {
       const items = await res.json();
       const exact = items.find(item =>
@@ -219,7 +219,7 @@ function triggerFamilySearch(q) {
 
 async function searchFamilies(q) {
   try {
-    const res = await fetch(`/familia/search?q=${encodeURIComponent(q)}`);
+    const res = await authFetch(`/familia/search?q=${encodeURIComponent(q)}`);
     if (!res.ok) return;
     const items = await res.json();
     showFamilyDropdown(items);
@@ -282,7 +282,7 @@ document.addEventListener("click", (e) => {
 // ============ FAMILY DOMICILES ============
 async function loadFamilyDomiciles(idFamilia) {
   try {
-    const res = await fetch(`/domicili/byFamily/${idFamilia}`);
+    const res = await authFetch(`/domicili/byFamily/${idFamilia}`);
     if (!res.ok) return;
     familyDomiciles = await res.json();
     familyDomicilis.innerHTML = '<option value="">Domicilis de la família</option>';
@@ -344,7 +344,7 @@ function triggerDomiciliSearch() {
 
 async function fetchDomicili(url) {
   try {
-    const res = await fetch(url);
+    const res = await authFetch(url);
     if (!res.ok) return;
     domiciliResults = await res.json();
     showDomiciliDropdown(domiciliResults);
@@ -610,7 +610,7 @@ async function submitForm() {
   try {
     const url = isEditMode ? `/client/${editPersonId}/full` : "/client/full";
     const method = isEditMode ? "PUT" : "POST";
-    const res = await fetch(url, {
+    const res = await authFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

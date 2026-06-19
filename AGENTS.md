@@ -92,7 +92,7 @@ Això esborra TOTES les dades de les taules i les torna a inserir (schema + inse
 - `POST /auth/login` returns JWT (24h expiry) — **pública**
 - `GET /auth/me` returns current user (requires Bearer token)
 - Frontend stores token + user in `localStorage`
-- `sidebar.js` provides `requireAuth()` (redirects to `/login.html` if no token), `logout()`, and `renderSidebar(activePage)`
+- `sidebar.js` provides `requireAuth()` (redirects to `/login.html` if no token), `logout()`, `renderSidebar(activePage)`, and `authFetch(url, options)` (wraps `fetch()` adding the Bearer token automatically)
 - After login, redirects to `/meus-projectes.html` for roles 2 & 3, otherwise `/clients.html`
 - UI role gating: "Configuració" only for Admin (1), "Nou projecte" for Admin (1) + Resp zona (2), "Crear persona" for 1/2/3, etc.
 - **Totes les rutes protegides** des de Juny 2026: tots els endpoints (`client`, `familia`, `domicili`, `usuari`, `centre_activitats`, `projectes`, `desplegables`, `reports`, `callejero`, i tots els catàlegs) requereixen `requireAuth` excepte `POST /auth/login`. Rutes sensibles (`callejero` POST) tenen `requireTotal` addicional.

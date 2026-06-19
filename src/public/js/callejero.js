@@ -1,3 +1,13 @@
+if (!window.authFetch) {
+    window.authFetch = function(url, options = {}) {
+        const token = localStorage.getItem('token');
+        if (token) {
+            options.headers = { ...options.headers, 'Authorization': `Bearer ${token}` };
+        }
+        return fetch(url, options);
+    };
+}
+
 const tipusViaSelect = document.getElementById("tipusVia");
 const nomCalleInput = document.getElementById("nomCalle");
 const barriInput = document.getElementById("barri");
@@ -41,7 +51,7 @@ async function fetchResults() {
     if (tipus_via) url += `&tipus_via=${encodeURIComponent(tipus_via)}`;
 
     try {
-        const res = await fetch(url);
+        const res = await authFetch(url);
         if (!res.ok) return;
         lastResults = await res.json();
         showDropdown(lastResults);
@@ -127,7 +137,7 @@ document.addEventListener("click", (e) => {
 
 async function loadTipusVia() {
     try {
-        const res = await fetch("/tipusVia");
+        const res = await authFetch("/tipusVia");
         if (!res.ok) return;
         const items = await res.json();
         for (const item of items) {
