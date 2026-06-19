@@ -1,18 +1,19 @@
 const router = require("express").Router();
 const ctrl = require("../controllers/reports");
+const { requireAuth } = require("../middlewares/auth");
 
-router.get("/projectes/generesEdats", ctrl.getProjectesGeneresEdats);
-router.get("/genere", ctrl.getGenere);
-router.get("/sitEco", ctrl.getSitEco);
-router.get("/rolFam", ctrl.getRolFam);
-router.get("/tipHab", ctrl.getTipHab);
-router.get("/cont", ctrl.getCont);
-router.get("/neses", ctrl.getNeses);
-router.get("/sebasDev", ctrl.getSebasDev);
-router.get("/cursAny/:any", ctrl.getCursAny);
-router.get("/resAcad", ctrl.getResAcad);
-router.get("/motiusBaixa", ctrl.getMotiusBaixa);
-router.get("/riscos", ctrl.getRiscos);
-router.get("/paisos", ctrl.getPaisos);
+router.get("/projectes/generesEdats", requireAuth, ctrl.getProjectesGeneresEdats);
+router.get("/genere", requireAuth, ctrl.getGenere);
+router.get("/sitEco", requireAuth, ctrl.getSitEco);
+router.get("/rolFam", requireAuth, ctrl.getRolFam);
+router.get("/tipHab", requireAuth, ctrl.getTipHab);
+router.get("/cont", requireAuth, ctrl.getCont);
+router.get("/neses", requireAuth, ctrl.getNeses);
+router.get("/sebasDev", requireAuth, ctrl.getSebasDev);
+router.get("/cursAny/:any", requireAuth, ctrl.getCursAny);
+router.get("/resAcad", requireAuth, ctrl.getResAcad);
+router.get("/motiusBaixa", requireAuth, ctrl.getMotiusBaixa);
+router.get("/riscos", requireAuth, ctrl.getRiscos);
+router.get("/paisos", requireAuth, ctrl.getPaisos);
 
 module.exports = router;

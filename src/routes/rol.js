@@ -1,8 +1,9 @@
 const router = require("express").Router();
 const rol = require("../controllers/rol");
+const { requireAuth } = require("../middlewares/auth");
 
-router.get("/", rol.getAllRol);
+router.get("/", requireAuth, rol.getAllRol);
 
-router.get("/:id", rol.getRolById);
+router.get("/:id", requireAuth, rol.getRolById);
 
 module.exports = router;
