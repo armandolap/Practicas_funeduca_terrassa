@@ -1,11 +1,12 @@
 const router = require("express").Router();
 const ctrl = require("../controllers/centre_activitats");
+const { requireAuth } = require("../middlewares/auth");
 
-router.get("/", ctrl.getAll);
-router.get("/search", ctrl.search);
-router.get("/:id", ctrl.getById);
-router.post("/", ctrl.create);
-router.put("/:id", ctrl.update);
-router.delete("/:id", ctrl.remove);
+router.get("/", requireAuth, ctrl.getAll);
+router.get("/search", requireAuth, ctrl.search);
+router.get("/:id", requireAuth, ctrl.getById);
+router.post("/", requireAuth, ctrl.create);
+router.put("/:id", requireAuth, ctrl.update);
+router.delete("/:id", requireAuth, ctrl.remove);
 
 module.exports = router;
