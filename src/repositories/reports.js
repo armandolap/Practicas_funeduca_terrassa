@@ -70,16 +70,22 @@ async function genere() {
 
 async function sitEco() {
     const [rows] = await pool.query(`
-        SELECT se.Nom AS situacio_economica,
-               r.Nom_rol AS rol,
-               COUNT(*) AS total
-        FROM client cl
-        JOIN situacio_economica se ON cl.idSituacio_economica = se.idSituacio_economica
-        JOIN rol r ON cl.idRol = r.idRol
-        GROUP BY se.Nom, r.Nom_rol
-        ORDER BY se.Nom, r.Nom_rol
+        SELECT se.idSituacio_economica, se.Nom AS situacio_economica,
+               SUM(CASE WHEN r.idRol = 3 THEN 1 ELSE 0 END) AS fills,
+               SUM(CASE WHEN r.idRol != 3 THEN 1 ELSE 0 END) AS resta,
+               COUNT(cl.idClient) AS total
+        FROM situacio_economica se
+        LEFT JOIN client cl ON cl.idSituacio_economica = se.idSituacio_economica
+        LEFT JOIN rol r ON cl.idRol = r.idRol
+        GROUP BY se.idSituacio_economica, se.Nom
+        ORDER BY se.idSituacio_economica
     `);
-    return rows;
+    return rows.map(r => ({
+        'SITUACIÓ ECONÒMICA': r.situacio_economica,
+        'FILLS/FILLES': Number(r.fills),
+        'ADULTS': Number(r.resta),
+        'TOTAL': Number(r.total)
+    }));
 }
 
 async function rolFam() {
