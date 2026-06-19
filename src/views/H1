@@ -61,3 +61,22 @@ necessitem
 
 Habran botones arriba para filtrar el informe que quieras ver
 Debajo de esos habra uno para exportar el informe actual y otro para exportar todos los informes
+
+
+El informe de projectes/genero-edad debe mostrar en la primera columna los nombres de los proyectos, y en la fila de cada proyecto: 
+HOMES 0-3 ANYS,	 HOMES 4-6 ANYS	,HOMES 7-9 ANYS,	HOMES 10-12 ANYS,	HOMES 13-15 ANYS,	HOMES 16-18 ANYS,	HOMES 18-30 ANYS	,HOMES 30-65 ANYS,	TOTAL HOMES ,  DONES 0-3 ANYS,	DONES 4-6 ANYS,	DONES 7-9 ANYS,	DONES 10-12 ANYS,	DONES 13-15 ANYS,	DONES 16-18 ANYS,	DONES 18-30 ANYS,	DONES 30-65 ANYS,	TOTAL DONES,	NO BINARIS 0-3 ANYS	,NO BINARIS 4-6 ANYS,	NO BINARIS 7-9 ANYS,	NO BINARIS 10-12 ANYS	,NO BINARIS 13-15 ANYS,	NO BINARIS 16-18 ANYS,	NO BINARIS 18-30 ANYS,	NO BINARIS 30-65 ANYS,	TOTAL NO BINARIS,	TOTAL PERSONES,	BAIXES
+    El desglose de cantidad deberia mostarse en la fila de cada proyecto todas estas columnas con su filtro asociado (la cantidad filtrada)
+
+El informe Situacion economica/tipo usuario se filtra entre "usuarios adultos(todos excepot fills/filles)" y "usuarios hijos (fills/filles)" segun su situacion economica (
+    Autònom/a
+    treballador/a compte aliè
+    ATURAT/A
+    ATURAT/ADA LLARGA DURADA
+    PERCEPTOR/A AJUDA
+    JUBILAT/ADA
+    EN SITUACIÓ DE DEPENDÈNCIA
+    SENSE PERMÍS DE TREBALL
+    ECONOMIA SUBMERGIDA
+    TREBALLS REPRODUCTIUS (cures)
+    DEPENDENT)
+ Estos son los campos,debe coger los nombre de la tabla "situacio_economica" de la base de datos, debe diferencia de los hijos y el resto de la familia , seria (fill/a , adults y al final un total )

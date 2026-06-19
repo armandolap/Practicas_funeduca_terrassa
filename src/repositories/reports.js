@@ -4,27 +4,58 @@ const pool = createPool();
 async function projectesGeneresEdats() {
     const [rows] = await pool.query(`
         SELECT p.idProyecto, p.Nom_projecte,
-               g.Nom_genere,
-               CASE
-                   WHEN cl.C_edad BETWEEN 0 AND 3 THEN '0-3'
-                   WHEN cl.C_edad BETWEEN 4 AND 6 THEN '4-6'
-                   WHEN cl.C_edad BETWEEN 7 AND 9 THEN '7-9'
-                   WHEN cl.C_edad BETWEEN 10 AND 12 THEN '10-12'
-                   WHEN cl.C_edad BETWEEN 13 AND 15 THEN '13-15'
-                   WHEN cl.C_edad BETWEEN 16 AND 18 THEN '16-18'
-                   WHEN cl.C_edad BETWEEN 19 AND 30 THEN '19-30'
-                   WHEN cl.C_edad BETWEEN 31 AND 65 THEN '31-65'
-                   ELSE '+65'
-               END AS segment_edat,
-               COUNT(*) AS total
+               g.Nom_genere, cl.C_edad,
+               cl.Baixa, cl.idClient
         FROM proyectos p
         JOIN proyectos_has_client phc ON p.idProyecto = phc.idProyecto
         JOIN client cl ON phc.idClient = cl.idClient
         JOIN genere g ON cl.idGenere = g.idGenere
-        GROUP BY p.idProyecto, p.Nom_projecte, g.Nom_genere, segment_edat
-        ORDER BY p.Nom_projecte, g.Nom_genere, segment_edat
+        ORDER BY p.Nom_projecte, cl.C_edad
     `);
-    return rows;
+
+    const ageSegment = (edad) => {
+        if (edad >= 0 && edad <= 3) return '0-3 ANYS';
+        if (edad >= 4 && edad <= 6) return '4-6 ANYS';
+        if (edad >= 7 && edad <= 9) return '7-9 ANYS';
+        if (edad >= 10 && edad <= 12) return '10-12 ANYS';
+        if (edad >= 13 && edad <= 15) return '13-15 ANYS';
+        if (edad >= 16 && edad <= 18) return '16-18 ANYS';
+        if (edad >= 19 && edad <= 30) return '18-30 ANYS';
+        if (edad >= 31) return '30-65 ANYS';
+        return 'altres';
+    };
+
+    const genderMap = { 'Masculí': 'HOMES', 'Femeni': 'DONES', 'Femení': 'DONES', 'Non binari': 'NO BINARIS' };
+    const segments = ['0-3 ANYS', '4-6 ANYS', '7-9 ANYS', '10-12 ANYS', '13-15 ANYS', '16-18 ANYS', '18-30 ANYS', '30-65 ANYS'];
+    const genders = ['HOMES', 'DONES', 'NO BINARIS'];
+
+    const projectMap = new Map();
+
+    for (const r of rows) {
+        if (!projectMap.has(r.idProyecto)) {
+            projectMap.set(r.idProyecto, {
+                PROJECTE: r.Nom_projecte,
+                ...Object.fromEntries(genders.flatMap(g => segments.map(s => [`${g} ${s}`, 0]))),
+                ...Object.fromEntries(genders.map(g => [`TOTAL ${g}`, 0])),
+                'TOTAL PERSONES': 0,
+                'BAIXES': 0,
+            });
+        }
+        const proj = projectMap.get(r.idProyecto);
+        const gKey = genderMap[r.Nom_genere] || r.Nom_genere;
+        const seg = ageSegment(r.C_edad);
+        const col = `${gKey} ${seg}`;
+        if (col in proj) {
+            proj[col]++;
+            proj[`TOTAL ${gKey}`]++;
+            proj['TOTAL PERSONES']++;
+        }
+        if (r.Baixa === 1) {
+            proj['BAIXES']++;
+        }
+    }
+
+    return Array.from(projectMap.values());
 }
 
 async function genere() {
