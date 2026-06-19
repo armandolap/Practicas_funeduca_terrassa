@@ -1,11 +1,11 @@
 # DEVIL Test Report
 
-**Date:** 2026-06-18T20:16:02.818Z
+**Date:** 2026-06-19T09:08:01.220Z
 
 ## Summary
 
-- **Passed:** 143
-- **Failed:** 0
+- **Passed:** 141
+- **Failed:** 2
 - **Warnings:** 0
 - **Total:** 143
 
@@ -124,8 +124,8 @@
   ✓ GET /client?offset=999999999 → 200 (no crash)
   ✓ GET /client?offset=999999999 returns empty
   ✓ GET /client?sort=SQLi → 200 (no crash)
-  ✓ GET /client?id[]= → 200 (no crash)
-  ✓ GET /client?familia=1&familia=2 → 200 (no crash)
+  ✗ GET /client?id[]= → 200 (no crash) — esperat 200, obtingut 401
+  ✗ GET /client?familia=1&familia=2 → 200 (no crash) — esperat 200, obtingut 401
   ✓ GET /familia/search?q= → handled
   ✓ GET /client?q=XSS (query) → 200 (no crash)
   ✓ POST /client/full XML → 400
@@ -157,4 +157,4 @@
   ✓ DELETE /familia/999999 → 404
 ```
 
-✅ **All DEVIL tests passed**
+❌ **2 test(s) failed**

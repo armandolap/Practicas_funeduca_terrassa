@@ -1,6 +1,6 @@
 # AI Test Report
 
-**Date:** 2026-06-18T20:22:02.609Z
+**Date:** 2026-06-19T09:07:54.262Z
 
 ## Summary
 
@@ -259,8 +259,8 @@
   ✓ GET /callejero?q=ABAT[0] té idcallejero
   ✓ GET /callejero?q=ABAT[0] té Nom_complet
   ✓ GET /callejero?q=ABAT[0] té tipus_via
-  ✓ GET /callejero/2 → 200
-  ✓ GET /callejero/2 nom_complet = "AVINGUDA ABAT MARCET, DE L'"
+  ✓ GET /callejero/1 → 200
+  ✓ GET /callejero/1 nom_complet = "AVINGUDA ABAT MARCET, DE L'"
   ✓ GET /callejero?q=ABAT&tipus_via=1 → 200
   ✓ GET /callejero?q=ABAT&tipus_via=1 filtrat
   ✓ GET /callejero?q=ZZZNOTHING → 200

@@ -1,12 +1,13 @@
 # DEVIL Test Errors
 
-**Date:** 2026-06-18T20:16:02.820Z
+**Date:** 2026-06-19T09:08:01.222Z
 
-✅ Tots els tests han passat correctament.
+❌ **2 test(s) han fallat** (de 143 totals)
 
-## Possibles problemes i solucions
+## Tests fallats
 
-No s'han detectat problemes.
+-   ✗ GET /client?id[]= → 200 (no crash) — esperat 200, obtingut 401
+-   ✗ GET /client?familia=1&familia=2 → 200 (no crash) — esperat 200, obtingut 401
 
 ---
 *Aquest fitxer es sobrescriu en cada execució dels tests.*
