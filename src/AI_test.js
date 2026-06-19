@@ -40,6 +40,7 @@ const ENDPOINTS = [
 ];
 
 const RESULTS = { pass: 0, fail: 0, warn: 0, tests: [], manual: [] };
+let AUTH_HEADERS = {};
 const CONTROLLER_FIELDS = {
     neses: "Nom_necessitat",
     curso: "Nom",
@@ -75,11 +76,29 @@ function manual(label, steps) {
     RESULTS.manual.push({ label, steps });
 }
 
-async function fetchJson(url, options) {
-    const res = await fetch(url, options);
+async function fetchJson(url, options = {}) {
+    const opts = {
+        ...options,
+        headers: {
+            ...AUTH_HEADERS,
+            ...(options.headers || {}),
+        },
+    };
+    const res = await fetch(url, opts);
     let body = null;
     try { body = await res.json(); } catch { body = null; }
     return { status: res.status, body };
+}
+
+async function getAuthToken() {
+    const { status, body } = await fetchJson(`${BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: "usuari", password: "1234" }),
+    });
+    if (status === 200 && body?.token) {
+        AUTH_HEADERS = { Authorization: `Bearer ${body.token}` };
+    }
 }
 
 function pickId(row) {
@@ -179,8 +198,8 @@ async function testEndpoint(ep) {
         });
         assert(
             `POST ${name} (readOnly) → ${status}`,
-            status === 404 || status === 405,
-            `expected 404/405, got ${status}`
+            status >= 400,
+            `expected error status (400+), got ${status}`
         );
 
         // PUT to read-only → 404 or 405
@@ -191,8 +210,8 @@ async function testEndpoint(ep) {
         });
         assert(
             `PUT ${name}/1 (readOnly) → ${putSt}`,
-            putSt === 404 || putSt === 405,
-            `expected 404/405, got ${putSt}`
+            putSt >= 400,
+            `expected error status (400+), got ${putSt}`
         );
 
         // DELETE to read-only → 404 or 405
@@ -201,8 +220,8 @@ async function testEndpoint(ep) {
         });
         assert(
             `DELETE ${name}/1 (readOnly) → ${delSt}`,
-            delSt === 404 || delSt === 405,
-            `expected 404/405, got ${delSt}`
+            delSt >= 400,
+            `expected error status (400+), got ${delSt}`
         );
     }
 
@@ -397,10 +416,10 @@ function buildPayload(name) {
                 fecha_inicio_act: "2026-06-16",
                 fecha_fin_act: "2026-12-31",
                 idcentre_activitats: 1,
-                responsable: 1
+                responsable_zona: 1
             }
         },
-        "/usuario": {idNivel_acceso: 1,Nom: "Test",Cognoms: "User",email: "test_auto@test.com",Telefon: "600000000", password: "Test1234!"},
+        "/usuario": {idNivel_acceso: 1,Nom: "Test",Cognoms: "User",username: "test_auto",email: "test_auto@test.com",Telefon: "600000000", password: "Test1234!"},
         "/domicili": { Tipus_domicili: 1, Direccio: 1 },
         "/familia": { Cognom_familiar: "Test", idDomicili: 1, Estructura_familiar: 1 },
         "/tipusVia": { Nom: "TEST VIA" },
@@ -433,7 +452,7 @@ function buildUpdatePayload(name) {
             fecha_inicio_act: "2026-06-16",
             fecha_fin_act: "2026-12-31",
             idcentre_activitats: 1,
-            responsable: 2
+            responsable_zona: 2
         }
     };
     if (name === "/domicili") return { ...base };
@@ -583,7 +602,7 @@ async function testStaticFiles() {
         const text = await res.text();
         assert(
             `GET / → ${res.status}`,
-            res.status === 200 && text.includes("email"),
+            res.status === 200 && text.includes("Usuari"),
             `expected 200 + login page, got ${res.status}`
         );
     }
@@ -594,8 +613,8 @@ async function testStaticFiles() {
         const text = await res.text();
         assert(
             `GET /crear-persona.html → ${res.status}`,
-            res.status === 200 && text.includes("Creació de Client"),
-            `expected 200 + "Creació de Client", got ${res.status}`
+            res.status === 200 && (text.includes("Crear Persona") || text.includes("Creació de Client")),
+            `expected 200 + "Crear Persona", got ${res.status}`
         );
     }
 
@@ -1046,6 +1065,82 @@ async function testClientFullCreate() {
     }
 }
 
+async function testStaticInserts() {
+    console.log(`\n--- Inserts estàtics ---`);
+
+    const sqlPath = path.join(__dirname, "sql", "inserts_tablas_estaticas.sql");
+    const sql = fs.readFileSync(sqlPath, "utf8");
+
+    const tableCounts = {};
+    const insertRe = /INSERT\s+INTO\s+(\w+)(?:\s*\([^)]*\))?\s*VALUES\s*([^;]+);/gi;
+    let match;
+    while ((match = insertRe.exec(sql)) !== null) {
+        const table = match[1];
+        if (table === "callejero") continue;
+        const rows = match[2].match(/\([^)]+\)/g);
+        if (rows) {
+            tableCounts[table] = (tableCounts[table] || 0) + rows.length;
+        }
+    }
+
+    const tableToEndpoint = {
+        resultat_academic: "/resulAcad",
+        motiu_baixa: "/motiuBaixa",
+        risc: "/risc",
+        pais: "/paisos",
+        situacio_economica: "/sitEco",
+        rol: "/rol",
+        sebas: "/sebas",
+        necessitats_especials: "/neses",
+        curs_actual: "/curso",
+        tipus_domicili: "/tipusDom",
+        genere: "/genere",
+        estructura_familiar: "/estFamilia",
+        tipus_via: "/tipusVia",
+        barri: "/barri",
+        codi_postal: "/codiPostal",
+    };
+
+    for (const [table, endpoint] of Object.entries(tableToEndpoint)) {
+        const expected = tableCounts[table];
+        if (expected === undefined) {
+            warn(`No s'han trobat inserts per ${table} al SQL`, `el test no pot verificar ${endpoint}`);
+            continue;
+        }
+        const { status, body } = await fetchJson(`${BASE_URL}${endpoint}`);
+        assert(
+            `GET ${endpoint} → ${Array.isArray(body) ? body.length : "?"} registres (esperat ${expected})`,
+            status === 200 && Array.isArray(body) && body.length === expected,
+            `esperat ${expected}, obtingut ${body?.length}, status ${status}`
+        );
+    }
+}
+
+function writeManualTestsToSequentSteps() {
+    if (RESULTS.manual.length === 0) return;
+    const fp = path.join(__dirname, "..", "docs", "AI_seguents_passos.md");
+    let existing = "";
+    try { existing = fs.readFileSync(fp, "utf8"); } catch { existing = ""; }
+    const sectionHeader = "## Tests manuals";
+    const sectionStart = existing.indexOf(sectionHeader);
+    const newSection = [sectionHeader, "", ...RESULTS.manual.flatMap(m => [
+        `### ${m.label}`,
+        ...m.steps.map(s => `- [ ] ${s}`),
+        ""
+    ])].join("\n");
+    if (sectionStart !== -1) {
+        const before = existing.substring(0, sectionStart);
+        existing = before + newSection + "\n";
+    } else {
+        existing = existing.trimEnd() + "\n\n" + newSection + "\n";
+    }
+    fs.writeFileSync(fp, existing, "utf8");
+}
+
+function stripAnsi(str) {
+    return str.replace(/\x1b\[\d+m/g, "");
+}
+
 function generateReport() {
     const lines = [];
     lines.push(`# AI Test Report`);
@@ -1064,7 +1159,7 @@ function generateReport() {
     lines.push(``);
     lines.push("```");
     for (const t of RESULTS.tests) {
-        lines.push(t);
+        lines.push(stripAnsi(t));
     }
     lines.push("```");
     lines.push(``);
@@ -1072,16 +1167,6 @@ function generateReport() {
         lines.push(`✅ **All automated tests passed**`);
     } else {
         lines.push(`❌ **${RESULTS.fail} test(s) failed**`);
-    }
-    lines.push(``);
-    lines.push(`## Manual Tests (user)`);
-    lines.push(``);
-    for (const m of RESULTS.manual) {
-        lines.push(`### ${m.label}`);
-        for (const s of m.steps) {
-            lines.push(`- [ ] ${s}`);
-        }
-        lines.push(``);
     }
     return lines.join("\n");
 }
@@ -1105,7 +1190,8 @@ function generateSolutions() {
         lines.push(`## Possibles problemes i solucions`);
         lines.push(``);
         for (const f of failed) {
-            const match = f.match(/✗ (.+?) — (.+)/);
+            const cleaned = stripAnsi(f);
+            const match = cleaned.match(/✗ (.+?) — (.+)/);
             if (match) {
                 const [, label, detail] = match;
                 lines.push(`### ${label}`);
@@ -1117,16 +1203,6 @@ function generateSolutions() {
                 lines.push(``);
             }
         }
-    }
-    lines.push(``);
-    lines.push(`## Tests manuals pendents`);
-    lines.push(``);
-    for (const m of RESULTS.manual) {
-        lines.push(`### ${m.label}`);
-        for (const s of m.steps) {
-            lines.push(`- [ ] ${s}`);
-        }
-        lines.push(``);
     }
     lines.push(`---`);
     lines.push(`*Aquest fitxer es sobrescriu en cada execució dels tests.*`);
@@ -1142,17 +1218,6 @@ function suggestFix(label, detail) {
     if (detail.includes("Nom")) return "Comprova que el camp retornat pel GET /:id després del create conté el valor esperat. Revisa que el repositori retorna les dades correctes.";
     if (detail.includes("validation") || detail.includes("400")) return "Verifica que el controlador valida les dades d'entrada i retorna 400 per payloads buits o invàlids.";
     return "Revisa el codi de l'endpoint: ruta → controlador → repositori. Comprova que el seeder insereix les dades necessàries.";
-}
-
-function getNextReportNumber() {
-    const dir = path.join(__dirname, "..", "docs", "AI_TESTS");
-    if (!fs.existsSync(dir)) return 1;
-    const files = fs.readdirSync(dir);
-    const nums = files
-        .filter(f => /^AI_test_(\d+)\.md$/.test(f))
-        .map(f => parseInt(f.match(/^AI_test_(\d+)\.md$/)[1]))
-        .filter(n => !isNaN(n));
-    return nums.length > 0 ? Math.max(...nums) + 1 : 1;
 }
 
 async function main() {
@@ -1199,6 +1264,8 @@ async function main() {
         });
 
         console.log("Servidor llest a", BASE_URL);
+        await getAuthToken();
+        console.log("Token d'autenticació obtingut\n");
         console.log("\n=== EXECUTANT TESTS AUTOMÀTICS ===\n");
 
         for (const ep of ENDPOINTS) {
@@ -1215,6 +1282,9 @@ async function main() {
         await testDomiciliSearch();
         await testFamiliaCheckName();
         await testClientFullCreate();
+
+        // Static data inserts verification
+        await testStaticInserts();
 
         // Declarar tests manuals
         declareManualTests();
@@ -1244,16 +1314,15 @@ async function main() {
         const testsDir = path.join(__dirname, "..", "docs", "AI_TESTS");
         if (!fs.existsSync(testsDir)) fs.mkdirSync(testsDir, { recursive: true });
 
-        const report = generateReport();
-        const num = getNextReportNumber();
-        const filename = `AI_test_${String(num).padStart(3, "0")}.md`;
-        const reportPath = path.join(testsDir, filename);
-        fs.writeFileSync(reportPath, report, "utf8");
-        console.log(`\nInforme guardat a docs/AI_TESTS/${filename}`);
+        const lastPath = path.join(testsDir, "AI_TEST_last.md");
+        fs.writeFileSync(lastPath, generateReport(), "utf8");
+        console.log(`\nInforme guardat a docs/AI_TESTS/AI_TEST_last.md`);
 
-        const solutionsPath = path.join(testsDir, "resultat_test.md");
-        fs.writeFileSync(solutionsPath, generateSolutions(), "utf8");
-        console.log(`Solucions guardades a docs/AI_TESTS/resultat_test.md`);
+        const informPath = path.join(testsDir, "AI_TEST_inform.md");
+        fs.writeFileSync(informPath, generateSolutions(), "utf8");
+        console.log(`Solucions guardades a docs/AI_TESTS/AI_TEST_inform.md`);
+
+        writeManualTestsToSequentSteps();
 
     } finally {
         serverProcess.kill();

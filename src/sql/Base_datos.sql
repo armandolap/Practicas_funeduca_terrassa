@@ -11,7 +11,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema crm_funeduca
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `crm_funeduca` DEFAULT CHARACTER SET utf8mb3 ;
+CREATE SCHEMA IF NOT EXISTS `crm_funeduca` DEFAULT CHARACTER SET utf8mb4 ;
 USE `crm_funeduca` ;
 
 -- -----------------------------------------------------
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`barri` (
   PRIMARY KEY (`idBarri`),
   UNIQUE INDEX `Nom_UNIQUE` (`Nom` ASC) VISIBLE)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`codi_postal` (
   PRIMARY KEY (`idCodi_postal`),
   UNIQUE INDEX `Codi_UNIQUE` (`Codi` ASC) VISIBLE)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`tipus_via` (
   PRIMARY KEY (`idTipus_via`),
   UNIQUE INDEX `Nom_UNIQUE` (`Nom` ASC) VISIBLE)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`callejero` (
     FOREIGN KEY (`idTipus_via`)
     REFERENCES `crm_funeduca`.`tipus_via` (`idTipus_via`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`direccio` (
     FOREIGN KEY (`idcallejero`)
     REFERENCES `crm_funeduca`.`callejero` (`idcallejero`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -107,7 +107,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`centre_activitats` (
     FOREIGN KEY (`direccio_idDireccio`)
     REFERENCES `crm_funeduca`.`direccio` (`idDireccio`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`tipus_domicili` (
   `Nom_domicili` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idTipus_domicili`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`domicili` (
     FOREIGN KEY (`Tipus_domicili`)
     REFERENCES `crm_funeduca`.`tipus_domicili` (`idTipus_domicili`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`genere` (
   `Nom_genere` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idGenere`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`curs_actual` (
   `Nom` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idCurs_actual`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`estructura_familiar` (
   `Nom_est_fam` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idEstructura_familiar`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`familia` (
     FOREIGN KEY (`Estructura_familiar`)
     REFERENCES `crm_funeduca`.`estructura_familiar` (`idEstructura_familiar`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -199,7 +199,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`motiu_baixa` (
   `Nom_motiu_baixa` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idMotiu_baixa`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -210,7 +210,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`pais` (
   `Nom_pais` VARCHAR(120) NOT NULL,
   PRIMARY KEY (`idPais`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -221,7 +221,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`resultat_academic` (
   `Nom_resultat_acad` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idResultat_academic`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -232,7 +232,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`risc` (
   `Nivel` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idRisc`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -243,7 +243,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`rol` (
   `Nom_rol` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idRol`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -254,7 +254,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`sebas` (
   `Nom` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idSebas`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -265,7 +265,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`situacio_economica` (
   `Nom` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idSituacio_economica`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -345,7 +345,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`client` (
     FOREIGN KEY (`idNecessitat_especial`)
     REFERENCES `crm_funeduca`.`necessitats_especials` (`idNecessitat_especial`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -364,7 +364,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`nacionalitat` (
     FOREIGN KEY (`idClient`)
     REFERENCES `crm_funeduca`.`client` (`idClient`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -375,7 +375,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`necessitats_especials` (
   `Nom_necessitat` VARCHAR(45) NOT NULL,
   PRIMARY KEY (`idNecessitat_especial`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -394,7 +394,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`necessitats_especials_has_client` (
     FOREIGN KEY (`idClient`)
     REFERENCES `crm_funeduca`.`client` (`idClient`))
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -417,7 +417,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`proyectos` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -435,10 +435,10 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `crm_funeduca`.`usuario_app` (
   `idUsuario_APP` INT NOT NULL AUTO_INCREMENT,
-  `idNivel_acceso` INT NOT NULL UNIQUE,
+  `idNivel_acceso` INT NOT NULL,
   `Nom` VARCHAR(45) NOT NULL,
   `Cognoms` VARCHAR(45) NOT NULL,
-  `username` VARCHAR(45) NOT NULL,
+  `username` VARCHAR(45) NOT NULL UNIQUE,
   `email` VARCHAR(45) NULL DEFAULT NULL,
   `Telefon` VARCHAR(45) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
@@ -451,7 +451,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`usuario_app` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -474,7 +474,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`proyectos_has_client` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 -- -----------------------------------------------------
@@ -498,7 +498,7 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`Responsables` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb3;
+DEFAULT CHARACTER SET = utf8mb4;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;

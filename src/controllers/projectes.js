@@ -43,8 +43,20 @@ async function createProject(req, res) {
 
         if (!Nom_projecte?.trim()) return res.status(400).json({ message: "El nom del projecte és obligatori." });
         if (!idcentre_activitats) return res.status(400).json({ message: "idcentre_activitats és obligatori." });
+        if (Nom_projecte && Nom_projecte.length > 100) return res.status(400).json({ message: "El nom del projecte no pot superar 100 caràcters." });
+        if (plazas !== undefined && plazas !== null) {
+            if (typeof plazas !== "number" || !Number.isFinite(plazas) || plazas < 0) {
+                return res.status(400).json({ message: "El nombre de places ha de ser un número positiu o zero." });
+            }
+        }
 
-        const newId = await repo.create({ Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
+        const nomProj = Nom_projecte.trim();
+
+        if (fecha_inicio_act && fecha_fin_act && fecha_fin_act < fecha_inicio_act) {
+            return res.status(400).json({ message: "La data de finalització no pot ser anterior a la data d'inici." });
+        }
+
+        const newId = await repo.create({ Nom_projecte: nomProj, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
         await repo.syncResponsables(newId, responsable_zona, responsables_projecte, treballadors);
 
         res.status(201).json({ message: "Projecte creat correctament", id: newId });
@@ -77,8 +89,17 @@ async function updateProject(req, res) {
 
         if (!Nom_projecte?.trim()) return res.status(400).json({ message: "El nom del projecte és obligatori." });
         if (!idcentre_activitats) return res.status(400).json({ message: "idcentre_activitats és obligatori." });
+        if (Nom_projecte && Nom_projecte.length > 100) return res.status(400).json({ message: "El nom del projecte no pot superar 100 caràcters." });
+        if (plazas !== undefined && plazas !== null) {
+            if (typeof plazas !== "number" || !Number.isFinite(plazas) || plazas < 0) {
+                return res.status(400).json({ message: "El nombre de places ha de ser un número positiu o zero." });
+            }
+        }
+        if (fecha_inicio_act && fecha_fin_act && fecha_fin_act < fecha_inicio_act) {
+            return res.status(400).json({ message: "La data de finalització no pot ser anterior a la data d'inici." });
+        }
 
-        await repo.update(req.params.id, { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
+        await repo.update(req.params.id, { Nom_projecte: Nom_projecte.trim(), Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
 
         if (userRole === 3) {
             await repo.addResponsables(req.params.id, responsables_projecte_add, treballadors_add);
@@ -107,6 +128,13 @@ async function deleteProject(req, res) {
 async function addClients(req, res) {
     try {
         const { clientIds } = req.body;
+        if (!clientIds || !Array.isArray(clientIds) || clientIds.length === 0) {
+            return res.status(400).json({ message: "clientIds és obligatori i ha de ser un array no buit." });
+        }
+        const invalidIds = await repo.validateClientIds(clientIds);
+        if (invalidIds.length > 0) {
+            return res.status(400).json({ message: `Els següents IDs de client no existeixen: ${invalidIds.join(", ")}` });
+        }
         const affected = await repo.addClients(req.params.id, clientIds);
         res.json({ message: `${affected} clients afegits` });
     } catch (error) {

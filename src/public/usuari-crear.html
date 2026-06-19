@@ -60,25 +60,12 @@ async function init() {
         const res = await fetch('/desplegables/nivells-acces', {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
+        if (!res.ok) throw new Error('Error carregant nivells');
         const levels = await res.json();
         const sel = document.getElementById('nivellAcces');
-        sel.innerHTML = '<option value="">-- Selecciona --</option>' + levels.map(l => `<option value="${l.idNivel_acceso}">${l.Nom}</option>`).join('');
+        sel.innerHTML = '<option value="">-- Selecciona --</option>' + levels.map(l => `<option value="${l.id}">${l.Nom}</option>`).join('');
     } catch (e) {
-        // Fallback: fetch Nivel_acceso directly
-        try {
-            const res = await fetch('/desplegables', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-            // Try to get from the generic endpoint or just hardcode
-            const fallbackRes = await fetch('/paisos', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
-            const sel = document.getElementById('nivellAcces');
-            sel.innerHTML = '<option value="">-- Selecciona --</option><option value="1">Total</option><option value="2">Responsable de zona</option><option value="3">Viewer</option><option value="4">Treballador</option>';
-        } catch (e2) {
-            const sel = document.getElementById('nivellAcces');
-            sel.innerHTML = '<option value="">-- Selecciona --</option><option value="1">Total</option><option value="2">Responsable de zona</option><option value="3">Viewer</option><option value="4">Treballador</option>';
-        }
+        console.error('No s\'han pogut carregar els nivells d\'accés:', e);
     }
 }
 

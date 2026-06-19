@@ -4,27 +4,58 @@ const pool = createPool();
 async function projectesGeneresEdats() {
     const [rows] = await pool.query(`
         SELECT p.idProyecto, p.Nom_projecte,
-               g.Nom_genere,
-               CASE
-                   WHEN cl.C_edad BETWEEN 0 AND 3 THEN '0-3'
-                   WHEN cl.C_edad BETWEEN 4 AND 6 THEN '4-6'
-                   WHEN cl.C_edad BETWEEN 7 AND 9 THEN '7-9'
-                   WHEN cl.C_edad BETWEEN 10 AND 12 THEN '10-12'
-                   WHEN cl.C_edad BETWEEN 13 AND 15 THEN '13-15'
-                   WHEN cl.C_edad BETWEEN 16 AND 18 THEN '16-18'
-                   WHEN cl.C_edad BETWEEN 19 AND 30 THEN '19-30'
-                   WHEN cl.C_edad BETWEEN 31 AND 65 THEN '31-65'
-                   ELSE '+65'
-               END AS segment_edat,
-               COUNT(*) AS total
+               g.Nom_genere, cl.C_edad,
+               cl.Baixa, cl.idClient
         FROM proyectos p
         JOIN proyectos_has_client phc ON p.idProyecto = phc.idProyecto
         JOIN client cl ON phc.idClient = cl.idClient
         JOIN genere g ON cl.idGenere = g.idGenere
-        GROUP BY p.idProyecto, p.Nom_projecte, g.Nom_genere, segment_edat
-        ORDER BY p.Nom_projecte, g.Nom_genere, segment_edat
+        ORDER BY p.Nom_projecte, cl.C_edad
     `);
-    return rows;
+
+    const ageSegment = (edad) => {
+        if (edad >= 0 && edad <= 3) return '0-3 ANYS';
+        if (edad >= 4 && edad <= 6) return '4-6 ANYS';
+        if (edad >= 7 && edad <= 9) return '7-9 ANYS';
+        if (edad >= 10 && edad <= 12) return '10-12 ANYS';
+        if (edad >= 13 && edad <= 15) return '13-15 ANYS';
+        if (edad >= 16 && edad <= 18) return '16-18 ANYS';
+        if (edad >= 19 && edad <= 30) return '18-30 ANYS';
+        if (edad >= 31) return '30-65 ANYS';
+        return 'altres';
+    };
+
+    const genderMap = { 'Masculí': 'HOMES', 'Femeni': 'DONES', 'Femení': 'DONES', 'Non binari': 'NO BINARIS' };
+    const segments = ['0-3 ANYS', '4-6 ANYS', '7-9 ANYS', '10-12 ANYS', '13-15 ANYS', '16-18 ANYS', '18-30 ANYS', '30-65 ANYS'];
+    const genders = ['HOMES', 'DONES', 'NO BINARIS'];
+
+    const projectMap = new Map();
+
+    for (const r of rows) {
+        if (!projectMap.has(r.idProyecto)) {
+            projectMap.set(r.idProyecto, {
+                PROJECTE: r.Nom_projecte,
+                ...Object.fromEntries(genders.flatMap(g => segments.map(s => [`${g} ${s}`, 0]))),
+                ...Object.fromEntries(genders.map(g => [`TOTAL ${g}`, 0])),
+                'TOTAL PERSONES': 0,
+                'BAIXES': 0,
+            });
+        }
+        const proj = projectMap.get(r.idProyecto);
+        const gKey = genderMap[r.Nom_genere] || r.Nom_genere;
+        const seg = ageSegment(r.C_edad);
+        const col = `${gKey} ${seg}`;
+        if (col in proj) {
+            proj[col]++;
+            proj[`TOTAL ${gKey}`]++;
+            proj['TOTAL PERSONES']++;
+        }
+        if (r.Baixa === 1) {
+            proj['BAIXES']++;
+        }
+    }
+
+    return Array.from(projectMap.values());
 }
 
 async function genere() {
@@ -39,16 +70,22 @@ async function genere() {
 
 async function sitEco() {
     const [rows] = await pool.query(`
-        SELECT se.Nom AS situacio_economica,
-               r.Nom_rol AS rol,
-               COUNT(*) AS total
-        FROM client cl
-        JOIN situacio_economica se ON cl.idSituacio_economica = se.idSituacio_economica
-        JOIN rol r ON cl.idRol = r.idRol
-        GROUP BY se.Nom, r.Nom_rol
-        ORDER BY se.Nom, r.Nom_rol
+        SELECT se.idSituacio_economica, se.Nom AS situacio_economica,
+               SUM(CASE WHEN r.idRol = 3 THEN 1 ELSE 0 END) AS fills,
+               SUM(CASE WHEN r.idRol != 3 THEN 1 ELSE 0 END) AS resta,
+               COUNT(cl.idClient) AS total
+        FROM situacio_economica se
+        LEFT JOIN client cl ON cl.idSituacio_economica = se.idSituacio_economica
+        LEFT JOIN rol r ON cl.idRol = r.idRol
+        GROUP BY se.idSituacio_economica, se.Nom
+        ORDER BY se.idSituacio_economica
     `);
-    return rows;
+    return rows.map(r => ({
+        'SITUACIÓ ECONÒMICA': r.situacio_economica,
+        'FILLS/FILLES': Number(r.fills),
+        'ADULTS': Number(r.resta),
+        'TOTAL': Number(r.total)
+    }));
 }
 
 async function rolFam() {
@@ -73,50 +110,96 @@ async function tipHab() {
 }
 
 async function cont() {
-    const [usuaris] = await pool.query(`SELECT COUNT(DISTINCT idClient) AS total FROM client WHERE Baixa = 0`);
-    const [families] = await pool.query(`SELECT COUNT(*) AS total FROM familia`);
-    const [baixesTotal] = await pool.query(`SELECT COUNT(*) AS total FROM client WHERE Baixa = 1`);
-    const [baixesGenere] = await pool.query(`
-        SELECT g.Nom_genere, COUNT(*) AS total
-        FROM client cl
-        JOIN genere g ON cl.idGenere = g.idGenere
-        WHERE cl.Baixa = 1
-        GROUP BY g.Nom_genere
+    const [genderRows] = await pool.query(`
+        SELECT g.idGenere, COUNT(cl.idClient) AS total
+        FROM genere g
+        LEFT JOIN client cl ON cl.idGenere = g.idGenere
+        GROUP BY g.idGenere
+        ORDER BY g.idGenere
     `);
-    return {
-        usuaris_actius: usuaris[0].total,
-        families: families[0].total,
-        baixes: {
-            total: baixesTotal[0].total,
-            per_genere: baixesGenere
-        }
+    const [baixesRows] = await pool.query(`
+        SELECT g.idGenere, COUNT(cl.idClient) AS total
+        FROM genere g
+        LEFT JOIN client cl ON cl.idGenere = g.idGenere AND cl.Baixa = 1
+        GROUP BY g.idGenere
+        ORDER BY g.idGenere
+    `);
+    const [[famTotal]] = await pool.query(`SELECT COUNT(*) AS total FROM familia`);
+
+    const toCounts = (rows) => {
+        const home = Number(rows.find(r => r.idGenere === 1)?.total || 0);
+        const dona = Number(rows.find(r => r.idGenere === 2)?.total || 0);
+        const nb   = Number(rows.find(r => r.idGenere === 3)?.total || 0);
+        return { home, dona, nb, total: home + dona + nb };
     };
+
+    const u = toCounts(genderRows);
+    const b = toCounts(baixesRows);
+
+    return [
+        { 'Tipus': 'Usuaris únics',  'Home': u.home, 'Dona': u.dona, 'NB': u.nb, 'Total': u.total },
+        { 'Tipus': 'Families úniques','Home': 0,      'Dona': 0,      'NB': 0,   'Total': Number(famTotal.total) },
+        { 'Tipus': 'Baixes',          'Home': b.home, 'Dona': b.dona, 'NB': b.nb, 'Total': b.total },
+    ];
 }
 
 async function neses() {
     const [rows] = await pool.query(`
-        SELECT ne.Nom_necessitat, g.Nom_genere, COUNT(*) AS total
-        FROM client cl
-        JOIN necessitats_especials ne ON cl.idNecessitat_especial = ne.idNecessitat_especial
-        JOIN genere g ON cl.idGenere = g.idGenere
-        WHERE cl.idNecessitat_especial IS NOT NULL AND cl.idNecessitat_especial != 3
-        GROUP BY ne.Nom_necessitat, g.Nom_genere
-        ORDER BY ne.Nom_necessitat, g.Nom_genere
+        SELECT ne.idNecessitat_especial, ne.Nom_necessitat,
+               SUM(CASE WHEN g.Nom_genere = 'Masculí' THEN 1 ELSE 0 END) AS homes,
+               SUM(CASE WHEN g.Nom_genere = 'Femení' THEN 1 ELSE 0 END) AS dones,
+               SUM(CASE WHEN g.Nom_genere = 'Non binari' THEN 1 ELSE 0 END) AS nb,
+               COUNT(cl.idClient) AS total
+        FROM necessitats_especials ne
+        LEFT JOIN client cl ON cl.idNecessitat_especial = ne.idNecessitat_especial
+        LEFT JOIN genere g ON cl.idGenere = g.idGenere
+        GROUP BY ne.idNecessitat_especial, ne.Nom_necessitat
+        ORDER BY ne.idNecessitat_especial
     `);
-    return rows;
+
+    const result = rows.map(r => ({
+        'NESE': r.Nom_necessitat,
+        'Total': Number(r.total),
+        'Dones': Number(r.dones),
+        'Homes': Number(r.homes),
+        'NB': Number(r.nb),
+    }));
+
+    const totals = { 'NESE': 'TOTAL', 'Total': 0, 'Dones': 0, 'Homes': 0, 'NB': 0 };
+    for (const r of result) {
+        totals.Total += r.Total;
+        totals.Dones += r.Dones;
+        totals.Homes += r.Homes;
+        totals.NB += r.NB;
+    }
+    result.push(totals);
+    return result;
 }
 
 async function sebasDev() {
-    const [ambSeguiment] = await pool.query(`
-        SELECT COUNT(*) AS total FROM client WHERE idSebas != 12
+    const [rows] = await pool.query(`
+        SELECT s.idSebas, s.Nom,
+               COUNT(cl.idClient) AS ambSeguiment,
+               SUM(CASE WHEN cl.derivacio_serveis_socials = 1 THEN 1 ELSE 0 END) AS derivacions
+        FROM sebas s
+        LEFT JOIN client cl ON cl.idSebas = s.idSebas
+        GROUP BY s.idSebas, s.Nom
+        ORDER BY s.idSebas
     `);
-    const [derivacions] = await pool.query(`
-        SELECT COUNT(*) AS total FROM client WHERE derivacio_serveis_socials = 1
-    `);
-    return {
-        amb_seguiment: ambSeguiment[0].total,
-        derivacions: derivacions[0].total
-    };
+
+    const result = rows.map(r => ({
+        'SEBAS': r.Nom,
+        'Total amb seguiment': Number(r.ambSeguiment),
+        'Total derivacions': Number(r.derivacions),
+    }));
+
+    const totals = { 'SEBAS': 'TOTAL', 'Total amb seguiment': 0, 'Total derivacions': 0 };
+    for (const r of result) {
+        totals['Total amb seguiment'] += r['Total amb seguiment'];
+        totals['Total derivacions'] += r['Total derivacions'];
+    }
+    result.push(totals);
+    return result;
 }
 
 async function cursAny(any) {
@@ -143,6 +226,55 @@ async function cursAny(any) {
         percent_sense_placa: r.totals > 0 ? Math.round((r.sense_placa / r.totals) * 100) : 0,
         percent_mon_laboral: r.totals > 0 ? Math.round((r.mon_laboral / r.totals) * 100) : 0,
     }));
+}
+
+async function cursAcademic() {
+    const [rows] = await pool.query(`
+        SELECT ca.idCurs_actual, ca.Nom AS curs,
+               COUNT(cl.idClient) AS totals,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%promociona%' THEN 1 ELSE 0 END) AS promociona,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%repeteix%' THEN 1 ELSE 0 END) AS repeteix,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%abandona%' THEN 1 ELSE 0 END) AS abandona,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%plaça%' THEN 1 ELSE 0 END) AS sense_placa,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%laboral%' THEN 1 ELSE 0 END) AS mon_laboral
+        FROM curs_actual ca
+        LEFT JOIN client cl ON cl.Curs_actual = ca.idCurs_actual
+        LEFT JOIN resultat_academic ra ON cl.Resultat_academic = ra.idResultat_academic
+        GROUP BY ca.idCurs_actual, ca.Nom
+        ORDER BY ca.idCurs_actual
+    `);
+    const pct = (part, total) => total > 0 ? String(Math.round((part / total) * 100)) + '%' : '0%';
+    const result = rows.map(r => ({
+        'CURS ACTUAL': r.curs,
+        'TOTALS ANY ACTUAL': Number(r.totals),
+        'PROMOCIONA': Number(r.promociona),
+        'PERCENTATGE PROMOCIONA': pct(r.promociona, r.totals),
+        'REPETEIX': Number(r.repeteix),
+        'PERCENTATGE REPETEIX': pct(r.repeteix, r.totals),
+        'ABANDONA ESTUDIS': Number(r.abandona),
+        'PERCENTATGE ABANDONA': pct(r.abandona, r.totals),
+        'NO OPTÉ PLAÇA': Number(r.sense_placa),
+        'PERCENTATGE SENSE PLAÇA': pct(r.sense_placa, r.totals),
+        'ACCEDEIX MÓN LABORAL': Number(r.mon_laboral),
+        'PERCENTATGE ACCÉS MÓN LABORAL': pct(r.mon_laboral, r.totals),
+    }));
+    const tot = { 'CURS ACTUAL': 'TOTAL', 'TOTALS ANY ACTUAL': 0, 'PROMOCIONA': 0, 'PERCENTATGE PROMOCIONA': '0%', 'REPETEIX': 0, 'PERCENTATGE REPETEIX': '0%', 'ABANDONA ESTUDIS': 0, 'PERCENTATGE ABANDONA': '0%', 'NO OPTÉ PLAÇA': 0, 'PERCENTATGE SENSE PLAÇA': '0%', 'ACCEDEIX MÓN LABORAL': 0, 'PERCENTATGE ACCÉS MÓN LABORAL': '0%' };
+    for (const r of result) {
+        tot['TOTALS ANY ACTUAL'] += r['TOTALS ANY ACTUAL'];
+        tot['PROMOCIONA'] += r['PROMOCIONA'];
+        tot['REPETEIX'] += r['REPETEIX'];
+        tot['ABANDONA ESTUDIS'] += r['ABANDONA ESTUDIS'];
+        tot['NO OPTÉ PLAÇA'] += r['NO OPTÉ PLAÇA'];
+        tot['ACCEDEIX MÓN LABORAL'] += r['ACCEDEIX MÓN LABORAL'];
+    }
+    const t = tot['TOTALS ANY ACTUAL'];
+    tot['PERCENTATGE PROMOCIONA'] = pct(tot['PROMOCIONA'], t);
+    tot['PERCENTATGE REPETEIX'] = pct(tot['REPETEIX'], t);
+    tot['PERCENTATGE ABANDONA'] = pct(tot['ABANDONA ESTUDIS'], t);
+    tot['PERCENTATGE SENSE PLAÇA'] = pct(tot['NO OPTÉ PLAÇA'], t);
+    tot['PERCENTATGE ACCÉS MÓN LABORAL'] = pct(tot['ACCEDEIX MÓN LABORAL'], t);
+    result.push(tot);
+    return result;
 }
 
 async function resAcad() {
@@ -180,24 +312,17 @@ async function riscos() {
 }
 
 async function paisos() {
-    const [nacionalitat] = await pool.query(`
-        SELECT p.Nom_pais, COUNT(*) AS total
-        FROM nacionalitat n
-        JOIN pais p ON n.idPais = p.idPais
-        GROUP BY p.Nom_pais
-        ORDER BY total DESC
-    `);
-    const [naixement] = await pool.query(`
-        SELECT p.Nom_pais, COUNT(*) AS total
+    const [rows] = await pool.query(`
+        SELECT p.Nom_pais AS pais_naixement, COUNT(*) AS total
         FROM client cl
         JOIN pais p ON cl.Pais_naixement = p.idPais
         GROUP BY p.Nom_pais
         ORDER BY total DESC
     `);
-    return { nacionalitat, naixement };
+    return rows.map(r => ({ 'PAÍS DE NAIXEMENT': r.pais_naixement, 'TOTAL': Number(r.total) }));
 }
 
 module.exports = {
     projectesGeneresEdats, genere, sitEco, rolFam, tipHab, cont,
-    neses, sebasDev, cursAny, resAcad, motiusBaixa, riscos, paisos
+    neses, sebasDev, cursAny, cursAcademic, resAcad, motiusBaixa, riscos, paisos
 };

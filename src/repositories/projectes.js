@@ -164,6 +164,16 @@ async function remove(id) {
     return result.affectedRows;
 }
 
+async function validateClientIds(clientIds) {
+    if (!clientIds || clientIds.length === 0) return [];
+    const [rows] = await pool.query(
+        `SELECT idClient FROM client WHERE idClient IN (?)`,
+        [clientIds]
+    );
+    const existing = new Set(rows.map(r => r.idClient));
+    return clientIds.filter(id => !existing.has(id));
+}
+
 async function addClients(projectId, clientIds) {
     if (!clientIds || clientIds.length === 0) return 0;
     const values = clientIds.map(cid => [projectId, cid]);
@@ -182,4 +192,4 @@ async function removeClient(projectId, clientId) {
     return result.affectedRows;
 }
 
-module.exports = { getAll, getById, getResponsables, getUsuarisByNivell, getParticipants, create, update, syncResponsables, addResponsables, remove, addClients, removeClient };
+module.exports = { getAll, getById, getResponsables, getUsuarisByNivell, getParticipants, create, update, syncResponsables, addResponsables, remove, addClients, removeClient, validateClientIds };

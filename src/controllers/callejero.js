@@ -13,7 +13,10 @@ async function searchCallejero(req, res) {
 
 async function createCallejero(req, res) {
     try {
-        const id = await callejeroRepository.create(req.body);
+        const { idTipus_via, Nom_calle, idBarri, idCodi_postal } = req.body;
+        if (!Nom_calle?.trim()) return res.status(400).json({ message: "Nom del carrer obligatori" });
+        if (!idTipus_via) return res.status(400).json({ message: "Tipus de via obligatori" });
+        const id = await callejeroRepository.create({ idTipus_via, Nom_calle, idBarri, idCodi_postal });
         res.status(201).json({ id });
     } catch (error) {
         console.error(error);

@@ -77,7 +77,7 @@ function calcEdad(fecha) {
 // ============ LOAD DROPDOWNS ============
 async function loadSelect(url, select, valueKey, labelKey) {
   try {
-    const res = await fetch(url);
+    const res = await authFetch(url);
     if (!res.ok) return;
     const items = await res.json();
     for (const item of items) {
@@ -161,7 +161,7 @@ cognoms.addEventListener("blur", async () => {
   familiaName.value = c;
   // Auto-suggest: search and select if exact match
   try {
-    const res = await fetch(`/familia/search?q=${encodeURIComponent(c)}`);
+    const res = await authFetch(`/familia/search?q=${encodeURIComponent(c)}`);
     if (res.ok) {
       const items = await res.json();
       const exact = items.find(item =>
@@ -219,7 +219,7 @@ function triggerFamilySearch(q) {
 
 async function searchFamilies(q) {
   try {
-    const res = await fetch(`/familia/search?q=${encodeURIComponent(q)}`);
+    const res = await authFetch(`/familia/search?q=${encodeURIComponent(q)}`);
     if (!res.ok) return;
     const items = await res.json();
     showFamilyDropdown(items);
@@ -282,7 +282,7 @@ document.addEventListener("click", (e) => {
 // ============ FAMILY DOMICILES ============
 async function loadFamilyDomiciles(idFamilia) {
   try {
-    const res = await fetch(`/domicili/byFamily/${idFamilia}`);
+    const res = await authFetch(`/domicili/byFamily/${idFamilia}`);
     if (!res.ok) return;
     familyDomiciles = await res.json();
     familyDomicilis.innerHTML = '<option value="">Domicilis de la família</option>';
@@ -344,7 +344,7 @@ function triggerDomiciliSearch() {
 
 async function fetchDomicili(url) {
   try {
-    const res = await fetch(url);
+    const res = await authFetch(url);
     if (!res.ok) return;
     domiciliResults = await res.json();
     showDomiciliDropdown(domiciliResults);
@@ -605,26 +605,29 @@ async function submitForm() {
   };
 
   btnCrear.disabled = true;
-  btnCrear.textContent = "Creant...";
+  btnCrear.textContent = isEditMode ? "Actualitzant..." : "Creant...";
 
   try {
-    const res = await fetch("/client/full", {
-      method: "POST",
+    const url = isEditMode ? `/client/${editPersonId}/full` : "/client/full";
+    const method = isEditMode ? "PUT" : "POST";
+    const res = await authFetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
     const data = await res.json();
     if (res.ok) {
-      showToast(`Client creat correctament (ID: ${data.id})`, "success");
-      resetForm();
+      showToast(isEditMode ? "Persona actualitzada correctament" : `Persona creada correctament (ID: ${data.id})`, "success");
+      if (!isEditMode) resetForm();
+      else setTimeout(() => window.location.href = `/client.html?id=${editPersonId}`, 1000);
     } else {
-      showToast(data.message || "Error creant client", "error");
+      showToast(data.message || (isEditMode ? "Error actualitzant" : "Error creant"), "error");
     }
   } catch {
     showToast("Error de connexió", "error");
   } finally {
     btnCrear.disabled = false;
-    btnCrear.textContent = "CREAR";
+    btnCrear.textContent = isEditMode ? "ACTUALITZAR" : "CREAR";
   }
 }
 
@@ -679,5 +682,84 @@ function clearDomicile() {
   previewBar.textContent = "";
 }
 
+// ============ EDIT MODE ============
+let isEditMode = !!editPersonId;
+
+async function loadEditData(id) {
+    try {
+        const res = await fetch(`/client/${id}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const c = await res.json();
+        if (!c || !c.idClient) { showToast('Persona no trobada', 'error'); return; }
+
+        nom.value = c.Nom || '';
+        cognoms.value = c.Cognoms || '';
+        telefon.value = c.Telefon || '';
+        correu.value = c.Correu_electronic || '';
+        fechaNaixement.value = c.Fecha_nacimiento ? c.Fecha_nacimiento.split('T')[0] : '';
+        edad.value = c.C_edad || 0;
+        if (c.idGenere) genere.value = c.idGenere;
+        if (c.idRol) rol.value = c.idRol;
+        if (c.idSituacio_economica) situacioEconomica.value = c.idSituacio_economica;
+        if (c.Pais_naixement) paisNaixement.value = c.Pais_naixement;
+        if (c.idNecessitat_especial) neses.value = c.idNecessitat_especial;
+        if (c.Curs_actual) cursActual.value = c.Curs_actual;
+        if (c.Risc) risc.value = c.Risc;
+        if (c.Resultat_academic) resulAcad.value = c.Resultat_academic;
+        if (c.idSebas) sebas.value = c.idSebas;
+        derivacio.checked = c.derivacio_serveis_socials == 1;
+        dataAlta.value = c.Data_d_alta ? c.Data_d_alta.split('T')[0] : '';
+
+        // Family
+        if (c.idFamilia) {
+            selectedFamilyId = c.idFamilia;
+            selectedFamilyName.textContent = `${c.Cognom_familiar || ''} (ID: ${c.idFamilia})`;
+            selectedFamilyInfo.style.display = 'flex';
+            familiaName.value = c.Cognom_familiar || c.Cognoms || '';
+            if (c.estructura_familiar_nom) {
+                for (const opt of estructuraFamiliar.options) {
+                    if (opt.textContent === c.estructura_familiar_nom) {
+                        estructuraFamiliar.value = opt.value;
+                        break;
+                    }
+                }
+            }
+            estructuraFamiliar.disabled = true;
+            if (c.idFamilia) loadFamilyDomiciles(c.idFamilia);
+        } else if (c.Cognom_familiar) {
+            familiaName.value = c.Cognom_familiar;
+        }
+
+        // Domicile
+        if (c.idDomicili) {
+            selectedDomiciliId = c.idDomicili;
+            domiciliSearch.value = [c.tipus_via, c.Nom_calle, c.Num_calle].filter(Boolean).join(' ');
+            if (c.idTipus_via) tipusVia.value = c.idTipus_via;
+            if (c.idcallejero) selectedCallejeroId = c.idcallejero;
+            nomCalle.value = c.Nom_calle || '';
+            numCalle.value = c.Num_calle || '';
+            pis.value = c.Pis || '';
+            escala.value = c.Escala || '';
+            barriInput.value = c.barri || '';
+            codiPostalInput.value = c.codi_postal || '';
+            if (c.tipus_domicili_nom) {
+                for (const opt of tipusDomicili.options) {
+                    if (opt.textContent === c.tipus_domicili_nom) {
+                        tipusDomicili.value = opt.value;
+                        break;
+                    }
+                }
+            }
+            setDomicileEditState(true);
+        }
+    } catch (e) { console.error(e); showToast('Error carregant dades', 'error'); }
+}
+
 // ============ INIT ============
-initDropdowns();
+(async function init() {
+    await initDropdowns();
+    if (isEditMode) {
+        await loadEditData(editPersonId);
+    }
+})();

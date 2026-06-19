@@ -31,7 +31,7 @@
     <select id="familiaFilter" onchange="loadClients()"><option value="">Totes</option></select>
     <label>Barri</label>
     <select id="barriFilter" onchange="loadClients()"><option value="">Tots</option></select>
-    <button class="btn btn-success btn-sm" id="btnCrearClient" onclick="window.location.href='/crear-persona.html'" style="display:none">+ Nou client</button>
+    <button class="btn btn-success btn-sm" id="btnCrearClient" onclick="window.location.href='/crear-persona.html'" style="display:none">+ Nova persona</button>
   </div>
   <div class="table-wrap">
     <table>
@@ -100,7 +100,7 @@ async function loadClients() {
         const total = data.total || rows.length;
         const tbody = document.getElementById('clientList');
         if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha clients</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha persones</td></tr>';
             document.getElementById('pagination').innerHTML = '';
             return;
         }

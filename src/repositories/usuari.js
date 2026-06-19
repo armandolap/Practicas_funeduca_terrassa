@@ -25,9 +25,9 @@ async function getAll(filter = "tots", q = "") {
     }
 
     if (q && q.trim()) {
-        sql += ` AND (u.Nom LIKE ? OR u.Cognoms LIKE ? OR u.username LIKE ?)`;
+        sql += ` AND (u.Nom LIKE ? OR u.Cognoms LIKE ? OR u.username LIKE ? OR u.email LIKE ?)`;
         const like = `%${q.trim()}%`;
-        params.push(like, like, like);
+        params.push(like, like, like, like);
     }
 
     sql += ` ORDER BY num_projectes_actius DESC, u.Nom, u.Cognoms`;

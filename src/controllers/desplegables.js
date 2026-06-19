@@ -14,6 +14,7 @@ const tipusDomRepo = require("../repositories/tipus_domicili");
 const tipusViaRepo = require("../repositories/tipus_via");
 
 const genereRepo = require("../repositories/genere");
+const nivelAccesoRepo = require("../repositories/nivel_acceso");
 
 const MAP = {
   barri:              { repo: barriRepo,       idKey: "idBarri",             nomKey: "Nom" },
@@ -31,6 +32,7 @@ const MAP = {
   situacio_eco:       { repo: sitEcoRepo,       idKey: "idSituacio_economica", nomKey: "Nom" },
   tipus_domicili:     { repo: tipusDomRepo,     idKey: "idTipus_domicili",    nomKey: "Nom_domicili" },
   tipus_via:          { repo: tipusViaRepo,     idKey: "idTipus_via",         nomKey: "Nom" },
+  "nivells-acces":    { repo: nivelAccesoRepo,  idKey: "idNivel_acceso",      nomKey: "Nom" },
 };
 
 async function getDesplegable(req, res) {

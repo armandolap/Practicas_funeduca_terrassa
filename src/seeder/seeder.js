@@ -1,26 +1,15 @@
 const fs = require("fs");
 const path = require("path");
-const { createPool } = require("../config/database");
 
-const pool = createPool();
-
-async function runSQLFile(conn, filePath) {
-    const sql = fs.readFileSync(filePath, "utf8");
-    const statements = sql
-        .replace(/^use\s+`?\w+`?\s*;/gim, "")
-        .split(";")
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
-    for (const stmt of statements) {
-        try {
-            await conn.query(stmt);
-        } catch (err) {
-            if (err.errno !== 1061 && err.errno !== 1050 && err.errno !== 1060 && err.errno !== 1062) {
-                console.warn(`  SQL advertencia: ${err.message.slice(0, 80)}`);
-            }
-        }
-    }
+// Carregar .env si s'executa directament (node seeder/seeder.js)
+const dotenvPath = path.resolve(__dirname, "..", "..", ".env");
+if (require.main === module && fs.existsSync(dotenvPath)) {
+    require("dotenv").config({ path: dotenvPath });
 }
+
+const { createPool } = require("../config/database");
+const { runSQLFile } = require("../helpers/sqlRunner");
+const pool = createPool();
 
 async function insertTestData(conn) {
     await conn.query("SET FOREIGN_KEY_CHECKS = 0");

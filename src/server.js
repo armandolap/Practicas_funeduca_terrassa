@@ -12,9 +12,24 @@ require("dotenv").config({ path: dotenvPath });
 
 const express = require("express");
 const server = express();
+const { runSQLFile } = require("./helpers/sqlRunner");
 const PORT = process.env.PORT || 3000;
 
 server.use(express.json());
+
+server.use((req, res, next) => {
+    if (["POST", "PUT", "PATCH"].includes(req.method) && (req.body === undefined || req.body === null)) {
+        return res.status(400).json({ message: "El cos de la petició ha de ser JSON" });
+    }
+    next();
+});
+
+server.use((err, req, res, next) => {
+    if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+        return res.status(400).json({ message: "JSON malformat" });
+    }
+    next();
+});
 
 // Root → login page
 server.get("/", (req, res) => {
@@ -51,7 +66,6 @@ const reports = require("./routes/reports");
 const genere = require("./routes/genere");
 const nivelAcceso = require("./routes/nivel_acceso");
 
-server.use(express.json());
 server.use("/paisos", paisos);
 server.use("/estFamilia", estFamiliar);
 server.use("/motiuBaixa", motiuBaixa);
@@ -78,24 +92,23 @@ server.use("/centre-activitats", centreActivitats);
 server.use("/reports", reports);
 server.use("/genere", genere);
 server.use("/nivell-acces", nivelAcceso);
-server.use(express.static(path.join(__dirname, "public")));
 
-async function runSQLFile(connection, filePath) {
-    const sql = fs.readFileSync(filePath, "utf8");
-    const statements = sql
-        .replace(/^USE\s+`?\w+`?\s*;/gim, "")
-        .split(";")
-        .map(s => s.trim())
-        .filter(Boolean);
-    for (const stmt of statements) {
-        try {
-            await connection.query(stmt);
-        } catch (err) {
-            if (![1050, 1060, 1061, 1062].includes(err.errno)) {
-                console.warn(`SQL warning: ${err.message}`);
-            }
-        }
+async function ensureDatabase(bootstrap) {
+    const dbName = process.env.DB_NAME;
+    await bootstrap.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+    await bootstrap.query(`USE \`${dbName}\``);
+    const [rows] = await bootstrap.query(
+        `SELECT COUNT(*) AS cnt FROM information_schema.tables WHERE table_schema = ?`,
+        [dbName]
+    );
+    if (rows[0].cnt > 0) {
+        console.log(`BD "${dbName}" ja te taules — s'omet esquema i inserts`);
+        return;
     }
+    console.log("Ejecutando Base_datos.sql...");
+    await runSQLFile(bootstrap, path.join(__dirname, "sql", "Base_datos.sql"));
+    console.log("Ejecutando inserts_tablas_estaticas.sql...");
+    await runSQLFile(bootstrap, path.join(__dirname, "sql", "inserts_tablas_estaticas.sql"));
 }
 
 async function startServer() {
@@ -107,16 +120,7 @@ async function startServer() {
             password: process.env.DB_PASSWORD,
         });
         console.log("MySQL conectado");
-        await bootstrap.query(`DROP DATABASE IF EXISTS \`${process.env.DB_NAME}\``);
-        await bootstrap.query(`CREATE DATABASE \`${process.env.DB_NAME}\``);
-        await bootstrap.query(`USE \`${process.env.DB_NAME}\``);
-        console.log("Ejecutando Base_datos.sql...");
-        await runSQLFile(bootstrap, path.join(__dirname, "sql", "Base_datos.sql"));
-        console.log("Ejecutando inserts_tablas_estaticas.sql...");
-        await runSQLFile(bootstrap, path.join(__dirname, "sql", "inserts_tablas_estaticas.sql"));
-        console.log("Insertant dades de prova...");
-        const { insertTestData } = require("./seeder/seeder");
-        await insertTestData(bootstrap);
+        await ensureDatabase(bootstrap);
         await bootstrap.end();
         console.log("Base de datos preparada");
         const { createPool } = require("./config/database");

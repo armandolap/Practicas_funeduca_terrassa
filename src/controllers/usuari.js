@@ -36,6 +36,7 @@ async function createUsuario(req, res) {
         if (!Nom?.trim()) return res.status(400).json({ error: "Nom obligatori" });
         if (!Cognoms?.trim()) return res.status(400).json({ error: "Cognoms obligatoris" });
         if (!username?.trim()) return res.status(400).json({ error: "Nom d'usuari obligatori" });
+        if (username && username.length > 50) return res.status(400).json({ error: "Nom d'usuari no pot superar 50 caràcters" });
         if (!password?.trim()) return res.status(400).json({ error: "Contrasenya obligatòria" });
         const existing = await repo.findByUsername(username.trim());
         if (existing) return res.status(409).json({ error: "Aquest nom d'usuari ja existeix" });
@@ -49,6 +50,9 @@ async function createUsuario(req, res) {
 
 async function updateUsuario(req, res) {
     try {
+        if (!req.body || Object.keys(req.body).length === 0) {
+            return res.status(400).json({ error: "Dades d'actualització obligatòries" });
+        }
         const affected = await repo.update(req.params.id, req.body);
         if (affected === 0) return res.status(404).json({ error: "Usuari no trobat" });
         res.json({ message: "Usuari actualitzat" });
