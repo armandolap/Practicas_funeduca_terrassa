@@ -228,6 +228,55 @@ async function cursAny(any) {
     }));
 }
 
+async function cursAcademic() {
+    const [rows] = await pool.query(`
+        SELECT ca.idCurs_actual, ca.Nom AS curs,
+               COUNT(cl.idClient) AS totals,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%promociona%' THEN 1 ELSE 0 END) AS promociona,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%repeteix%' THEN 1 ELSE 0 END) AS repeteix,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%abandona%' THEN 1 ELSE 0 END) AS abandona,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%plaça%' THEN 1 ELSE 0 END) AS sense_placa,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%laboral%' THEN 1 ELSE 0 END) AS mon_laboral
+        FROM curs_actual ca
+        LEFT JOIN client cl ON cl.Curs_actual = ca.idCurs_actual
+        LEFT JOIN resultat_academic ra ON cl.Resultat_academic = ra.idResultat_academic
+        GROUP BY ca.idCurs_actual, ca.Nom
+        ORDER BY ca.idCurs_actual
+    `);
+    const pct = (part, total) => total > 0 ? String(Math.round((part / total) * 100)) + '%' : '0%';
+    const result = rows.map(r => ({
+        'CURS ACTUAL': r.curs,
+        'TOTALS ANY ACTUAL': Number(r.totals),
+        'PROMOCIONA': Number(r.promociona),
+        'PERCENTATGE PROMOCIONA': pct(r.promociona, r.totals),
+        'REPETEIX': Number(r.repeteix),
+        'PERCENTATGE REPETEIX': pct(r.repeteix, r.totals),
+        'ABANDONA ESTUDIS': Number(r.abandona),
+        'PERCENTATGE ABANDONA': pct(r.abandona, r.totals),
+        'NO OPTÉ PLAÇA': Number(r.sense_placa),
+        'PERCENTATGE SENSE PLAÇA': pct(r.sense_placa, r.totals),
+        'ACCEDEIX MÓN LABORAL': Number(r.mon_laboral),
+        'PERCENTATGE ACCÉS MÓN LABORAL': pct(r.mon_laboral, r.totals),
+    }));
+    const tot = { 'CURS ACTUAL': 'TOTAL', 'TOTALS ANY ACTUAL': 0, 'PROMOCIONA': 0, 'PERCENTATGE PROMOCIONA': '0%', 'REPETEIX': 0, 'PERCENTATGE REPETEIX': '0%', 'ABANDONA ESTUDIS': 0, 'PERCENTATGE ABANDONA': '0%', 'NO OPTÉ PLAÇA': 0, 'PERCENTATGE SENSE PLAÇA': '0%', 'ACCEDEIX MÓN LABORAL': 0, 'PERCENTATGE ACCÉS MÓN LABORAL': '0%' };
+    for (const r of result) {
+        tot['TOTALS ANY ACTUAL'] += r['TOTALS ANY ACTUAL'];
+        tot['PROMOCIONA'] += r['PROMOCIONA'];
+        tot['REPETEIX'] += r['REPETEIX'];
+        tot['ABANDONA ESTUDIS'] += r['ABANDONA ESTUDIS'];
+        tot['NO OPTÉ PLAÇA'] += r['NO OPTÉ PLAÇA'];
+        tot['ACCEDEIX MÓN LABORAL'] += r['ACCEDEIX MÓN LABORAL'];
+    }
+    const t = tot['TOTALS ANY ACTUAL'];
+    tot['PERCENTATGE PROMOCIONA'] = pct(tot['PROMOCIONA'], t);
+    tot['PERCENTATGE REPETEIX'] = pct(tot['REPETEIX'], t);
+    tot['PERCENTATGE ABANDONA'] = pct(tot['ABANDONA ESTUDIS'], t);
+    tot['PERCENTATGE SENSE PLAÇA'] = pct(tot['NO OPTÉ PLAÇA'], t);
+    tot['PERCENTATGE ACCÉS MÓN LABORAL'] = pct(tot['ACCEDEIX MÓN LABORAL'], t);
+    result.push(tot);
+    return result;
+}
+
 async function resAcad() {
     const [rows] = await pool.query(`
         SELECT ra.Nom_resultat_acad, COUNT(*) AS total
@@ -282,5 +331,5 @@ async function paisos() {
 
 module.exports = {
     projectesGeneresEdats, genere, sitEco, rolFam, tipHab, cont,
-    neses, sebasDev, cursAny, resAcad, motiusBaixa, riscos, paisos
+    neses, sebasDev, cursAny, cursAcademic, resAcad, motiusBaixa, riscos, paisos
 };

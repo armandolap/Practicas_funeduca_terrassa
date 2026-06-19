@@ -90,6 +90,16 @@ async function getCursAny(req, res) {
     }
 }
 
+async function getCursAcademic(req, res) {
+    try {
+        const data = await repo.cursAcademic();
+        res.json(data);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error al obtenir informe curs/resultat acadèmic" });
+    }
+}
+
 async function getResAcad(req, res) {
     try {
         const data = await repo.resAcad();
@@ -132,5 +142,5 @@ async function getPaisos(req, res) {
 
 module.exports = {
     getProjectesGeneresEdats, getGenere, getSitEco, getRolFam, getTipHab, getCont,
-    getNeses, getSebasDev, getCursAny, getResAcad, getMotiusBaixa, getRiscos, getPaisos
+    getNeses, getSebasDev, getCursAny, getCursAcademic, getResAcad, getMotiusBaixa, getRiscos, getPaisos
 };

@@ -94,8 +94,9 @@ total x x x x
 El informe SEBAS: debe incluir en las filas todos los tipos de SEBAS (obtenidos de la tabla SEBAS en la base de datos) y como columna "total amb seguiment" son los usuarios dependiendo a que tipo de SEBAS tengan (sebas1,2.1,2.2,etc) y como otra columna "total derivacions" que son los usuarios que tienen el campo "derivacion serveis socials" activo
 al final como ultima fila debe ser un total de todos los registrados por columna
 
-
+Crea este nuevo informe en la pagina de informes(el boton y la vista)
+El informe Curs/resultat academic tiene que mostrar la tabla cruzada entre curso actual y el resultado academico de cada usuario que lo tenga registrado y mostrar los porcentajes dependiendo al resultado y contra el total de ese curso
 FILAS: CURS ACTUAL	TOTALS ANY ACTUAL	PROMOCIONA	PERCENTATGE PROMOCIONA	REPETEIX	PERCENTATGE REPETEIX	ABANADONA ESTUDIS	PERCENTATGE ABANDONA	NO OPTÉ PLAÇA	PERCENTATGE SENSE PLAÇA	ACCEDEIX MÓN LABORAL	PERCENTATGE ACCÉS MÓN LABORAL
 
 (Una fila para cada curso actual sacado de la tabla curs_actual y el total es de las personas asociadas a estos cursos)	0	0	0,00%	0	0,00%	0	0,00%	0	0,00%	0	0,00%
-
+Actualmente tenemos un informe de resultado academico/total, ese mantenlo y este generalo como un nuevo tipo de informe

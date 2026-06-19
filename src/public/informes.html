@@ -19,6 +19,7 @@
     <button class="btn btn-sm btn-secondary" data-report="cont" onclick="loadReport('cont')">Comptadors</button>
     <button class="btn btn-sm btn-secondary" data-report="neses" onclick="loadReport('neses')">NESE</button>
     <button class="btn btn-sm btn-secondary" data-report="sebasDev" onclick="loadReport('sebasDev')">SEBAS/Deriv.</button>
+    <button class="btn btn-sm btn-secondary" data-report="cursAcademic" onclick="loadReport('cursAcademic')">Curs/Res. Acadèmic</button>
     <button class="btn btn-sm btn-secondary" data-report="resAcad" onclick="loadReport('resAcad')">Res. Acadèmic</button>
     <button class="btn btn-sm btn-secondary" data-report="motiusBaixa" onclick="loadReport('motiusBaixa')">Motius Baixa</button>
     <button class="btn btn-sm btn-secondary" data-report="riscos" onclick="loadReport('riscos')">Riscos</button>
@@ -108,7 +109,7 @@ function exportCSV() {
 }
 
 async function exportAllCSV() {
-    const reports = ['projectes/generesEdats', 'genere', 'sitEco', 'rolFam', 'tipHab', 'cont', 'neses', 'sebasDev', 'resAcad', 'motiusBaixa', 'riscos', 'paisos'];
+    const reports = ['projectes/generesEdats', 'genere', 'sitEco', 'rolFam', 'tipHab', 'cont', 'neses', 'sebasDev', 'cursAcademic', 'resAcad', 'motiusBaixa', 'riscos', 'paisos'];
     let allCsv = '';
     for (const name of reports) {
         try {
