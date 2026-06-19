@@ -312,21 +312,14 @@ async function riscos() {
 }
 
 async function paisos() {
-    const [nacionalitat] = await pool.query(`
-        SELECT p.Nom_pais, COUNT(*) AS total
-        FROM nacionalitat n
-        JOIN pais p ON n.idPais = p.idPais
-        GROUP BY p.Nom_pais
-        ORDER BY total DESC
-    `);
-    const [naixement] = await pool.query(`
-        SELECT p.Nom_pais, COUNT(*) AS total
+    const [rows] = await pool.query(`
+        SELECT p.Nom_pais AS pais_naixement, COUNT(*) AS total
         FROM client cl
         JOIN pais p ON cl.Pais_naixement = p.idPais
         GROUP BY p.Nom_pais
         ORDER BY total DESC
     `);
-    return { nacionalitat, naixement };
+    return rows.map(r => ({ 'PAÍS DE NAIXEMENT': r.pais_naixement, 'TOTAL': Number(r.total) }));
 }
 
 module.exports = {
