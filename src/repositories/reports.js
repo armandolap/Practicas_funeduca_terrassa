@@ -110,24 +110,37 @@ async function tipHab() {
 }
 
 async function cont() {
-    const [usuaris] = await pool.query(`SELECT COUNT(DISTINCT idClient) AS total FROM client WHERE Baixa = 0`);
-    const [families] = await pool.query(`SELECT COUNT(*) AS total FROM familia`);
-    const [baixesTotal] = await pool.query(`SELECT COUNT(*) AS total FROM client WHERE Baixa = 1`);
-    const [baixesGenere] = await pool.query(`
-        SELECT g.Nom_genere, COUNT(*) AS total
-        FROM client cl
-        JOIN genere g ON cl.idGenere = g.idGenere
-        WHERE cl.Baixa = 1
-        GROUP BY g.Nom_genere
+    const [genderRows] = await pool.query(`
+        SELECT g.idGenere, COUNT(cl.idClient) AS total
+        FROM genere g
+        LEFT JOIN client cl ON cl.idGenere = g.idGenere
+        GROUP BY g.idGenere
+        ORDER BY g.idGenere
     `);
-    return {
-        usuaris_actius: usuaris[0].total,
-        families: families[0].total,
-        baixes: {
-            total: baixesTotal[0].total,
-            per_genere: baixesGenere
-        }
+    const [baixesRows] = await pool.query(`
+        SELECT g.idGenere, COUNT(cl.idClient) AS total
+        FROM genere g
+        LEFT JOIN client cl ON cl.idGenere = g.idGenere AND cl.Baixa = 1
+        GROUP BY g.idGenere
+        ORDER BY g.idGenere
+    `);
+    const [[famTotal]] = await pool.query(`SELECT COUNT(*) AS total FROM familia`);
+
+    const toCounts = (rows) => {
+        const home = Number(rows.find(r => r.idGenere === 1)?.total || 0);
+        const dona = Number(rows.find(r => r.idGenere === 2)?.total || 0);
+        const nb   = Number(rows.find(r => r.idGenere === 3)?.total || 0);
+        return { home, dona, nb, total: home + dona + nb };
     };
+
+    const u = toCounts(genderRows);
+    const b = toCounts(baixesRows);
+
+    return [
+        { 'Tipus': 'Usuaris únics',  'Home': u.home, 'Dona': u.dona, 'NB': u.nb, 'Total': u.total },
+        { 'Tipus': 'Families úniques','Home': 0,      'Dona': 0,      'NB': 0,   'Total': Number(famTotal.total) },
+        { 'Tipus': 'Baixes',          'Home': b.home, 'Dona': b.dona, 'NB': b.nb, 'Total': b.total },
+    ];
 }
 
 async function neses() {

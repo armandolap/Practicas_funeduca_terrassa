@@ -80,3 +80,5 @@ El informe Situacion economica/tipo usuario se filtra entre "usuarios adultos(to
     TREBALLS REPRODUCTIUS (cures)
     DEPENDENT)
  Estos son los campos,debe coger los nombre de la tabla "situacio_economica" de la base de datos, debe diferencia de los hijos y el resto de la familia , seria (fill/a , adults y al final un total )
+
+El informe de comptador inclou  tres files, usuaris unics, families uniques y bajas , i columnes  de home/dona/NB ( no binaris ) i un total . les dades s'extreuen de les taules del projecte. usuaris són el numero de persones apuntades, les families, és el nombre de families que tenim al sistema i baixes és el nombre de persones que tenen motiu de baixa ( o el camp corresponent de baixa, millor )
