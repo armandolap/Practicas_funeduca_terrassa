@@ -18,9 +18,7 @@ const domiciliId = new URLSearchParams(location.search).get('id');
 async function loadDomicili() {
     if (!requireAuth()) return;
     try {
-        const res = await fetch(`/domicili/${domiciliId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/domicili/${domiciliId}`);
         const d = await res.json();
         if (!d || !d.idDomicili) {
             document.getElementById('domiciliContent').innerHTML = '<p>Domicili no trobat</p>';
@@ -66,7 +64,7 @@ async function loadDomicili() {
                 `).join('') || '<p style="color:#94a3b8;">Cap projecte</p>'}
             </div>
         `;
-    } catch (err) { console.error(err); document.getElementById('domiciliContent').innerHTML = '<p>Error carregant domicili</p>'; }
+    } catch (err) { document.getElementById('domiciliContent').innerHTML = '<p>Error carregant domicili</p>'; }
 }
 
 renderSidebar('domicilis');

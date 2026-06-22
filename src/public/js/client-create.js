@@ -55,7 +55,6 @@ let domiciliDebounce = null;
 let lastDomiciliQuery = "";
 let domiciliResults = [];
 let familyDomiciles = [];
-let lastFamiliaNameCheck = "";
 
 // ============ HELPERS ============
 function showToast(msg, type) {
@@ -753,7 +752,7 @@ async function loadEditData(id) {
             }
             setDomicileEditState(true);
         }
-    } catch (e) { console.error(e); showToast('Error carregant dades', 'error'); }
+    } catch { showToast('Error carregant dades', 'error'); }
 }
 
 // ============ INIT ============

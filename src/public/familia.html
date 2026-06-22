@@ -18,9 +18,7 @@ const familyId = new URLSearchParams(location.search).get('id');
 async function loadFamily() {
     if (!requireAuth()) return;
     try {
-        const res = await fetch(`/familia/${familyId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/familia/${familyId}`);
         const f = await res.json();
         if (!f || !f.idFamilia) {
             document.getElementById('familyContent').innerHTML = '<p>Família no trobada</p>';
@@ -70,7 +68,7 @@ async function loadFamily() {
                 `).join('') || '<p style="color:#94a3b8;">Cap projecte</p>'}
             </div>
         `;
-    } catch (err) { console.error(err); document.getElementById('familyContent').innerHTML = '<p>Error carregant família</p>'; }
+    } catch (err) { document.getElementById('familyContent').innerHTML = '<p>Error carregant família</p>'; }
 }
 
 renderSidebar('families');

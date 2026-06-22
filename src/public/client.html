@@ -33,9 +33,7 @@ let currentProjFilter = 'tots';
 async function loadClient() {
     if (!requireAuth()) return;
     try {
-        const res = await fetch(`/client/${clientId}?filter=${currentProjFilter}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/client/${clientId}?filter=${currentProjFilter}`);
         const c = await res.json();
         if (!c || !c.idClient) { document.getElementById('clientContent').innerHTML = '<p>Persona no trobada</p>'; return; }
 
@@ -90,7 +88,7 @@ async function loadClient() {
             </div>
         `;
         renderProjects(c.projectes || [], canAssignProj);
-    } catch (err) { console.error(err); document.getElementById('clientContent').innerHTML = '<p>Error carregant persona</p>'; }
+    } catch (err) { document.getElementById('clientContent').innerHTML = '<p>Error carregant persona</p>'; }
 }
 
 function renderProjects(projects, canRemove) {
@@ -118,20 +116,15 @@ function setProjFilter(f) {
 async function removeFromProj(projId) {
     if (!confirm('Treure aquesta persona del projecte?')) return;
     try {
-        const res = await fetch(`/projectes/${projId}/clients/${clientId}`, {
-            method: 'DELETE', headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        const res = await authFetch(`/projectes/${projId}/clients/${clientId}`, {
+            method: 'DELETE'
         });
         if (res.ok) { showToast('Persona treta del projecte', 'success'); loadClient(); }
         else { showToast('Error', 'error'); }
     } catch (e) { showToast('Error de connexió', 'error'); }
 }
 
-let projSearchTimeout;
-
-function debounceProjSearch() {
-    clearTimeout(projSearchTimeout);
-    projSearchTimeout = setTimeout(searchProjects, 300);
-}
+const debounceProjSearch = debounce(searchProjects, 300);
 
 async function searchProjects() {
     const q = document.getElementById('projAssignSearch').value.trim();
@@ -141,9 +134,7 @@ async function searchProjects() {
     try {
         const params = new URLSearchParams({ q });
         if (role === 4) params.set('filter', 'actiu_futur');
-        const res = await fetch(`/projectes?${params}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/projectes?${params}`);
         const projects = await res.json();
         if (projects.length) {
             list.innerHTML = projects.map(p => `
@@ -173,20 +164,14 @@ function closeAssignModal() {
 
 async function assignProject(projId) {
     try {
-        const addRes = await fetch(`/projectes/${projId}/clients`, {
+        const addRes = await authFetch(`/projectes/${projId}/clients`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ clientIds: [parseInt(clientId)] })
         });
         if (addRes.ok) { showToast('Assignat correctament', 'success'); closeAssignModal(); loadClient(); }
         else { showToast('Error assignant', 'error'); }
     } catch (e) { showToast('Error de connexió', 'error'); }
-}
-
-function showToast(msg, type) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.className = `toast ${type} show`;
-    setTimeout(() => t.className = 'toast', 3000);
 }
 
 renderSidebar('clients');

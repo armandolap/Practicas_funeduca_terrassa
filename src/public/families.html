@@ -29,24 +29,19 @@
 <script>
 let currentPage = 0;
 const PAGE_SIZE = 15;
-let searchTimeout;
-
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => { currentPage = 0; loadFamilies(); }, 300);
-}
+const debounceSearch = debounce(() => { currentPage = 0; loadFamilies(); }, 300);
 
 async function loadFilterOptions() {
     try {
         const [estRes, barriRes] = await Promise.all([
-            fetch('/estFamilia', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-            fetch('/barri', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+            authFetch('/estFamilia'),
+            authFetch('/barri')
         ]);
         const est = await estRes.json();
         const barris = await barriRes.json();
         document.getElementById('estructuraFilter').innerHTML = '<option value="">Totes</option>' + est.map(e => `<option value="${e.idEstructura_familiar}">${e.Nom_est_fam}</option>`).join('');
         document.getElementById('barriFilter').innerHTML = '<option value="">Tots</option>' + barris.map(b => `<option value="${b.idBarri}">${b.Nom}</option>`).join('');
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 async function loadFamilies() {
@@ -61,7 +56,7 @@ async function loadFamilies() {
     if (barri) params.set('barri', barri);
 
     try {
-        const res = await fetch(`/familia?${params}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const res = await authFetch(`/familia?${params}`);
         const data = await res.json();
         const rows = data.rows || data || [];
         const total = data.total || rows.length;
@@ -81,13 +76,8 @@ async function loadFamilies() {
             </tr>
         `).join('');
         const totalPages = Math.ceil(total / PAGE_SIZE);
-        const pagHtml = `
-            <button onclick="goPage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>Anterior</button>
-            <span>Pàg ${currentPage + 1} de ${totalPages || 1} (${total} total)</span>
-            <button onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Següent</button>
-        `;
-        document.getElementById('pagination').innerHTML = pagHtml;
-    } catch (err) { console.error(err); }
+        renderPagination('pagination', currentPage, totalPages, 'goPage', total);
+    } catch {}
 }
 
 function goPage(page) { if (page < 0) return; currentPage = page; loadFamilies(); }

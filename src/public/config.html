@@ -90,9 +90,7 @@ async function loadTable() {
     const fields = FIELD_MAP[table] || { label: 'Nom', valueField: 'id' };
 
     try {
-        const res = await fetch(`/${endpoint}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/${endpoint}`);
         const data = await res.json();
         const items = Array.isArray(data) ? data : [];
         const div = document.getElementById('configContent');
@@ -116,7 +114,6 @@ async function loadTable() {
         `;
     } catch (err) {
         document.getElementById('configContent').innerHTML = '<p style="color:#ef4444;">Error carregant taula</p>';
-        console.error(err);
     }
 }
 
@@ -128,9 +125,9 @@ async function addRecord(table) {
     try {
         const body = {};
         body[fields.label] = name.trim();
-        const res = await fetch(`/${endpoint}`, {
+        const res = await authFetch(`/${endpoint}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
         if (res.ok) { alert('Registre afegit'); loadTable(); }
@@ -142,9 +139,8 @@ async function deleteRecord(table, id) {
     if (!confirm('Eliminar aquest registre?')) return;
     const endpoint = ENDPOINT_MAP[table] || table;
     try {
-        const res = await fetch(`/${endpoint}/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        const res = await authFetch(`/${endpoint}/${id}`, {
+            method: 'DELETE'
         });
         if (res.ok) { alert('Registre eliminat'); loadTable(); }
         else { alert('Error eliminant registre'); }

@@ -23,21 +23,14 @@
 </main>
 <script src="/js/sidebar.js"></script>
 <script>
-let searchTimeout;
-
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => { loadCentres(); }, 300);
-}
+const debounceSearch = debounce(() => { loadCentres(); }, 300);
 
 async function loadCentres() {
     if (!requireAuth()) return;
     const q = document.getElementById('searchQ').value.trim();
     const params = q ? `?q=${encodeURIComponent(q)}` : '';
     try {
-        const res = await fetch(`/centre-activitats${params}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/centre-activitats${params}`);
         const data = await res.json();
         const tbody = document.getElementById('centreList');
         if (!data.length) {
@@ -53,7 +46,7 @@ async function loadCentres() {
                 <td style="font-size:12px;color:#64748b;">${c.num_projectes || 0}</td>
             </tr>
         `).join('');
-    } catch (err) { console.error(err); }
+    } catch {}
 }
 
 function checkCreateRole() {

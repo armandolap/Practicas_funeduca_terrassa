@@ -33,34 +33,25 @@
 <script src="/js/sidebar.js"></script>
 <script>
 const centreId = new URLSearchParams(location.search).get('id');
-let searchTimeout;
-
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => loadProjectes(), 300);
-}
+const debounceSearch = debounce(() => loadProjectes(), 300);
 
 async function loadCentre() {
     if (!requireAuth() || !centreId) return;
     try {
-        const res = await fetch(`/centre-activitats/${centreId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/centre-activitats/${centreId}`);
         const c = await res.json();
         if (!c) { document.getElementById('centreDetail').innerHTML = '<p>Centre no trobat</p>'; return; }
         document.getElementById('centreNom').textContent = c.nom_centre_activitats || '';
         document.getElementById('adrecaCentre').textContent = `${c.tipus_via || ''} ${c.Nom_calle || ''}, ${c.Num_calle || ''}${c.Pis ? ', ' + c.Pis : ''}${c.Escala ? ' ' + c.Escala : ''} — ${c.barri || ''} (${c.codi_postal || ''})`;
         document.getElementById('numProjectes').textContent = `${c.num_projectes || 0} projectes`;
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 async function loadProjectes() {
     if (!requireAuth() || !centreId) return;
     const q = document.getElementById('searchQ').value.trim();
     try {
-        const res = await fetch(`/projectes/centre/${centreId}?q=${encodeURIComponent(q)}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/projectes/centre/${centreId}?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         const tbody = document.getElementById('projectesList');
         if (!data.length) {
@@ -84,7 +75,7 @@ async function loadProjectes() {
                 <td><span class="badge ${cls}">${estat}</span></td>
             </tr>`;
         }).join('');
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 renderSidebar('centres');

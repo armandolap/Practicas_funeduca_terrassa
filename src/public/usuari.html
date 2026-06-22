@@ -18,9 +18,7 @@ const userId = new URLSearchParams(location.search).get('id');
 async function loadUser() {
     if (!requireAuth()) return;
     try {
-        const res = await fetch(`/usuario/${userId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/usuario/${userId}`);
         const u = await res.json();
         if (!u || !u.idUsuario_APP) {
             document.getElementById('userContent').innerHTML = '<p>Usuari no trobat</p>';
@@ -66,7 +64,7 @@ async function loadUser() {
                 </table>
             </div>
         `;
-    } catch (err) { console.error(err); document.getElementById('userContent').innerHTML = '<p>Error carregant usuari</p>'; }
+    } catch (err) { document.getElementById('userContent').innerHTML = '<p>Error carregant usuari</p>'; }
 }
 
 renderSidebar('usuaris');

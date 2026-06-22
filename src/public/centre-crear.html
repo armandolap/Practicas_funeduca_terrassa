@@ -82,9 +82,7 @@ async function searchStreets() {
     const dropdown = document.getElementById('streetDropdown');
     if (q.length < 2) { dropdown.style.display = 'none'; return; }
     try {
-        const res = await fetch(`/callejero?q=${encodeURIComponent(q)}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/callejero?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         if (data.length) {
             dropdown.innerHTML = data.map(s =>
@@ -97,7 +95,7 @@ async function searchStreets() {
             dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">No s\'ha trobat cap carrer. Només usuaris amb accés Total poden crear-ne de nous.</div>';
             dropdown.style.display = 'block';
         }
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 function selectStreet(id, tipusVia, nomCalle, barri, cp) {
@@ -121,9 +119,9 @@ async function saveCentre(e) {
     const escala = document.getElementById('escala').value.trim();
 
     try {
-        const centreRes = await fetch('/centre-activitats', {
+        const centreRes = await authFetch('/centre-activitats', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 nom_centre_activitats: nomCentre,
                 direccio: { idcallejero: parseInt(idCallejero), Num_calle: numCalle, Pis: pis || null, Escala: escala || null }
@@ -136,7 +134,7 @@ async function saveCentre(e) {
         } else {
             alert(centreData.message || 'Error creant centre');
         }
-    } catch (err) { alert('Error de connexió'); console.error(err); }
+    } catch (err) { alert('Error de connexió'); }
 }
 
 initForm();

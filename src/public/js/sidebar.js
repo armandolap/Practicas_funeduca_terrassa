@@ -25,6 +25,36 @@ function logout() {
     window.location.href = '/login.html';
 }
 
+// Mostra una notificació toast. Requereix un <div id="toast"> a la pàgina.
+function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.className = 'toast', 3000);
+}
+
+// Crea una funció amb debounce: retarda l'execució de `fn` fins que passen `ms` mil·lisegons sense noves crides.
+function debounce(fn, ms = 300) {
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+    };
+}
+
+// Pinta els controls de paginació dins de #containerId.
+// onGo: nom de la funció global a cridar (rep el número de pàgina). totalCount opcional → mostra "(N total)".
+function renderPagination(containerId, currentPage, totalPages, onGo, totalCount) {
+    const info = totalCount === undefined
+        ? `Pàg ${currentPage + 1} de ${totalPages || 1}`
+        : `Pàg ${currentPage + 1} de ${totalPages || 1} (${totalCount} total)`;
+    document.getElementById(containerId).innerHTML =
+        `<button onclick="${onGo}(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>Anterior</button>`
+        + `<span>${info}</span>`
+        + `<button onclick="${onGo}(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Següent</button>`;
+}
+
 function renderSidebar(activePage) {
     const role = getRole();
     const user = JSON.parse(localStorage.getItem('user') || '{}');

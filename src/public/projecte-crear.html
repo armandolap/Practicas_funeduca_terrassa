@@ -162,7 +162,7 @@ async function loadUserLists() {
         _zonaUsers = await zonaRes.json();
         _projRespUsers = await projRes.json();
         _trebUsers = await trebRes.json();
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 function initTagInputs() {
@@ -341,7 +341,7 @@ async function loadProject(id) {
                 if (found) selectTreb(found);
             });
         }
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 async function saveProject(e) {
@@ -375,7 +375,7 @@ async function saveProject(e) {
             const centreData = await centreRes.json();
             if (!centreRes.ok) { alert(centreData.message || 'Error creant centre'); return; }
             idCentre = centreData.id;
-        } catch (err) { alert('Error creant centre'); console.error(err); return; }
+        } catch (err) { alert('Error creant centre'); return; }
     }
 
     if (!idCentre) { alert('Cal seleccionar o crear un centre d\'activitats'); return; }
@@ -418,7 +418,7 @@ async function saveProject(e) {
         } else {
             alert(data.message || 'Error');
         }
-    } catch (err) { alert('Error de connexió'); console.error(err); }
+    } catch (err) { alert('Error de connexió'); }
 }
 
 // ── Centre search (unchanged) ──
@@ -438,7 +438,7 @@ async function searchCentres() {
             dropdown.innerHTML = `<div onclick="showNewCentreForm()" style="color:#2563eb;font-weight:600;">+ Crear nou centre</div>`;
             dropdown.style.display = 'block';
         }
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 document.getElementById('centreSearch').addEventListener('input', function() {
@@ -501,7 +501,7 @@ async function searchNewStreets() {
             dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">No s\'ha trobat cap carrer.</div>';
             dropdown.style.display = 'block';
         }
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 function selectNewStreet(id, tipusVia, nomCalle, barri, cp) {

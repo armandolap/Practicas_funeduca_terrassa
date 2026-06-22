@@ -45,17 +45,8 @@
 <script>
 let currentMyFilter = 'todos';
 let currentAllFilter = 'todos';
-let mySearchTimeout;
-let allSearchTimeout;
-
-function debounceMySearch() {
-    clearTimeout(mySearchTimeout);
-    mySearchTimeout = setTimeout(loadMyProjects, 300);
-}
-function debounceAllSearch() {
-    clearTimeout(allSearchTimeout);
-    allSearchTimeout = setTimeout(loadAllProjects, 300);
-}
+const debounceMySearch = debounce(loadMyProjects, 300);
+const debounceAllSearch = debounce(loadAllProjects, 300);
 
 function setMyFilter(filter) {
     currentMyFilter = filter;
@@ -77,9 +68,7 @@ async function loadMyProjects() {
     const params = new URLSearchParams({ filter: currentMyFilter, responsable_id: user.idUsuario_APP });
     if (q) params.set('q', q);
     try {
-        const res = await fetch(`/projectes?${params}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/projectes?${params}`);
         const projects = await res.json();
         const tbody = document.getElementById('myProjectList');
         if (!projects.length) {
@@ -96,7 +85,7 @@ async function loadMyProjects() {
                 <td>${p.nom_centre_activitats || '-'}</td>
             </tr>
         `).join('');
-    } catch (err) { console.error(err); }
+    } catch {}
 }
 
 async function loadAllProjects() {
@@ -105,9 +94,7 @@ async function loadAllProjects() {
     const params = new URLSearchParams({ filter: currentAllFilter });
     if (q) params.set('q', q);
     try {
-        const res = await fetch(`/projectes?${params}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/projectes?${params}`);
         const projects = await res.json();
         const tbody = document.getElementById('allProjectList');
         if (!projects.length) {
@@ -125,7 +112,7 @@ async function loadAllProjects() {
                 <td>${p.nom_centre_activitats || '-'}</td>
             </tr>
         `).join('');
-    } catch (err) { console.error(err); }
+    } catch {}
 }
 
 renderSidebar('meus-projectes');

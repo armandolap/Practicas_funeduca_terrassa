@@ -28,12 +28,7 @@
 <script src="/js/sidebar.js"></script>
 <script>
 let currentFilter = 'todos';
-let searchTimeout;
-
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(loadProjects, 300);
-}
+const debounceSearch = debounce(loadProjects, 300);
 
 function setFilter(filter) {
     currentFilter = filter;
@@ -48,9 +43,7 @@ async function loadProjects() {
     const params = new URLSearchParams({ filter: currentFilter });
     if (q) params.set('q', q);
     try {
-        const res = await fetch(`/projectes?${params}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/projectes?${params}`);
         const projects = await res.json();
         const tbody = document.getElementById('projectList');
         if (!projects.length) {
@@ -68,7 +61,7 @@ async function loadProjects() {
                 <td>${p.nom_centre_activitats || '-'}</td>
             </tr>
         `).join('');
-    } catch (err) { console.error(err); }
+    } catch {}
 }
 
 function checkRole() {

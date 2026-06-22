@@ -57,15 +57,12 @@ async function init() {
     if (role !== 1) { alert('No tens permís per crear usuaris'); window.location.href = '/usuaris.html'; return; }
     renderSidebar('usuaris');
     try {
-        const res = await fetch('/desplegables/nivells-acces', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch('/desplegables/nivells-acces');
         if (!res.ok) throw new Error('Error carregant nivells');
         const levels = await res.json();
         const sel = document.getElementById('nivellAcces');
         sel.innerHTML = '<option value="">-- Selecciona --</option>' + levels.map(l => `<option value="${l.id}">${l.Nom}</option>`).join('');
     } catch (e) {
-        console.error('No s\'han pogut carregar els nivells d\'accés:', e);
     }
 }
 
@@ -84,15 +81,15 @@ async function saveUser(e) {
     }
 
     try {
-        const res = await fetch('/usuario', {
+        const res = await authFetch('/usuario', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ Nom: nom, Cognoms: cognoms, username, email: email || null, Telefon: telefon, idNivel_acceso: parseInt(idNivel_acceso), password })
         });
         const data = await res.json();
         if (res.ok) { alert('Usuari creat correctament'); window.location.href = `/usuari.html?id=${data.id}`; }
         else { alert(data.error || 'Error creant usuari'); }
-    } catch (err) { alert('Error de connexió'); console.error(err); }
+    } catch (err) { alert('Error de connexió'); }
 }
 
 init();

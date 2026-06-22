@@ -27,12 +27,7 @@
 <script src="/js/sidebar.js"></script>
 <script>
 let currentFilter = 'tots';
-let searchTimeout;
-
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(loadUsers, 300);
-}
+const debounceSearch = debounce(loadUsers, 300);
 
 function setFilter(filter) {
     currentFilter = filter;
@@ -47,7 +42,7 @@ async function loadUsers() {
     const params = new URLSearchParams({ filter: currentFilter });
     if (q) params.set('q', q);
     try {
-        const res = await fetch(`/usuario?${params}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const res = await authFetch(`/usuario?${params}`);
         const users = await res.json();
         const tbody = document.getElementById('userList');
         if (!users.length) {
@@ -65,7 +60,7 @@ async function loadUsers() {
                 <td>${u.num_projectes_actius || 0}</td>
             </tr>
         `).join('');
-    } catch (err) { console.error(err); }
+    } catch {}
 }
 
 const role = getRole();

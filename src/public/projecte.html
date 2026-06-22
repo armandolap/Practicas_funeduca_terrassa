@@ -28,20 +28,13 @@
 <script src="/js/sidebar.js"></script>
 <script>
 let projectId = new URLSearchParams(location.search).get('id');
-let clientSearchTimeout;
-
-function debounceClientSearch() {
-    clearTimeout(clientSearchTimeout);
-    clientSearchTimeout = setTimeout(searchClients, 300);
-}
+const debounceClientSearch = debounce(searchClients, 300);
 
 async function searchClients() {
     const q = document.getElementById('clientSearch').value.trim();
     if (!q || q.length < 2) { document.getElementById('clientResults').innerHTML = ''; return; }
     try {
-        const res = await fetch(`/client?q=${encodeURIComponent(q)}&limit=10`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/client?q=${encodeURIComponent(q)}&limit=10`);
         const data = await res.json();
         const rows = data.rows || data || [];
         const list = document.getElementById('clientResults');
@@ -52,14 +45,14 @@ async function searchClients() {
             </div>
         `).join('');
         if (!rows.length) list.innerHTML = '<div style="padding:12px;color:#94a3b8;">Cap resultat</div>';
-    } catch (err) { console.error(err); }
+    } catch {}
 }
 
 async function addClient(clientId) {
     try {
-        const res = await fetch(`/projectes/${projectId}/clients`, {
+        const res = await authFetch(`/projectes/${projectId}/clients`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ clientIds: [clientId] })
         });
         if (res.ok) { showToast('Participant afegit', 'success'); closeModal(); loadProject(); }
@@ -70,9 +63,8 @@ async function addClient(clientId) {
 async function removeClient(clientId) {
     if (!confirm('Eliminar aquest participant del projecte?')) return;
     try {
-        const res = await fetch(`/projectes/${projectId}/clients/${clientId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        const res = await authFetch(`/projectes/${projectId}/clients/${clientId}`, {
+            method: 'DELETE'
         });
         if (res.ok) { showToast('Participant eliminat', 'success'); loadProject(); }
         else { showToast('Error en eliminar participant', 'error'); }
@@ -85,9 +77,7 @@ function closeModal() { document.getElementById('modalOverlay').style.display = 
 async function loadProject() {
     if (!requireAuth()) return;
     try {
-        const res = await fetch(`/projectes/${projectId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/projectes/${projectId}`);
         const p = await res.json();
         if (!p) { document.getElementById('projectContent').innerHTML = '<p>Projecte no trobat</p>'; return; }
 
@@ -158,13 +148,7 @@ async function loadProject() {
                 </table>
             </div>
         `;
-    } catch (err) { console.error(err); document.getElementById('projectContent').innerHTML = '<p>Error carregant projecte</p>'; }
-}
-
-function showToast(msg, type) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.className = `toast ${type} show`;
-    setTimeout(() => t.className = 'toast', 3000);
+    } catch (err) { document.getElementById('projectContent').innerHTML = '<p>Error carregant projecte</p>'; }
 }
 
 renderSidebar('projectes');
