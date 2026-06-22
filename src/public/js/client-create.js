@@ -465,7 +465,7 @@ function setBarriCpValue(barriVal, cpVal) {
 
 function highlightAmbiguity(field) {
   const el = field === "barri" ? barriInput : codiPostalInput;
-  el.style.borderColor = "#e94560";
+  el.style.borderColor = "#e57373";
   el.style.boxShadow = "0 0 0 2px rgba(233,69,96,0.25)";
 }
 
@@ -539,13 +539,18 @@ function updatePreview(r) {
 btnCrear.addEventListener("click", submitForm);
 
 async function submitForm() {
-  if (!nom.value.trim()) { showToast("El camp Nom és obligatori", "error"); nom.focus(); return; }
-  if (!cognoms.value.trim()) { showToast("El camp Cognoms és obligatori", "error"); cognoms.focus(); return; }
-  if (!fechaNaixement.value) { showToast("La data de naixement és obligatòria", "error"); fechaNaixement.focus(); return; }
-  if (!genere.value) { showToast("El gènere és obligatori", "error"); genere.focus(); return; }
-  if (!rol.value) { showToast("El rol és obligatori", "error"); rol.focus(); return; }
-  if (!situacioEconomica.value) { showToast("La situació econòmica és obligatòria", "error"); situacioEconomica.focus(); return; }
-  if (!paisNaixement.value) { showToast("El país de naixement és obligatori", "error"); paisNaixement.focus(); return; }
+  const v = validateForm([
+    { id: "nom",               rules: ["required"] },
+    { id: "cognoms",           rules: ["required"] },
+    { id: "fechaNaixement",    rules: ["required", "notFuture"] },
+    { id: "telefon",           rules: ["phone"] },
+    { id: "correu",            rules: ["email"] },
+    { id: "genere",            rules: ["required"] },
+    { id: "rol",               rules: ["required"] },
+    { id: "situacioEconomica", rules: ["required"] },
+    { id: "paisNaixement",     rules: ["required"] },
+  ]);
+  if (!v.ok) return;
 
   if (!selectedFamilyId && !estructuraFamiliar.value) {
     showToast("Cal seleccionar una família o indicar l'estructura familiar", "error");
@@ -640,6 +645,7 @@ async function submitForm() {
 }
 
 function resetForm() {
+  if (typeof clearFormErrors === "function") clearFormErrors();
   nom.value = "";
   cognoms.value = "";
   cognoms.style.borderColor = "";

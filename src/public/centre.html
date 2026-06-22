@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Centre — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 <style>.projectes-section { margin-top: 24px; }</style>
 </head>
@@ -12,7 +16,7 @@
 <main class="main-content">
   <div id="centreDetail">
     <h1 id="centreNom"></h1>
-    <p id="adrecaCentre" style="color:#64748b;"></p>
+    <p id="adrecaCentre" style="color:var(--color-text-muted);"></p>
     <div style="display:flex;gap:8px;margin:12px 0;">
       <span class="badge badge-info" id="numProjectes"></span>
     </div>
@@ -55,7 +59,7 @@ async function loadProjectes() {
         const data = await res.json();
         const tbody = document.getElementById('projectesList');
         if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha projectes en aquest centre</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--color-text-soft);">No hi ha projectes en aquest centre</td></tr>';
             return;
         }
         tbody.innerHTML = data.map(p => {

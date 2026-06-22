@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Persones i Famílies — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -77,7 +81,7 @@ async function search() {
                 <td>${f.num_membres || 0}</td>
                 <td>${f.estructura_familiar_nom || ''}</td>
             </tr>
-        `).join('') || '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">Cap resultat</td></tr>';
+        `).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--color-text-soft);">Cap resultat</td></tr>';
 
         const perParams = new URLSearchParams({ limit: 10 });
         if (q) perParams.set('q', q);
@@ -94,7 +98,7 @@ async function search() {
                 <td>${p.Nom_genere || ''}</td>
                 <td>${p.Cognom_familiar || ''}</td>
             </tr>
-        `).join('') || '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">Cap resultat</td></tr>';
+        `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--color-text-soft);">Cap resultat</td></tr>';
     } catch {}
 }
 

@@ -55,7 +55,7 @@ function hideLoading() {
 function confirmModal(message, opts = {}) {
     const okText = opts.okText || 'Confirmar';
     const cancelText = opts.cancelText || 'Cancel·lar';
-    const okClass = opts.danger === false ? 'btn-primary' : 'btn-danger';
+    const okClass = opts.danger === false ? 'btn-success' : 'btn-danger';
     return new Promise(resolve => {
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
@@ -77,6 +77,77 @@ function confirmModal(message, opts = {}) {
         });
         document.body.appendChild(overlay);
         overlay.querySelector('[data-act="ok"]').focus();
+    });
+}
+
+// Substitueix alert() natiu. Modal amb un sol botó. Retorna una Promise que es
+// resol en tancar (útil per esperar abans de redirigir).
+// opts: { okText, title }
+function alertModal(message, opts = {}) {
+    const okText = opts.okText || 'D\'acord';
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML =
+            `<div class="modal confirm-box">`
+            + (opts.title ? `<h2></h2>` : '')
+            + `<p></p>`
+            + `<div class="modal-actions">`
+            + `<button class="btn btn-primary" data-act="ok">${okText}</button>`
+            + `</div></div>`;
+        if (opts.title) overlay.querySelector('h2').textContent = opts.title;
+        overlay.querySelector('p').textContent = message;
+        const close = () => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(); };
+        const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter') close(); };
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay || e.target.getAttribute('data-act') === 'ok') close();
+        });
+        document.addEventListener('keydown', onKey);
+        document.body.appendChild(overlay);
+        overlay.querySelector('[data-act="ok"]').focus();
+    });
+}
+
+// Substitueix prompt() natiu. Modal amb un input de text.
+// Retorna una Promise<string|null> (null si es cancel·la).
+// opts: { okText, cancelText, placeholder, defaultValue, title }
+function promptModal(message, opts = {}) {
+    const okText = opts.okText || 'Acceptar';
+    const cancelText = opts.cancelText || 'Cancel·lar';
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML =
+            `<div class="modal confirm-box">`
+            + (opts.title ? `<h2></h2>` : '')
+            + `<div class="form-group"><label></label>`
+            + `<input type="text" data-role="input"></div>`
+            + `<div class="modal-actions">`
+            + `<button class="btn btn-secondary" data-act="cancel">${cancelText}</button>`
+            + `<button class="btn btn-primary" data-act="ok">${okText}</button>`
+            + `</div></div>`;
+        if (opts.title) overlay.querySelector('h2').textContent = opts.title;
+        overlay.querySelector('label').textContent = message;
+        const input = overlay.querySelector('[data-role="input"]');
+        if (opts.placeholder) input.placeholder = opts.placeholder;
+        if (opts.defaultValue) input.value = opts.defaultValue;
+        const close = (val) => { overlay.remove(); document.removeEventListener('keydown', onKey); resolve(val); };
+        const submit = () => close(input.value);
+        const onKey = (e) => {
+            if (e.key === 'Escape') close(null);
+            if (e.key === 'Enter') submit();
+        };
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) return close(null);
+            const act = e.target.getAttribute('data-act');
+            if (act === 'ok') submit();
+            if (act === 'cancel') close(null);
+        });
+        document.addEventListener('keydown', onKey);
+        document.body.appendChild(overlay);
+        input.focus();
     });
 }
 
@@ -144,13 +215,54 @@ function renderPagination(containerId, currentPage, totalPages, onGo, totalCount
         + `<button onclick="${onGo}(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Següent</button>`;
 }
 
+// ===== Menú mòbil (hamburguesa lliscant) =====
+// Tanca el menú lateral en mòbil.
+function closeSidebar() {
+    document.body.classList.remove('sidebar-open');
+}
+// Obre/tanca el menú lateral en mòbil.
+function toggleSidebar() {
+    document.body.classList.toggle('sidebar-open');
+}
+// Crea (un sol cop) el logo mòbil, el botó hamburguesa i el fons fosc per al menú mòbil.
+function ensureMobileNav() {
+    if (!document.getElementById('navLogo')) {
+        const logo = document.createElement('a');
+        logo.id = 'navLogo';
+        logo.className = 'nav-logo';
+        logo.href = '/projectes.html';
+        logo.setAttribute('aria-label', 'Funeduca — Projectes');
+        logo.innerHTML = '<img src="/images/funeduca-logo.png" alt="Funeduca">';
+        document.body.insertBefore(logo, document.body.firstChild);
+    }
+    if (!document.getElementById('navToggle')) {
+        const btn = document.createElement('button');
+        btn.id = 'navToggle';
+        btn.className = 'nav-toggle';
+        btn.setAttribute('aria-label', 'Obrir menú');
+        btn.innerHTML = '<span></span><span></span><span></span>';
+        btn.addEventListener('click', toggleSidebar);
+        document.body.insertBefore(btn, document.body.firstChild);
+    }
+    if (!document.getElementById('navBackdrop')) {
+        const bd = document.createElement('div');
+        bd.id = 'navBackdrop';
+        bd.className = 'nav-backdrop';
+        bd.addEventListener('click', closeSidebar);
+        document.body.appendChild(bd);
+    }
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
+}
+
 function renderSidebar(activePage) {
     const role = getRole();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
 
-    let html = `<div class="logo">FunEduca</div>`;
+    ensureMobileNav();
+
+    let html = `<a href="/projectes.html" class="logo" aria-label="Funeduca — Projectes"><img src="/images/funeduca-logo.png" alt="Funeduca"></a>`;
 
     const mainItems = [
         { label: 'Persones', href: '/clients.html', id: 'clients', roles: [1, 2, 3, 4, 5] },
@@ -173,8 +285,10 @@ function renderSidebar(activePage) {
         html += `<hr>`;
     }
     if (user.Nom) {
-        html += `<div class="user-info">${user.Nom} ${user.Cognoms || ''}<br><small style="cursor:pointer;color:#ef4444;" onclick="logout()">Tancar sessió</small></div>`;
+        html += `<div class="user-info">${user.Nom} ${user.Cognoms || ''}<br><small style="cursor:pointer;color:#e57373;" onclick="logout()">Tancar sessió</small></div>`;
     }
     sidebar.innerHTML = html;
+    // En mòbil, tancar el menú en seguir un enllaç de navegació.
+    sidebar.querySelectorAll('.sidebar-item').forEach(el => el.addEventListener('click', closeSidebar));
     showPendingToast();
 }

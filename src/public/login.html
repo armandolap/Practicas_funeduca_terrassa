@@ -4,22 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inici de Sessió — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 <style>
-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #1e293b; }
-.login-box { background: #fff; padding: 40px; border-radius: 12px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
-.login-box h1 { text-align: center; margin-bottom: 24px; font-size: 22px; color: #1e293b; }
+body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--color-primary); }
+.login-box { background: var(--color-surface); padding: 40px; border-radius: 16px; width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.login-box .brand-logo { display: block; width: 100%; max-width: 260px; height: auto; margin: 0 auto 24px; padding: 0 28px; background: var(--color-primary); border-radius: 10px; }
+.login-box h1 { text-align: center; margin-bottom: 24px; font-size: var(--fs-md); font-weight: 500; color: var(--color-text-muted); letter-spacing: 0.08em; }
 .login-box .form-group { margin-bottom: 18px; }
-.login-box label { font-size: 13px; font-weight: 600; color: #374151; }
-.login-box input { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
-.login-box input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.2); outline: none; }
-.login-box .btn { width: 100%; padding: 10px; font-size: 15px; justify-content: center; }
-.login-box .error { color: #ef4444; font-size: 13px; margin-bottom: 12px; display: none; }
+.login-box label { font-size: var(--fs-sm); font-weight: 600; color: var(--color-label); }
+.login-box input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border-input); border-radius: 8px; font-size: var(--fs-base); font-family: var(--font-sans); }
+.login-box input:focus { border-color: var(--color-primary); box-shadow: var(--focus-ring); outline: none; }
+.login-box .btn { width: 100%; padding: 10px; font-size: var(--fs-md); justify-content: center; }
+.login-box .error { color: var(--color-danger); font-size: var(--fs-sm); margin-bottom: 12px; display: none; }
 </style>
 </head>
 <body>
 <div class="login-box">
-  <h1>FunEduca CRM</h1>
+  <img class="brand-logo" src="/images/funeduca-logo.png" alt="Funeduca">
   <div class="error" id="errorMsg"></div>
   <div class="form-group">
     <label for="username">Usuari</label>
@@ -31,17 +36,20 @@ body { display: flex; align-items: center; justify-content: center; min-height: 
   </div>
   <button class="btn btn-primary" id="btnLogin" onclick="login()">Iniciar Sessió</button>
 </div>
+<script src="/js/validate.js"></script>
 <script>
 async function login() {
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value;
   const errorEl = document.getElementById('errorMsg');
   const btn = document.getElementById('btnLogin');
-  if (!username || !password) {
-    errorEl.textContent = 'Usuari i contrasenya obligatoris';
-    errorEl.style.display = 'block';
-    return;
-  }
+
+  const v = validateForm([
+    { id: 'username', rules: ['required'] },
+    { id: 'password', rules: ['required'] },
+  ]);
+  if (!v.ok) return;
+
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
   btn.disabled = true;
   btn.innerHTML = '<span class="btn-spinner"></span> Entrant...';
   try {

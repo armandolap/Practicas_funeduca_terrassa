@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Persona — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -94,7 +98,7 @@ async function loadClient() {
 function renderProjects(projects, canRemove) {
     const tbody = document.getElementById('projectsBody');
     if (!projects.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">Cap projecte</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--color-text-soft);">Cap projecte</td></tr>';
         return;
     }
     tbody.innerHTML = projects.map(p => `
@@ -146,9 +150,9 @@ async function searchProjects() {
                 </div>
             `).join('');
         } else {
-            list.innerHTML = '<div style="padding:12px;color:#94a3b8;">Cap projecte trobat</div>';
+            list.innerHTML = '<div style="padding:12px;color:var(--color-text-soft);">Cap projecte trobat</div>';
         }
-    } catch (e) { list.innerHTML = '<div style="padding:12px;color:#ef4444;">Error de connexió</div>'; }
+    } catch (e) { list.innerHTML = '<div style="padding:12px;color:#e57373;">Error de connexió</div>'; }
 }
 
 function showAssignProject() {

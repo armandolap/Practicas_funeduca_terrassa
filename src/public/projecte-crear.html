@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Editar Projecte — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 <style>.autocomplete-dropdown { position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:0 0 6px 6px;max-height:200px;overflow-y:auto;z-index:100; }</style>
 </head>
@@ -46,9 +50,9 @@
           <div class="autocomplete-dropdown" id="centreDropdown" style="display:none"></div>
         </div>
       </div>
-      <div id="centreInfo" style="display:none;padding:10px;background:#f0fdf4;border-radius:6px;margin-bottom:12px;">
+      <div id="centreInfo" style="display:none;padding:10px;background:#e6f4f0;border-radius:6px;margin-bottom:12px;">
         <p id="centreNameDisplay"></p>
-        <p id="centreAddressDisplay" style="font-size:13px;color:#64748b;"></p>
+        <p id="centreAddressDisplay" style="font-size:var(--fs-sm);color:var(--color-text-muted);"></p>
       </div>
       <div id="newCentreForm" style="display:none">
         <div class="form-group"><label>Nom del centre *</label><input type="text" id="newCentreName"></div>
@@ -59,9 +63,9 @@
             <div class="autocomplete-dropdown" id="newStreetDropdown" style="display:none"></div>
           </div>
         </div>
-        <div id="newSelectedStreet" style="display:none;padding:10px;background:#f0fdf4;border-radius:6px;margin-bottom:12px;">
+        <div id="newSelectedStreet" style="display:none;padding:10px;background:#e6f4f0;border-radius:6px;margin-bottom:12px;">
           <p id="newStreetDisplay" style="font-weight:600;"></p>
-          <p id="newStreetDetails" style="font-size:13px;color:#64748b;"></p>
+          <p id="newStreetDetails" style="font-size:var(--fs-sm);color:var(--color-text-muted);"></p>
         </div>
         <div class="form-row">
           <div class="form-group"><label>Número *</label><input type="text" id="newNumCalle"></div>
@@ -82,9 +86,9 @@
           <input type="text" id="zonaSearch" placeholder="Cerca responsable de zona..." autocomplete="off">
           <div class="autocomplete-dropdown" id="zonaDropdown" style="display:none"></div>
         </div>
-        <div id="zonaSelected" style="display:none;margin-top:6px;padding:8px 12px;background:#f0fdf4;border-radius:6px;">
+        <div id="zonaSelected" style="display:none;margin-top:6px;padding:8px 12px;background:#e6f4f0;border-radius:6px;">
           <span id="zonaSelectedName" style="font-weight:600;"></span>
-          <span id="zonaRemoveBtn" style="cursor:pointer;color:#ef4444;margin-left:8px;font-size:13px;" onclick="removeZona()">✕</span>
+          <span id="zonaRemoveBtn" style="cursor:pointer;color:#e57373;margin-left:8px;font-size:var(--fs-sm);" onclick="removeZona()">✕</span>
         </div>
         <input type="hidden" id="responsableZona">
       </div>
@@ -116,6 +120,7 @@
 </main>
 <div class="toast" id="toast"></div>
 <script src="/js/sidebar.js"></script>
+<script src="/js/validate.js"></script>
 <script>
 const isEdit = new URLSearchParams(location.search).get('id');
 let selectedCentreId = null;
@@ -132,7 +137,7 @@ async function initForm() {
     const role = getRole();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (role !== 1 && role !== 2 && !(role === 3 && isEdit)) {
-        alert('No tens permís per crear projectes');
+        await alertModal('No tens permís per crear projectes');
         window.location.href = '/projectes.html';
         return;
     }
@@ -184,12 +189,12 @@ function setupSearch(inputId, dropdownId, users, type) {
         if (filtered.length) {
             dropdown.innerHTML = filtered.map(u =>
                 `<div onclick="select${capitalize(type)}(${JSON.stringify(u).replace(/"/g, "'")})" style="cursor:pointer;padding:6px 10px;border-bottom:1px solid #f1f5f9;">
-                    ${u.Nom} ${u.Cognoms} <span style="color:#64748b;font-size:12px;">(${u.nivell_nom || ''})</span>
+                    ${u.Nom} ${u.Cognoms} <span style="color:var(--color-text-muted);font-size:var(--fs-xs);">(${u.nivell_nom || ''})</span>
                 </div>`
             ).join('');
             dropdown.style.display = 'block';
         } else {
-            dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">Cap resultat</div>';
+            dropdown.innerHTML = '<div style="padding:8px;color:var(--color-text-soft);font-size:var(--fs-sm);">Cap resultat</div>';
             dropdown.style.display = 'block';
         }
     });
@@ -248,15 +253,15 @@ function renderProjRespTags() {
     let html = '';
     if (isEdit && role === 3) {
         html += _projRespExisting.map(u =>
-            `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e0f2fe;border-radius:20px;font-size:13px;opacity:0.6;">
+            `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e6f4f0;border-radius:20px;font-size:var(--fs-sm);opacity:0.6;">
                 ${u.Nom} ${u.Cognoms}
             </span>`
         ).join('');
     }
     html += _projRespSelected.map(u =>
-        `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e0f2fe;border-radius:20px;font-size:13px;">
+        `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#e6f4f0;border-radius:20px;font-size:var(--fs-sm);">
             ${u.Nom} ${u.Cognoms}
-            <span onclick="removeProjResp(${u.idUsuario_APP})" style="cursor:pointer;color:#ef4444;font-weight:700;">✕</span>
+            <span onclick="removeProjResp(${u.idUsuario_APP})" style="cursor:pointer;color:#e57373;font-weight:700;">✕</span>
         </span>`
     ).join('');
     container.innerHTML = html;
@@ -285,15 +290,15 @@ function renderTrebTags() {
     let html = '';
     if (isEdit && role === 3) {
         html += _trebExisting.map(u =>
-            `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fef3c7;border-radius:20px;font-size:13px;opacity:0.6;">
+            `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fef3c7;border-radius:20px;font-size:var(--fs-sm);opacity:0.6;">
                 ${u.Nom} ${u.Cognoms}
             </span>`
         ).join('');
     }
     html += _trebSelected.map(u =>
-        `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fef3c7;border-radius:20px;font-size:13px;">
+        `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#fef3c7;border-radius:20px;font-size:var(--fs-sm);">
             ${u.Nom} ${u.Cognoms}
-            <span onclick="removeTreb(${u.idUsuario_APP})" style="cursor:pointer;color:#ef4444;font-weight:700;">✕</span>
+            <span onclick="removeTreb(${u.idUsuario_APP})" style="cursor:pointer;color:#e57373;font-weight:700;">✕</span>
         </span>`
     ).join('');
     container.innerHTML = html;
@@ -349,18 +354,33 @@ async function saveProject(e) {
     e.preventDefault();
     if (!requireAuth()) return;
     const role = getRole();
-    const nom = document.getElementById('nomProjecte').value.trim();
-    if (!nom) { alert('El nom del projecte és obligatori'); return; }
 
+    // Coherència de dates: la fi no pot ser anterior a l'inici
+    const dateOrder = () => {
+        const ini = document.getElementById('fechaInicio').value;
+        const fi = document.getElementById('fechaFin').value;
+        if (ini && fi && new Date(fi) < new Date(ini)) {
+            return "La data de fi no pot ser anterior a la d'inici";
+        }
+        return null;
+    };
+    const v = validateForm([
+        { id: 'nomProjecte', rules: ['required'] },
+        { id: 'plazas',      rules: ['number'] },
+        { id: 'fechaFin',    rules: [dateOrder] },
+    ]);
+    if (!v.ok) return;
+
+    const nom = document.getElementById('nomProjecte').value.trim();
     let idCentre = selectedCentreId;
 
     if (!idCentre && document.getElementById('newCentreForm').style.display === 'block') {
         const centreName = document.getElementById('newCentreName').value.trim();
-        if (!centreName) { alert('Nom del centre obligatori'); return; }
+        if (!centreName) { alertModal('Nom del centre obligatori'); return; }
         const idCallejero = document.getElementById('newIdCallejero').value;
         const numCalle = document.getElementById('newNumCalle').value.trim();
-        if (!idCallejero) { alert('Cal seleccionar un carrer de la llista'); return; }
-        if (!numCalle) { alert('Cal indicar el número'); return; }
+        if (!idCallejero) { alertModal('Cal seleccionar un carrer de la llista'); return; }
+        if (!numCalle) { alertModal('Cal indicar el número'); return; }
         const pis = document.getElementById('newPis').value.trim();
         const escala = document.getElementById('newEscala').value.trim();
 
@@ -381,7 +401,7 @@ async function saveProject(e) {
         finally { hideLoading(); }
     }
 
-    if (!idCentre) { alert('Cal seleccionar o crear un centre d\'activitats'); return; }
+    if (!idCentre) { alertModal('Cal seleccionar o crear un centre d\'activitats'); return; }
 
     const payload = {
         projecte: {
@@ -400,7 +420,7 @@ async function saveProject(e) {
         payload.projecte.treballadors_add = _trebSelected.map(u => u.idUsuario_APP);
     } else {
         const zonaId = document.getElementById('responsableZona').value;
-        if (!zonaId) { alert('Cal seleccionar un responsable de zona'); return; }
+        if (!zonaId) { alertModal('Cal seleccionar un responsable de zona'); return; }
         payload.projecte.responsable_zona = parseInt(zonaId);
         payload.projecte.responsables_projecte = _projRespSelected.map(u => u.idUsuario_APP);
         payload.projecte.treballadors = _trebSelected.map(u => u.idUsuario_APP);
@@ -436,10 +456,10 @@ async function searchCentres() {
         const data = await res.json();
         if (data.length) {
             dropdown.innerHTML = data.map(c => `<div onclick="selectCentre(${c.idcentre_activitats}, '${c.nom_centre_activitats.replace(/'/g, "\\'")}', '${(c.tipus_via || '') + ' ' + (c.Nom_calle || '')}')">${c.nom_centre_activitats} — ${c.tipus_via || ''} ${c.Nom_calle || ''}</div>`).join('');
-            dropdown.innerHTML += `<hr style="margin:4px 0"><div onclick="showNewCentreForm()" style="color:#2563eb;font-weight:600;">+ Crear nou centre</div>`;
+            dropdown.innerHTML += `<hr style="margin:4px 0"><div onclick="showNewCentreForm()" style="color:#4f9c8d;font-weight:600;">+ Crear nou centre</div>`;
             dropdown.style.display = 'block';
         } else {
-            dropdown.innerHTML = `<div onclick="showNewCentreForm()" style="color:#2563eb;font-weight:600;">+ Crear nou centre</div>`;
+            dropdown.innerHTML = `<div onclick="showNewCentreForm()" style="color:#4f9c8d;font-weight:600;">+ Crear nou centre</div>`;
             dropdown.style.display = 'block';
         }
     } catch {}
@@ -502,7 +522,7 @@ async function searchNewStreets() {
             ).join('');
             dropdown.style.display = 'block';
         } else {
-            dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">No s\'ha trobat cap carrer.</div>';
+            dropdown.innerHTML = '<div style="padding:8px;color:var(--color-text-soft);font-size:var(--fs-sm);">No s\'ha trobat cap carrer.</div>';
             dropdown.style.display = 'block';
         }
     } catch {}

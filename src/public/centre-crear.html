@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crear Centre — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 <style>.autocomplete-dropdown { position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:0 0 6px 6px;max-height:200px;overflow-y:auto;z-index:100; }</style>
 </head>
@@ -25,9 +29,9 @@
           <div class="autocomplete-dropdown" id="streetDropdown" style="display:none"></div>
         </div>
       </div>
-      <div id="selectedStreet" style="display:none;padding:10px;background:#f0fdf4;border-radius:6px;margin-bottom:12px;">
+      <div id="selectedStreet" style="display:none;padding:10px;background:#e6f4f0;border-radius:6px;margin-bottom:12px;">
         <p id="streetDisplay" style="font-weight:600;"></p>
-        <p id="streetDetails" style="font-size:13px;color:#64748b;"></p>
+        <p id="streetDetails" style="font-size:var(--fs-sm);color:var(--color-text-muted);"></p>
       </div>
       <div class="form-row">
         <div class="form-group">
@@ -53,6 +57,7 @@
 </main>
 <div class="toast" id="toast"></div>
 <script src="/js/sidebar.js"></script>
+<script src="/js/validate.js"></script>
 <script>
 let searchTimeout;
 
@@ -60,7 +65,7 @@ async function initForm() {
     if (!requireAuth()) return;
     const role = getRole();
     if (role !== 1 && role !== 2) {
-        alert('No tens permís per crear centres');
+        await alertModal('No tens permís per crear centres');
         window.location.href = '/centres.html';
         return;
     }
@@ -93,7 +98,7 @@ async function searchStreets() {
             ).join('');
             dropdown.style.display = 'block';
         } else {
-            dropdown.innerHTML = '<div style="padding:8px;color:#94a3b8;font-size:13px;">No s\'ha trobat cap carrer. Només usuaris amb accés Total poden crear-ne de nous.</div>';
+            dropdown.innerHTML = '<div style="padding:8px;color:var(--color-text-soft);font-size:var(--fs-sm);">No s\'ha trobat cap carrer. Només usuaris amb accés Total poden crear-ne de nous.</div>';
             dropdown.style.display = 'block';
         }
     } catch {}
@@ -110,12 +115,18 @@ function selectStreet(id, tipusVia, nomCalle, barri, cp) {
 
 async function saveCentre(e) {
     e.preventDefault();
+
+    const v = validateForm([
+        { id: 'nomCentre', rules: ['required'] },
+        { id: 'numCalle',  rules: ['required', 'number'] },
+    ]);
+    if (!v.ok) return;
+
     const nomCentre = document.getElementById('nomCentre').value.trim();
-    if (!nomCentre) { showToast('El nom del centre és obligatori', 'error'); return; }
     const idCallejero = document.getElementById('idCallejero').value;
     const numCalle = document.getElementById('numCalle').value.trim();
+    // El carrer es tria d'una llista (camp ocult): avís puntual amb toast
     if (!idCallejero) { showToast('Cal seleccionar un carrer de la llista', 'error'); return; }
-    if (!numCalle) { showToast('Cal indicar el número', 'error'); return; }
     const pis = document.getElementById('pis').value.trim();
     const escala = document.getElementById('escala').value.trim();
 

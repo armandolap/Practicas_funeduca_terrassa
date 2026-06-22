@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informes — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -30,7 +34,7 @@
     <button class="btn btn-sm btn-primary" onclick="exportAllCSV()">Exportar Tots</button>
   </div>
   <div class="card" id="reportContent">
-    <p style="color:#94a3b8;text-align:center;padding:40px;">Selecciona un informe per visualitzar-lo</p>
+    <p style="color:var(--color-text-soft);text-align:center;padding:40px;">Selecciona un informe per visualitzar-lo</p>
   </div>
 </main>
 <script src="/js/sidebar.js"></script>
@@ -50,14 +54,14 @@ async function loadReport(name) {
         currentData = data;
         renderReport(name, data);
     } catch (err) {
-        document.getElementById('reportContent').innerHTML = '<p style="color:#ef4444;">Error carregant informe</p>';
+        document.getElementById('reportContent').innerHTML = '<p style="color:#e57373;">Error carregant informe</p>';
     }
 }
 
 function renderReport(name, data) {
     const div = document.getElementById('reportContent');
     if (!data || (Array.isArray(data) && data.length === 0)) {
-        div.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px;">Sense dades</p>';
+        div.innerHTML = '<p style="color:var(--color-text-soft);text-align:center;padding:20px;">Sense dades</p>';
         return;
     }
 
@@ -100,7 +104,7 @@ function downloadCSV(csv, filename) {
 }
 
 function exportCSV() {
-    if (!currentReport || !currentData) { alert('Selecciona un informe primer'); return; }
+    if (!currentReport || !currentData) { alertModal('Selecciona un informe primer'); return; }
     const csv = convertToCSV(currentData);
     downloadCSV(csv, `informe_${currentReport.replace(/\//g, '_')}.csv`);
 }
