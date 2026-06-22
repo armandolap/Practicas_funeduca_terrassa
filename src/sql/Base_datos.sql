@@ -3,7 +3,7 @@
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-
+SET GLOBAL event_scheduler = ON;
 -- -----------------------------------------------------
 -- Schema crm_funeduca
 -- -----------------------------------------------------
@@ -499,6 +499,49 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`Responsables` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4;
+
+DELIMITER $$
+CREATE FUNCTION calcTempsEntitat(altaDate DATE) 
+RETURNS VARCHAR(50)
+DETERMINISTIC
+BEGIN
+    DECLARE anys INT;
+    DECLARE mesos INT;
+    -- Calculamos años completos
+    SET anys = TIMESTAMPDIFF(YEAR, altaDate, CURDATE());
+    -- Calculamos meses restantes (meses totales - años12)
+    SET mesos = TIMESTAMPDIFF(MONTH, altaDate, CURDATE()) - (anys*12);
+    IF anys > 0 THEN
+        IF anys = 1 THEN
+            RETURN '1 any';
+        ELSE
+            RETURN CONCAT(anys, ' anys');
+        END IF;
+    ELSEIF mesos > 0 THEN
+        IF mesos = 1 THEN
+            RETURN '1 mes';
+        ELSE
+            RETURN CONCAT(mesos, ' mesos');
+        END IF;
+    ELSE
+        RETURN '0';
+    END IF;
+END$$
+DELIMITER ;
+
+drop event if exists actualizar_tiempo_entidad_edad ;
+delimiter //
+create event actualizar_tiempo_entidad_edad
+ on schedule every 1 day 
+ STARTS CURRENT_TIMESTAMP
+do
+begin
+	UPDATE client
+    SET C_temps_a_lentitat = calcTempsEntitat(Data_d_alta),
+		C_edad = TIMESTAMPDIFF(YEAR, Fecha_nacimiento, CURDATE())
+    WHERE data_d_alta IS NOT NULL;
+end //
+delimiter ;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
