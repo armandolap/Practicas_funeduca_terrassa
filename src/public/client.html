@@ -29,6 +29,23 @@
     </div>
   </div>
 </div>
+<div id="baixaModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBaixaModal()">
+  <div class="modal">
+    <h2>Donar de baixa</h2>
+    <div class="form-group">
+      <label>Motiu de baixa</label>
+      <select id="baixaMotiuSelect"></select>
+    </div>
+    <div class="form-group">
+      <label>Data de baixa</label>
+      <input type="date" id="baixaDataInput">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeBaixaModal()">Cancel·lar</button>
+      <button class="btn btn-danger" onclick="confirmBaixa()">Donar de baixa</button>
+    </div>
+  </div>
+</div>
 <div id="nacModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeNacModal()">
   <div class="modal">
     <h2>Afegir nacionalitat</h2>
@@ -108,8 +125,10 @@ async function loadClient() {
                                    <div style="margin-top:6px;font-weight:400;font-size:var(--fs-sm);">
                                        Data: ${c.Data_baixa ? new Date(c.Data_baixa).toLocaleDateString() : '-'}<br>
                                        Motiu: ${c.Nom_motiu_baixa || '-'}
-                                   </div>`
-                                : `<span class="badge badge-green">No</span>`}
+                                   </div>
+                                   ${canEdit ? `<button class="btn btn-sm btn-secondary" style="margin-top:8px;" onclick="donarAlta()">Donar d'alta</button>` : ''}`
+                                : `<span class="badge badge-green">No</span>
+                                   ${canEdit ? `<div style="margin-top:8px;"><button class="btn btn-sm btn-danger" onclick="showBaixa()">Donar de baixa</button></div>` : ''}`}
                         </div>
                     </div>
                 </div>
@@ -238,6 +257,60 @@ async function assignProject(projId) {
 }
 
 let paisosCache = null;
+let motiusBaixaCache = null;
+
+async function showBaixa() {
+    const modal = document.getElementById('baixaModal');
+    const select = document.getElementById('baixaMotiuSelect');
+    const dataInput = document.getElementById('baixaDataInput');
+    modal.style.display = 'flex';
+    const today = new Date().toISOString().split('T')[0];
+    dataInput.value = today;
+    dataInput.max = today;
+    if (!motiusBaixaCache) {
+        select.innerHTML = '<option>Carregant...</option>';
+        try {
+            const res = await authFetch('/motiuBaixa');
+            motiusBaixaCache = await res.json();
+        } catch (e) { showToast('Error carregant motius', 'error'); motiusBaixaCache = []; }
+    }
+    select.innerHTML = '<option value="">Selecciona un motiu...</option>' +
+        motiusBaixaCache.map(m => `<option value="${m.idMotiu_baixa}">${m.Nom_motiu_baixa}</option>`).join('');
+    select.focus();
+}
+
+function closeBaixaModal() {
+    document.getElementById('baixaModal').style.display = 'none';
+}
+
+async function confirmBaixa() {
+    const Motiu_baixa = parseInt(document.getElementById('baixaMotiuSelect').value);
+    const Data_baixa = document.getElementById('baixaDataInput').value;
+    if (!Motiu_baixa) { showToast('Selecciona un motiu', 'error'); return; }
+    if (!Data_baixa) { showToast('Indica la data', 'error'); return; }
+    try {
+        showLoading();
+        const res = await authFetch(`/client/${clientId}/baixa`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ Motiu_baixa, Data_baixa })
+        });
+        if (res.ok) { showToast('Persona donada de baixa', 'success'); closeBaixaModal(); loadClient(); }
+        else { const d = await res.json().catch(() => ({})); showToast(d.message || 'Error', 'error'); }
+    } catch (e) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
+}
+
+async function donarAlta() {
+    if (!await confirmModal('Tornar a donar d\'alta aquesta persona?')) return;
+    try {
+        showLoading();
+        const res = await authFetch(`/client/${clientId}/alta`, { method: 'PUT' });
+        if (res.ok) { showToast('Persona donada d\'alta', 'success'); loadClient(); }
+        else { showToast('Error', 'error'); }
+    } catch (e) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
+}
 
 async function showAddNacionalitat() {
     const modal = document.getElementById('nacModal');

@@ -215,6 +215,36 @@ async function updateFullClient(req, res) {
     }
 }
 
+async function baixaClient(req, res) {
+    try {
+        const existing = await repo.getDetailById(req.params.id);
+        if (!existing) return res.status(404).json({ message: "Client no trobat" });
+        const { Motiu_baixa, Data_baixa } = req.body || {};
+        const motiu = parseInt(Motiu_baixa);
+        if (!Number.isFinite(motiu)) return res.status(400).json({ message: "Motiu de baixa obligatori" });
+        const data = Data_baixa || new Date().toISOString().split("T")[0];
+        if (!isValidDate(data)) return res.status(400).json({ message: "Data de baixa no és una data vàlida" });
+        if (isFutureDate(data)) return res.status(400).json({ message: "Data de baixa no pot ser futura" });
+        await repo.setBaixa(req.params.id, { Motiu_baixa: motiu, Data_baixa: data });
+        res.json({ message: "Client donat de baixa" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error donant de baixa" });
+    }
+}
+
+async function altaClient(req, res) {
+    try {
+        const existing = await repo.getDetailById(req.params.id);
+        if (!existing) return res.status(404).json({ message: "Client no trobat" });
+        await repo.setAlta(req.params.id);
+        res.json({ message: "Client donat d'alta" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error donant d'alta" });
+    }
+}
+
 async function addClientNacionalitat(req, res) {
     try {
         const existing = await repo.getDetailById(req.params.id);
@@ -241,4 +271,4 @@ async function removeClientNacionalitat(req, res) {
     }
 }
 
-module.exports = { getAllClients, getClientById, createClient, updateClient, deleteClient, createFullClient, updateFullClient, addClientNacionalitat, removeClientNacionalitat };
+module.exports = { getAllClients, getClientById, createClient, updateClient, deleteClient, createFullClient, updateFullClient, addClientNacionalitat, removeClientNacionalitat, baixaClient, altaClient };

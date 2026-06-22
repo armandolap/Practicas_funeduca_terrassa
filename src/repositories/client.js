@@ -203,6 +203,22 @@ async function update(id, clientData) {
     return result.affectedRows;
 }
 
+async function setBaixa(id, { Motiu_baixa, Data_baixa }) {
+    const [result] = await pool.query(
+        `UPDATE client SET Baixa = 1, Motiu_baixa = ?, Data_baixa = ? WHERE idClient = ?`,
+        [Motiu_baixa ?? null, Data_baixa, id]
+    );
+    return result.affectedRows;
+}
+
+async function setAlta(id) {
+    const [result] = await pool.query(
+        `UPDATE client SET Baixa = 0, Motiu_baixa = NULL, Data_baixa = NULL WHERE idClient = ?`,
+        [id]
+    );
+    return result.affectedRows;
+}
+
 async function remove(id) {
     await pool.query(`DELETE FROM proyectos_has_client WHERE idClient = ?`, [id]);
     await pool.query(`DELETE FROM nacionalitat WHERE idClient = ?`, [id]);
@@ -315,4 +331,4 @@ async function updateFull(id, data) {
     }
 }
 
-module.exports = { getAll, getFiltered, getDetailById, getProjectsByClient, getNacionalitats, addNacionalitat, removeNacionalitat, create, update, remove, createFull, updateFull };
+module.exports = { getAll, getFiltered, getDetailById, getProjectsByClient, getNacionalitats, addNacionalitat, removeNacionalitat, setBaixa, setAlta, create, update, remove, createFull, updateFull };
