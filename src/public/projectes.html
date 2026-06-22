@@ -61,7 +61,7 @@ async function loadProjects() {
                 <td>${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</td>
                 <td>${p.plazas || 0}</td>
                 <td>${p.inscritos || 0}</td>
-                <td>${p.responsable_nom ? `${p.responsable_nom} ${p.responsable_cognoms || ''}` : '-'}</td>
+                <td>${p.responsable_zona_nom ? `${p.responsable_zona_nom} ${p.responsable_zona_cognoms || ''}` : '-'}</td>
                 <td>${p.nom_centre_activitats || '-'}</td>
             </tr>
         `).join('');

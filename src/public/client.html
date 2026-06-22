@@ -80,9 +80,9 @@ async function loadClient() {
         document.getElementById('clientContent').innerHTML = `
             <a class="back-link" href="/clients.html">← Tornar</a>
             <div class="detail-header">
-                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between;">
                     <h1 style="margin-bottom:0;">${c.Nom || ''} ${c.Cognoms || ''}</h1>
-                    ${canEdit ? `<button class="btn btn-sm btn-primary" onclick="window.location.href='/crear-persona.html?id=${clientId}'">Editar</button>` : ''}
+                    ${canEdit ? `<button class="btn btn-sm btn-secondary" onclick="window.location.href='/crear-persona.html?id=${clientId}'">Editar</button>` : ''}
                 </div>
             </div>
             <div class="card-grid card-grid-3">

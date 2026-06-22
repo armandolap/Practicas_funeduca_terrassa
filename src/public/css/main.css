@@ -134,7 +134,7 @@ tr.clickable { cursor: pointer; }
 .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
 
 /* Toast */
-.toast { position: fixed; bottom: 20px; right: 20px; background: var(--color-text-strong); color: var(--color-surface); padding: 12px 20px; border-radius: 8px; font-size: var(--fs-base); font-weight: 600; z-index: 2000; opacity: 0; transition: 0.3s; }
+.toast { position: fixed; top: 20px; right: 20px; background: var(--color-text-strong); color: var(--color-surface); padding: 12px 20px; border-radius: 8px; font-size: var(--fs-base); font-weight: 600; z-index: 2000; opacity: 0; transition: 0.3s; }
 .toast.show { opacity: 1; }
 .toast.success { background: var(--color-success); }
 .toast.error { background: var(--color-danger); }
@@ -315,7 +315,7 @@ tr.clickable { cursor: pointer; }
     th, td { padding: 8px 10px; font-size: var(--fs-sm); }
     .card { padding: 16px; }
     .btn { padding: 8px 12px; }
-    .toast { left: 12px; right: 12px; bottom: 12px; text-align: center; }
+    .toast { left: 12px; right: 12px; top: 64px; bottom: auto; text-align: center; }
 }
 
 /* ============ VALIDACIÓ DE FORMULARIS (validate.js) ============ */
