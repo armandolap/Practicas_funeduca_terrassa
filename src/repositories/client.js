@@ -167,19 +167,37 @@ async function create(clientData) {
             Pais_naixement, Risc, Resultat_academic, Motiu_baixa, idSituacio_economica,
             idSebas, idNecessitat_especial, derivacio_serveis_socials, Curs_actual,
             idDomicili, Baixa } = clientData;
-    const [result] = await pool.query(`
-        INSERT INTO client (idFamilia, idRol, idGenere, Nom, Cognoms, Telefon, Correu_electronic,
-            Data_d_alta, C_temps_a_lentitat, Fecha_nacimiento, C_edad, Data_baixa,
-            Pais_naixement, Risc, Resultat_academic, Motiu_baixa, idSituacio_economica,
-            idSebas, idNecessitat_especial, derivacio_serveis_socials, Curs_actual,
-            idDomicili, Baixa)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [idFamilia, idRol, idGenere, Nom, Cognoms, Telefon ?? null, Correu_electronic ?? null,
-        Data_d_alta, C_temps_a_lentitat, Fecha_nacimiento, C_edad, Data_baixa ?? null,
-        Pais_naixement, Risc, Resultat_academic, Motiu_baixa ?? null, idSituacio_economica,
-        idSebas, idNecessitat_especial ?? null, derivacio_serveis_socials, Curs_actual ?? null,
-        idDomicili ?? null, Baixa ?? 0]);
-    return result.insertId;
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        const [result] = await conn.query(`
+            INSERT INTO client (idFamilia, idRol, idGenere, Nom, Cognoms, Telefon, Correu_electronic,
+                Data_d_alta, C_temps_a_lentitat, Fecha_nacimiento, C_edad, Data_baixa,
+                Pais_naixement, Risc, Resultat_academic, Motiu_baixa, idSituacio_economica,
+                idSebas, idNecessitat_especial, derivacio_serveis_socials, Curs_actual,
+                idDomicili, Baixa)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [idFamilia, idRol, idGenere, Nom, Cognoms, Telefon ?? null, Correu_electronic ?? null,
+            Data_d_alta, C_temps_a_lentitat, Fecha_nacimiento, C_edad, Data_baixa ?? null,
+            Pais_naixement, Risc, Resultat_academic, Motiu_baixa ?? null, idSituacio_economica,
+            idSebas, idNecessitat_especial ?? null, derivacio_serveis_socials, Curs_actual ?? null,
+            idDomicili ?? null, Baixa ?? 0]);
+        const idClient = result.insertId;
+        // Reflectim el país de naixement com a nacionalitat inicial del client.
+        if (Pais_naixement) {
+            await conn.query(
+                `INSERT IGNORE INTO nacionalitat (idPais, idClient) VALUES (?, ?)`,
+                [Pais_naixement, idClient]
+            );
+        }
+        await conn.commit();
+        return idClient;
+    } catch (error) {
+        await conn.rollback();
+        throw error;
+    } finally {
+        conn.release();
+    }
 }
 
 async function update(id, clientData) {
@@ -269,7 +287,7 @@ async function createFull(data) {
             client.derivacio_serveis_socials ?? 0, client.Curs_actual ?? null, idDomicili, 0]);
         const idClient = rCli.insertId;
         if (nacionalitat) {
-            await conn.query(`INSERT INTO nacionalitat (idPais, idClient) VALUES (?, ?)`, [nacionalitat, idClient]);
+            await conn.query(`INSERT IGNORE INTO nacionalitat (idPais, idClient) VALUES (?, ?)`, [nacionalitat, idClient]);
         }
         await conn.commit();
         return idClient;
