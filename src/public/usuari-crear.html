@@ -49,6 +49,7 @@
     </div>
   </form>
 </main>
+<div class="toast" id="toast"></div>
 <script src="/js/sidebar.js"></script>
 <script>
 async function init() {
@@ -77,19 +78,21 @@ async function saveUser(e) {
     const password = document.getElementById('password').value;
 
     if (!nom || !cognoms || !username || !idNivel_acceso || !password) {
-        alert('Omple tots els camps obligatoris'); return;
+        showToast('Omple tots els camps obligatoris', 'error'); return;
     }
 
     try {
+        showLoading();
         const res = await authFetch('/usuario', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ Nom: nom, Cognoms: cognoms, username, email: email || null, Telefon: telefon, idNivel_acceso: parseInt(idNivel_acceso), password })
         });
         const data = await res.json();
-        if (res.ok) { alert('Usuari creat correctament'); window.location.href = `/usuari.html?id=${data.id}`; }
-        else { alert(data.error || 'Error creant usuari'); }
-    } catch (err) { alert('Error de connexió'); }
+        if (res.ok) { notifyAndRedirect('Usuari creat correctament', `/usuari.html?id=${data.id}`); }
+        else { showToast(data.error || 'Error creant usuari', 'error'); }
+    } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 init();

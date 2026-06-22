@@ -50,6 +50,7 @@ async function searchClients() {
 
 async function addClient(clientId) {
     try {
+        showLoading();
         const res = await authFetch(`/projectes/${projectId}/clients`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -58,17 +59,20 @@ async function addClient(clientId) {
         if (res.ok) { showToast('Participant afegit', 'success'); closeModal(); loadProject(); }
         else { showToast('Error en afegir participant', 'error'); }
     } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 async function removeClient(clientId) {
-    if (!confirm('Eliminar aquest participant del projecte?')) return;
+    if (!await confirmModal('Eliminar aquest participant del projecte?')) return;
     try {
+        showLoading();
         const res = await authFetch(`/projectes/${projectId}/clients/${clientId}`, {
             method: 'DELETE'
         });
         if (res.ok) { showToast('Participant eliminat', 'success'); loadProject(); }
         else { showToast('Error en eliminar participant', 'error'); }
     } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 function openAddModal() { document.getElementById('modalOverlay').style.display = 'flex'; }

@@ -616,9 +616,18 @@ async function submitForm() {
     });
     const data = await res.json();
     if (res.ok) {
-      showToast(isEditMode ? "Persona actualitzada correctament" : `Persona creada correctament (ID: ${data.id})`, "success");
-      if (!isEditMode) resetForm();
-      else setTimeout(() => window.location.href = `/client.html?id=${editPersonId}`, 1000);
+      btnCrear.disabled = false;
+      btnCrear.textContent = isEditMode ? "ACTUALITZAR" : "CREAR";
+      if (isEditMode) {
+        // Avís a dalt a la dreta i redirigeix a la fitxa
+        notifyAndRedirect("Persona actualitzada correctament", `/client.html?id=${editPersonId}`);
+      } else {
+        // Sense redirecció: avís a dalt a la dreta i reset del formulari
+        if (typeof notifyTop === "function") notifyTop(`Persona creada correctament (ID: ${data.id})`, "success");
+        else showToast(`Persona creada correctament (ID: ${data.id})`, "success");
+        resetForm();
+      }
+      return;
     } else {
       showToast(data.message || (isEditMode ? "Error actualitzant" : "Error creant"), "error");
     }

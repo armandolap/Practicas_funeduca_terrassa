@@ -51,6 +51,7 @@
     </div>
   </form>
 </main>
+<div class="toast" id="toast"></div>
 <script src="/js/sidebar.js"></script>
 <script>
 let searchTimeout;
@@ -110,15 +111,16 @@ function selectStreet(id, tipusVia, nomCalle, barri, cp) {
 async function saveCentre(e) {
     e.preventDefault();
     const nomCentre = document.getElementById('nomCentre').value.trim();
-    if (!nomCentre) { alert('El nom del centre és obligatori'); return; }
+    if (!nomCentre) { showToast('El nom del centre és obligatori', 'error'); return; }
     const idCallejero = document.getElementById('idCallejero').value;
     const numCalle = document.getElementById('numCalle').value.trim();
-    if (!idCallejero) { alert('Cal seleccionar un carrer de la llista'); return; }
-    if (!numCalle) { alert('Cal indicar el número'); return; }
+    if (!idCallejero) { showToast('Cal seleccionar un carrer de la llista', 'error'); return; }
+    if (!numCalle) { showToast('Cal indicar el número', 'error'); return; }
     const pis = document.getElementById('pis').value.trim();
     const escala = document.getElementById('escala').value.trim();
 
     try {
+        showLoading();
         const centreRes = await authFetch('/centre-activitats', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -129,12 +131,12 @@ async function saveCentre(e) {
         });
         const centreData = await centreRes.json();
         if (centreRes.ok) {
-            alert('Centre creat');
-            window.location.href = `/centre.html?id=${centreData.id}`;
+            notifyAndRedirect('Centre creat', `/centre.html?id=${centreData.id}`);
         } else {
-            alert(centreData.message || 'Error creant centre');
+            showToast(centreData.message || 'Error creant centre', 'error');
         }
-    } catch (err) { alert('Error de connexió'); }
+    } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 initForm();

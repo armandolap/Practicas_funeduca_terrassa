@@ -20,9 +20,98 @@ function requireAuth() {
 }
 
 function logout() {
+    showLoading();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     window.location.href = '/login.html';
+}
+
+// ===== Overlay de càrrega (spinner global) =====
+// Mostra un overlay amb spinner. Es pot cridar diverses vegades (es porta un comptador).
+let _loadingCount = 0;
+function showLoading() {
+    _loadingCount++;
+    let ov = document.getElementById('globalLoading');
+    if (!ov) {
+        ov = document.createElement('div');
+        ov.id = 'globalLoading';
+        ov.className = 'loading-overlay';
+        ov.innerHTML = '<div class="spinner"></div>';
+        document.body.appendChild(ov);
+    }
+    ov.classList.add('show');
+}
+function hideLoading() {
+    _loadingCount = Math.max(0, _loadingCount - 1);
+    if (_loadingCount === 0) {
+        const ov = document.getElementById('globalLoading');
+        if (ov) ov.classList.remove('show');
+    }
+}
+
+// ===== Modal de confirmació =====
+// Substitueix confirm() natiu. Retorna una Promise<boolean>.
+// opts: { okText, cancelText, danger }
+function confirmModal(message, opts = {}) {
+    const okText = opts.okText || 'Confirmar';
+    const cancelText = opts.cancelText || 'Cancel·lar';
+    const okClass = opts.danger === false ? 'btn-primary' : 'btn-danger';
+    return new Promise(resolve => {
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML =
+            `<div class="modal confirm-box">`
+            + `<p></p>`
+            + `<div class="modal-actions">`
+            + `<button class="btn btn-secondary" data-act="cancel">${cancelText}</button>`
+            + `<button class="btn ${okClass}" data-act="ok">${okText}</button>`
+            + `</div></div>`;
+        overlay.querySelector('p').textContent = message;
+        const close = (val) => { overlay.remove(); resolve(val); };
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) close(false);
+            const act = e.target.getAttribute('data-act');
+            if (act === 'ok') close(true);
+            if (act === 'cancel') close(false);
+        });
+        document.body.appendChild(overlay);
+        overlay.querySelector('[data-act="ok"]').focus();
+    });
+}
+
+// Mostra un avís a dalt a la dreta. Crea el seu propi toast (independent del toast d'errors).
+// Es tanca sol després de `duration` ms.
+function notifyTop(msg, type = 'success', duration = 3000) {
+    let t = document.getElementById('topToast');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'topToast';
+        document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.className = `toast top ${type} show`;
+    clearTimeout(t._hideTimer);
+    t._hideTimer = setTimeout(() => { t.className = 'toast top'; }, duration);
+    return t;
+}
+
+// Deixa un avís pendent perquè es mostri a la pàgina de destí i redirigeix IMMEDIATAMENT.
+function notifyAndRedirect(msg, url, type = 'success') {
+    try { sessionStorage.setItem('pendingToast', JSON.stringify({ msg, type })); } catch {}
+    window.location.href = url;
+}
+
+// Mostra l'avís pendent (desat per notifyAndRedirect) si n'hi ha. Es crida en carregar la pàgina.
+function showPendingToast() {
+    let raw;
+    try { raw = sessionStorage.getItem('pendingToast'); } catch { return; }
+    if (!raw) return;
+    sessionStorage.removeItem('pendingToast');
+    try {
+        const { msg, type } = JSON.parse(raw);
+        notifyTop(msg, type);
+    } catch {}
 }
 
 // Mostra una notificació toast. Requereix un <div id="toast"> a la pàgina.
@@ -87,4 +176,5 @@ function renderSidebar(activePage) {
         html += `<div class="user-info">${user.Nom} ${user.Cognoms || ''}<br><small style="cursor:pointer;color:#ef4444;" onclick="logout()">Tancar sessió</small></div>`;
     }
     sidebar.innerHTML = html;
+    showPendingToast();
 }

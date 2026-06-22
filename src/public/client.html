@@ -114,14 +114,16 @@ function setProjFilter(f) {
 }
 
 async function removeFromProj(projId) {
-    if (!confirm('Treure aquesta persona del projecte?')) return;
+    if (!await confirmModal('Treure aquesta persona del projecte?')) return;
     try {
+        showLoading();
         const res = await authFetch(`/projectes/${projId}/clients/${clientId}`, {
             method: 'DELETE'
         });
         if (res.ok) { showToast('Persona treta del projecte', 'success'); loadClient(); }
         else { showToast('Error', 'error'); }
     } catch (e) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 const debounceProjSearch = debounce(searchProjects, 300);
@@ -164,6 +166,7 @@ function closeAssignModal() {
 
 async function assignProject(projId) {
     try {
+        showLoading();
         const addRes = await authFetch(`/projectes/${projId}/clients`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -172,6 +175,7 @@ async function assignProject(projId) {
         if (addRes.ok) { showToast('Assignat correctament', 'success'); closeAssignModal(); loadClient(); }
         else { showToast('Error assignant', 'error'); }
     } catch (e) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 renderSidebar('clients');

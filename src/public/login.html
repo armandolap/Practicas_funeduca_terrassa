@@ -36,11 +36,14 @@ async function login() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value;
   const errorEl = document.getElementById('errorMsg');
+  const btn = document.getElementById('btnLogin');
   if (!username || !password) {
     errorEl.textContent = 'Usuari i contrasenya obligatoris';
     errorEl.style.display = 'block';
     return;
   }
+  btn.disabled = true;
+  btn.innerHTML = '<span class="btn-spinner"></span> Entrant...';
   try {
     const res = await fetch('/auth/login', {
       method: 'POST',
@@ -51,18 +54,22 @@ async function login() {
     if (!res.ok) {
       errorEl.textContent = data.message || 'Error al iniciar sessió';
       errorEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Iniciar Sessió';
       return;
     }
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(data.user));
-    if (data.user.idNivel_acceso === 2 || data.user.idNivel_acceso === 3) {
-      window.location.href = '/meus-projectes.html';
-    } else {
-      window.location.href = '/clients.html';
-    }
+    const dest = (data.user.idNivel_acceso === 2 || data.user.idNivel_acceso === 3)
+      ? '/meus-projectes.html' : '/clients.html';
+    // Deixa l'avís pendent perquè surti a la pàgina de destí i redirigeix immediatament
+    try { sessionStorage.setItem('pendingToast', JSON.stringify({ msg: `Sessió iniciada. Benvingut/da, ${data.user.Nom || ''}!`, type: 'success' })); } catch {}
+    window.location.href = dest;
   } catch (err) {
     errorEl.textContent = 'Error de connexió';
     errorEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Iniciar Sessió';
   }
 }
 if (localStorage.getItem('token')) {

@@ -39,6 +39,7 @@
     </div>
   </div>
 </main>
+<div class="toast" id="toast"></div>
 <script src="/js/sidebar.js"></script>
 <script>
 const FIELD_MAP = {
@@ -125,26 +126,30 @@ async function addRecord(table) {
     try {
         const body = {};
         body[fields.label] = name.trim();
+        showLoading();
         const res = await authFetch(`/${endpoint}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
-        if (res.ok) { alert('Registre afegit'); loadTable(); }
-        else { alert('Error afegint registre'); }
-    } catch (err) { alert('Error de connexió'); }
+        if (res.ok) { showToast('Registre afegit', 'success'); loadTable(); }
+        else { showToast('Error afegint registre', 'error'); }
+    } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 async function deleteRecord(table, id) {
-    if (!confirm('Eliminar aquest registre?')) return;
+    if (!await confirmModal('Eliminar aquest registre?')) return;
     const endpoint = ENDPOINT_MAP[table] || table;
     try {
+        showLoading();
         const res = await authFetch(`/${endpoint}/${id}`, {
             method: 'DELETE'
         });
-        if (res.ok) { alert('Registre eliminat'); loadTable(); }
-        else { alert('Error eliminant registre'); }
-    } catch (err) { alert('Error de connexió'); }
+        if (res.ok) { showToast('Registre eliminat', 'success'); loadTable(); }
+        else { showToast('Error eliminant registre', 'error'); }
+    } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 // Check auth + role

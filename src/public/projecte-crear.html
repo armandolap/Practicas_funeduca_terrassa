@@ -114,6 +114,7 @@
     </div>
   </form>
 </main>
+<div class="toast" id="toast"></div>
 <script src="/js/sidebar.js"></script>
 <script>
 const isEdit = new URLSearchParams(location.search).get('id');
@@ -364,6 +365,7 @@ async function saveProject(e) {
         const escala = document.getElementById('newEscala').value.trim();
 
         try {
+            showLoading();
             const centreRes = await fetch('/centre-activitats', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', ...AUTH_HEADERS() },
@@ -373,9 +375,10 @@ async function saveProject(e) {
                 })
             });
             const centreData = await centreRes.json();
-            if (!centreRes.ok) { alert(centreData.message || 'Error creant centre'); return; }
+            if (!centreRes.ok) { showToast(centreData.message || 'Error creant centre', 'error'); return; }
             idCentre = centreData.id;
-        } catch (err) { alert('Error creant centre'); return; }
+        } catch (err) { showToast('Error creant centre', 'error'); return; }
+        finally { hideLoading(); }
     }
 
     if (!idCentre) { alert('Cal seleccionar o crear un centre d\'activitats'); return; }
@@ -404,6 +407,7 @@ async function saveProject(e) {
     }
 
     try {
+        showLoading();
         const url = isEdit ? `/projectes/${isEdit}` : '/projectes';
         const method = isEdit ? 'PUT' : 'POST';
         const res = await fetch(url, {
@@ -413,12 +417,12 @@ async function saveProject(e) {
         });
         const data = await res.json();
         if (res.ok) {
-            alert(isEdit ? 'Projecte actualitzat' : 'Projecte creat');
-            window.location.href = `/projecte.html?id=${data.id || isEdit}`;
+            notifyAndRedirect(isEdit ? 'Projecte actualitzat' : 'Projecte creat', `/projecte.html?id=${data.id || isEdit}`);
         } else {
-            alert(data.message || 'Error');
+            showToast(data.message || 'Error', 'error');
         }
-    } catch (err) { alert('Error de connexió'); }
+    } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 // ── Centre search (unchanged) ──
