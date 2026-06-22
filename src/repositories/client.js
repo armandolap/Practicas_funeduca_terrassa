@@ -84,6 +84,7 @@ async function getDetailById(id) {
                ca.Nom AS curs_actual_nom,
                ra.Nom_resultat_acad,
                mb.Nom_motiu_baixa,
+               pn.Nom_pais AS pais_naixement_nom,
                (SELECT COUNT(*) FROM proyectos_has_client phc WHERE phc.idClient = cl.idClient) AS num_activitats
         FROM client cl
         JOIN familia f ON cl.idFamilia = f.idFamilia
@@ -104,9 +105,36 @@ async function getDetailById(id) {
         LEFT JOIN curs_actual ca ON cl.Curs_actual = ca.idCurs_actual
         LEFT JOIN resultat_academic ra ON cl.Resultat_academic = ra.idResultat_academic
         LEFT JOIN motiu_baixa mb ON cl.Motiu_baixa = mb.idMotiu_baixa
+        LEFT JOIN pais pn ON cl.Pais_naixement = pn.idPais
         WHERE cl.idClient = ?
     `, [id]);
     return rows[0] || null;
+}
+
+async function getNacionalitats(idClient) {
+    const [rows] = await pool.query(`
+        SELECT p.idPais, p.Nom_pais
+        FROM nacionalitat n
+        JOIN pais p ON n.idPais = p.idPais
+        WHERE n.idClient = ?
+        ORDER BY p.Nom_pais
+    `, [idClient]);
+    return rows;
+}
+
+async function addNacionalitat(idClient, idPais) {
+    await pool.query(
+        `INSERT IGNORE INTO nacionalitat (idPais, idClient) VALUES (?, ?)`,
+        [idPais, idClient]
+    );
+}
+
+async function removeNacionalitat(idClient, idPais) {
+    const [result] = await pool.query(
+        `DELETE FROM nacionalitat WHERE idClient = ? AND idPais = ?`,
+        [idClient, idPais]
+    );
+    return result.affectedRows;
 }
 
 async function getProjectsByClient(id, filter = "tots") {
@@ -287,4 +315,4 @@ async function updateFull(id, data) {
     }
 }
 
-module.exports = { getAll, getFiltered, getDetailById, getProjectsByClient, create, update, remove, createFull, updateFull };
+module.exports = { getAll, getFiltered, getDetailById, getProjectsByClient, getNacionalitats, addNacionalitat, removeNacionalitat, create, update, remove, createFull, updateFull };

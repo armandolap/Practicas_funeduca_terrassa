@@ -32,7 +32,8 @@ async function getClientById(req, res) {
         const client = await repo.getDetailById(req.params.id);
         if (!client) return res.status(404).json({ message: "Client no trobat" });
         const projectes = await repo.getProjectsByClient(req.params.id, filter || "tots");
-        res.json({ ...client, projectes });
+        const nacionalitats = await repo.getNacionalitats(req.params.id);
+        res.json({ ...client, projectes, nacionalitats });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Error obtenint client" });
@@ -214,4 +215,30 @@ async function updateFullClient(req, res) {
     }
 }
 
-module.exports = { getAllClients, getClientById, createClient, updateClient, deleteClient, createFullClient, updateFullClient };
+async function addClientNacionalitat(req, res) {
+    try {
+        const existing = await repo.getDetailById(req.params.id);
+        if (!existing) return res.status(404).json({ message: "Client no trobat" });
+        const idPais = parseInt(req.body?.idPais);
+        if (!Number.isFinite(idPais)) return res.status(400).json({ message: "idPais obligatori" });
+        await repo.addNacionalitat(req.params.id, idPais);
+        const nacionalitats = await repo.getNacionalitats(req.params.id);
+        res.status(201).json({ message: "Nacionalitat afegida", nacionalitats });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error afegint nacionalitat" });
+    }
+}
+
+async function removeClientNacionalitat(req, res) {
+    try {
+        const affected = await repo.removeNacionalitat(req.params.id, req.params.idPais);
+        if (affected === 0) return res.status(404).json({ message: "Nacionalitat no trobada" });
+        res.json({ message: "Nacionalitat eliminada" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error eliminant nacionalitat" });
+    }
+}
+
+module.exports = { getAllClients, getClientById, createClient, updateClient, deleteClient, createFullClient, updateFullClient, addClientNacionalitat, removeClientNacionalitat };

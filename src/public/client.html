@@ -29,6 +29,19 @@
     </div>
   </div>
 </div>
+<div id="nacModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeNacModal()">
+  <div class="modal">
+    <h2>Afegir nacionalitat</h2>
+    <div class="form-group">
+      <label>País</label>
+      <select id="nacSelect"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeNacModal()">Cancel·lar</button>
+      <button class="btn btn-primary" onclick="addNacionalitat()">Afegir</button>
+    </div>
+  </div>
+</div>
 <script src="/js/sidebar.js"></script>
 <script src="/js/validate.js"></script>
 <script>
@@ -46,15 +59,16 @@ async function loadClient() {
         const canEdit = role === 1 || role === 2 || role === 3;
         const canAssignProj = role === 1 || role === 2 || role === 3 || role === 4;
 
+        const nacs = c.nacionalitats || [];
         document.getElementById('clientContent').innerHTML = `
             <a class="back-link" href="/clients.html">← Tornar</a>
             <div class="detail-header">
-                <h1>${c.Nom || ''} ${c.Cognoms || ''}</h1>
-                <div class="subtitle">
-                    ${canEdit ? `<button class="btn btn-sm btn-secondary" style="float:right" onclick="window.location.href='/crear-persona.html?id=${clientId}'">Editar</button>` : ''}
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <h1 style="margin-bottom:0;">${c.Nom || ''} ${c.Cognoms || ''}</h1>
+                    ${canEdit ? `<button class="btn btn-sm btn-primary" onclick="window.location.href='/crear-persona.html?id=${clientId}'">Editar</button>` : ''}
                 </div>
             </div>
-            <div class="card-grid">
+            <div class="card-grid card-grid-3">
                 <div class="card">
                     <div class="detail-section"><div class="label">Edat</div><div class="value">${c.C_edad || 0} anys</div></div>
                     <div class="detail-section"><div class="label">Gènere</div><div class="value">${c.Nom_genere || ''}</div></div>
@@ -73,7 +87,31 @@ async function loadClient() {
                     <div class="detail-section"><div class="label">Telèfon</div><div class="value">${c.Telefon || '-'}</div></div>
                     <div class="detail-section"><div class="label">Correu</div><div class="value">${c.Correu_electronic || '-'}</div></div>
                     <div class="detail-section"><div class="label">Data d'alta</div><div class="value">${c.Data_d_alta ? new Date(c.Data_d_alta).toLocaleDateString() : '-'}</div></div>
-                    ${c.Baixa ? `<div class="detail-section"><div class="label">Data baixa</div><div class="value">${c.Data_baixa ? new Date(c.Data_baixa).toLocaleDateString() : '-'} (${c.Nom_motiu_baixa || ''})</div></div>` : ''}
+                </div>
+                <div class="card">
+                    <div class="detail-section">
+                        <div class="label">País de naixement</div>
+                        <div class="value">${c.pais_naixement_nom || '-'}</div>
+                    </div>
+                    <div class="detail-section">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;">
+                            <div class="label" style="margin-bottom:0;">Nacionalitats</div>
+                            ${canEdit ? `<button class="btn btn-sm btn-success" onclick="showAddNacionalitat()">+ Afegir nacionalitat</button>` : ''}
+                        </div>
+                        <div id="nacionalitatsList"></div>
+                    </div>
+                    <div class="detail-section" style="margin-bottom:0;">
+                        <div class="label">De baixa</div>
+                        <div class="value">
+                            ${c.Baixa
+                                ? `<span class="badge badge-red">Sí</span>
+                                   <div style="margin-top:6px;font-weight:400;font-size:var(--fs-sm);">
+                                       Data: ${c.Data_baixa ? new Date(c.Data_baixa).toLocaleDateString() : '-'}<br>
+                                       Motiu: ${c.Nom_motiu_baixa || '-'}
+                                   </div>`
+                                : `<span class="badge badge-green">No</span>`}
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="card">
@@ -93,7 +131,23 @@ async function loadClient() {
             </div>
         `;
         renderProjects(c.projectes || [], canAssignProj);
+        renderNacionalitats(nacs, canEdit);
     } catch (err) { document.getElementById('clientContent').innerHTML = '<p>Error carregant persona</p>'; }
+}
+
+function renderNacionalitats(nacs, canEdit) {
+    const el = document.getElementById('nacionalitatsList');
+    if (!el) return;
+    if (!nacs.length) {
+        el.innerHTML = '<div class="value" style="font-weight:400;color:var(--color-text-soft);">Sense nacionalitats</div>';
+        return;
+    }
+    el.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:6px;">${nacs.map(n => `
+        <span class="badge badge-blue" style="display:inline-flex;align-items:center;gap:6px;">
+            ${n.Nom_pais}
+            ${canEdit ? `<button onclick="removeNacionalitat(${n.idPais})" title="Treure" style="border:none;background:none;cursor:pointer;color:inherit;font-weight:700;line-height:1;padding:0;">×</button>` : ''}
+        </span>
+    `).join('')}</div>`;
 }
 
 function renderProjects(projects, canRemove) {
@@ -179,6 +233,55 @@ async function assignProject(projId) {
         });
         if (addRes.ok) { showToast('Assignat correctament', 'success'); closeAssignModal(); loadClient(); }
         else { showToast('Error assignant', 'error'); }
+    } catch (e) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
+}
+
+let paisosCache = null;
+
+async function showAddNacionalitat() {
+    const modal = document.getElementById('nacModal');
+    const select = document.getElementById('nacSelect');
+    modal.style.display = 'flex';
+    if (!paisosCache) {
+        select.innerHTML = '<option>Carregant...</option>';
+        try {
+            const res = await authFetch('/paisos');
+            paisosCache = await res.json();
+        } catch (e) { showToast('Error carregant països', 'error'); paisosCache = []; }
+    }
+    select.innerHTML = '<option value="">Selecciona un país...</option>' +
+        paisosCache.map(p => `<option value="${p.idPais}">${p.Nom_pais}</option>`).join('');
+    select.focus();
+}
+
+function closeNacModal() {
+    document.getElementById('nacModal').style.display = 'none';
+}
+
+async function addNacionalitat() {
+    const idPais = parseInt(document.getElementById('nacSelect').value);
+    if (!idPais) { showToast('Selecciona un país', 'error'); return; }
+    try {
+        showLoading();
+        const res = await authFetch(`/client/${clientId}/nacionalitats`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idPais })
+        });
+        if (res.ok) { showToast('Nacionalitat afegida', 'success'); closeNacModal(); loadClient(); }
+        else { const d = await res.json().catch(() => ({})); showToast(d.message || 'Error', 'error'); }
+    } catch (e) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
+}
+
+async function removeNacionalitat(idPais) {
+    if (!await confirmModal('Treure aquesta nacionalitat?')) return;
+    try {
+        showLoading();
+        const res = await authFetch(`/client/${clientId}/nacionalitats/${idPais}`, { method: 'DELETE' });
+        if (res.ok) { showToast('Nacionalitat treta', 'success'); loadClient(); }
+        else { showToast('Error', 'error'); }
     } catch (e) { showToast('Error de connexió', 'error'); }
     finally { hideLoading(); }
 }

@@ -110,6 +110,7 @@ tr.clickable { cursor: pointer; }
 .card h2 { font-size: var(--fs-lg); font-weight: 700; margin-bottom: 12px; color: var(--color-text-strong); }
 .card h3 { font-size: var(--fs-md); font-weight: 600; margin-bottom: 8px; color: var(--color-text-muted); }
 .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.card-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
 
 /* Badges */
 .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: var(--fs-xs); font-weight: 600; }
@@ -198,6 +199,7 @@ tr.clickable { cursor: pointer; }
     .sidebar { width: 200px; }
     .main-content { padding: 20px 24px; }
     .card-grid { gap: 12px; }
+    .card-grid-3 { grid-template-columns: 1fr 1fr; }
 }
 
 /* ---- Mòbil (≤ 768px): sidebar lliscant fora de pantalla ---- */
