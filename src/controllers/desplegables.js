@@ -1,6 +1,7 @@
 const barriRepo = require("../repositories/barri");
 const codiPostalRepo = require("../repositories/codi_postal");
 const cursoRepo = require("../repositories/curso");
+const cursLectiuRepo = require("../repositories/curs_lectiu");
 const estFamiliarRepo = require("../repositories/estructura_familiar");
 const motiuBaixaRepo = require("../repositories/motiu_baixa");
 const nesesRepo = require("../repositories/NESES");
@@ -20,6 +21,7 @@ const MAP = {
   barri:              { repo: barriRepo,       idKey: "idBarri",             nomKey: "Nom" },
   codi_postal:        { repo: codiPostalRepo,   idKey: "idCodi_postal",       nomKey: "Codi" },
   curso:              { repo: cursoRepo,         idKey: "idCurs_actual",       nomKey: "Nom" },
+  curs_lectiu:        { repo: cursLectiuRepo,    idKey: "idCurs_lectiu",       nomKey: "Nom_curs_lectiu" },
   estructura_familiar: { repo: estFamiliarRepo,  idKey: "idEstructura_familiar", nomKey: "Nom_est_fam" },
   genere:             { repo: genereRepo,       idKey: "idGenere",            nomKey: "Nom_genere" },
   motiu_baixa:        { repo: motiuBaixaRepo,   idKey: "idMotiu_baixa",       nomKey: "Nom_motiu_baixa" },

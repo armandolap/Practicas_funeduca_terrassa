@@ -398,6 +398,17 @@
 
 
   -- -----------------------------------------------------
+  -- Table `crm_funeduca`.`curs_lectiu`
+  -- -----------------------------------------------------
+  CREATE TABLE IF NOT EXISTS `crm_funeduca`.`curs_lectiu` (
+    `idCurs_lectiu` INT NOT NULL AUTO_INCREMENT,
+    `Nom_curs_lectiu` VARCHAR(24) NOT NULL,
+    PRIMARY KEY (`idCurs_lectiu`))
+  ENGINE = InnoDB
+  DEFAULT CHARACTER SET = utf8mb4;
+
+
+  -- -----------------------------------------------------
   -- Table `crm_funeduca`.`proyectos`
   -- -----------------------------------------------------
   CREATE TABLE IF NOT EXISTS `crm_funeduca`.`proyectos` (
@@ -409,11 +420,18 @@
     `fecha_inicio_act` DATE NULL DEFAULT NULL,
     `fecha_fin_act` DATE NULL DEFAULT NULL,
     `idcentre_activitats` INT NOT NULL,
+    `idCurs_lectiu` INT NULL DEFAULT NULL,
     PRIMARY KEY (`idProyecto`),
     INDEX `fk_proyectos_centre_activitats1_idx` (`idcentre_activitats` ASC),
+    INDEX `fk_proyectos_curs_lectiu1_idx` (`idCurs_lectiu` ASC),
     CONSTRAINT `fk_proyectos_centre_activitats1`
       FOREIGN KEY (`idcentre_activitats`)
       REFERENCES `crm_funeduca`.`centre_activitats` (`idcentre_activitats`)
+      ON DELETE NO ACTION
+      ON UPDATE NO ACTION,
+    CONSTRAINT `fk_proyectos_curs_lectiu1`
+      FOREIGN KEY (`idCurs_lectiu`)
+      REFERENCES `crm_funeduca`.`curs_lectiu` (`idCurs_lectiu`)
       ON DELETE NO ACTION
       ON UPDATE NO ACTION)
   ENGINE = InnoDB

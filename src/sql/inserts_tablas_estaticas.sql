@@ -2104,3 +2104,30 @@ INSERT INTO callejero (idTipus_via, Nom_calle, idBarri, idCodi_postal) VALUES (3
 -- Nivell d'accés (per usuaris de l'app)
 -- ============================================================
 INSERT INTO Nivel_acceso (Nom) VALUES ('Admin'), ('Responsable de zona'), ('Responsable de projectes'), ('Treballador'), ('Visitant');
+
+-- ============================================================
+-- Cursos lectius (per projectes): del 20/21 al 40/41
+-- ============================================================
+INSERT INTO curs_lectiu (Nom_curs_lectiu)
+VALUES
+    ('20/21'),
+    ('21/22'),
+    ('22/23'),
+    ('23/24'),
+    ('24/25'),
+    ('25/26'),
+    ('26/27'),
+    ('27/28'),
+    ('28/29'),
+    ('29/30'),
+    ('30/31'),
+    ('31/32'),
+    ('32/33'),
+    ('33/34'),
+    ('34/35'),
+    ('35/36'),
+    ('36/37'),
+    ('37/38'),
+    ('38/39'),
+    ('39/40'),
+    ('40/41');

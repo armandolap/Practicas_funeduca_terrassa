@@ -38,6 +38,10 @@
           <label>Data fi</label>
           <input type="date" id="fechaFin">
         </div>
+        <div class="form-group">
+          <label>Curs lectiu</label>
+          <select id="cursLectiu"></select>
+        </div>
       </div>
     </div>
 
@@ -144,6 +148,7 @@ async function initForm() {
     renderSidebar('projectes');
 
     await loadUserLists();
+    await loadCursLectiu();
     initTagInputs();
 
     if (isEdit) {
@@ -306,6 +311,19 @@ function renderTrebTags() {
 
 // ── Load / Save ──
 
+async function loadCursLectiu() {
+    const sel = document.getElementById('cursLectiu');
+    try {
+        const res = await authFetch('/desplegables/curs_lectiu');
+        if (!res.ok) throw new Error();
+        const cursos = await res.json();
+        sel.innerHTML = '<option value="">-- Sense curs --</option>' +
+            cursos.map(c => `<option value="${c.id}">${c.Nom}</option>`).join('');
+    } catch (e) {
+        sel.innerHTML = '<option value="">-- Sense curs --</option>';
+    }
+}
+
 async function loadProject(id) {
     try {
         const res = await fetch(`/projectes/${id}`, { headers: AUTH_HEADERS() });
@@ -315,6 +333,7 @@ async function loadProject(id) {
         document.getElementById('plazas').value = p.plazas || 0;
         document.getElementById('fechaInicio').value = p.fecha_inicio_act ? p.fecha_inicio_act.split('T')[0] : '';
         document.getElementById('fechaFin').value = p.fecha_fin_act ? p.fecha_fin_act.split('T')[0] : '';
+        document.getElementById('cursLectiu').value = p.idCurs_lectiu || '';
         if (p.idcentre_activitats) {
             selectedCentreId = p.idcentre_activitats;
             document.getElementById('idCentreActivitats').value = p.idcentre_activitats;
@@ -410,7 +429,8 @@ async function saveProject(e) {
             plazas: parseInt(document.getElementById('plazas').value) || 0,
             fecha_inicio_act: document.getElementById('fechaInicio').value || null,
             fecha_fin_act: document.getElementById('fechaFin').value || null,
-            idcentre_activitats: parseInt(idCentre)
+            idcentre_activitats: parseInt(idCentre),
+            idCurs_lectiu: parseInt(document.getElementById('cursLectiu').value) || null
         }
     };
 

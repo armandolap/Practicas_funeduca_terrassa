@@ -5,6 +5,7 @@ async function getAll(filter = "todos", q = "", responsable_id, idCentre) {
     let sql = `
         SELECT p.*,
                ca.nom_centre_activitats,
+               cl.Nom_curs_lectiu,
                (SELECT COUNT(*) FROM proyectos_has_client phc WHERE phc.idProyecto = p.idProyecto) AS inscritos,
                (SELECT GROUP_CONCAT(
                             CONCAT_WS('\x1f', r.idUsuario_APP, ru.Nom, ru.Cognoms, r.tipus_responsable)
@@ -14,6 +15,7 @@ async function getAll(filter = "todos", q = "", responsable_id, idCentre) {
                 WHERE r.proyectos_idProyecto = p.idProyecto) AS responsables
         FROM proyectos p
         LEFT JOIN centre_activitats ca ON p.idcentre_activitats = ca.idcentre_activitats
+        LEFT JOIN curs_lectiu cl ON p.idCurs_lectiu = cl.idCurs_lectiu
         WHERE 1=1
     `;
     const params = [];
@@ -62,9 +64,11 @@ async function getById(id) {
                tv.idTipus_via, tv.Nom AS tipus_via,
                b.idBarri, b.Nom AS barri,
                cp.idCodi_postal, cp.Codi AS codi_postal,
+               cl.Nom_curs_lectiu,
                (SELECT COUNT(*) FROM proyectos_has_client phc WHERE phc.idProyecto = p.idProyecto) AS inscritos
         FROM proyectos p
         LEFT JOIN centre_activitats ca ON p.idcentre_activitats = ca.idcentre_activitats
+        LEFT JOIN curs_lectiu cl ON p.idCurs_lectiu = cl.idCurs_lectiu
         LEFT JOIN direccio dir ON ca.direccio_idDireccio = dir.idDireccio
         LEFT JOIN callejero c ON dir.idcallejero = c.idcallejero
         LEFT JOIN tipus_via tv ON c.idTipus_via = tv.idTipus_via
@@ -113,20 +117,20 @@ async function getParticipants(projectId) {
 }
 
 async function create(projecteData) {
-    const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats } = projecteData;
+    const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, idCurs_lectiu } = projecteData;
     const [result] = await pool.query(`
-        INSERT INTO proyectos (Nom_projecte, Descripcio, plazas, inscritos, fecha_inicio_act, fecha_fin_act, idcentre_activitats)
-        VALUES (?, ?, ?, 0, ?, ?, ?)
-    `, [Nom_projecte, Descripcio || null, plazas || 0, fecha_inicio_act || null, fecha_fin_act || null, idcentre_activitats]);
+        INSERT INTO proyectos (Nom_projecte, Descripcio, plazas, inscritos, fecha_inicio_act, fecha_fin_act, idcentre_activitats, idCurs_lectiu)
+        VALUES (?, ?, ?, 0, ?, ?, ?, ?)
+    `, [Nom_projecte, Descripcio || null, plazas || 0, fecha_inicio_act || null, fecha_fin_act || null, idcentre_activitats, idCurs_lectiu || null]);
     return result.insertId;
 }
 
 async function update(id, projecteData) {
-    const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats } = projecteData;
+    const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, idCurs_lectiu } = projecteData;
     const [result] = await pool.query(`
-        UPDATE proyectos SET Nom_projecte = ?, Descripcio = ?, plazas = ?, fecha_inicio_act = ?, fecha_fin_act = ?, idcentre_activitats = ?
+        UPDATE proyectos SET Nom_projecte = ?, Descripcio = ?, plazas = ?, fecha_inicio_act = ?, fecha_fin_act = ?, idcentre_activitats = ?, idCurs_lectiu = ?
         WHERE idProyecto = ?
-    `, [Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, id]);
+    `, [Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, idCurs_lectiu || null, id]);
     return result.affectedRows;
 }
 

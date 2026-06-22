@@ -24,7 +24,7 @@
   </div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Nom</th><th>Inici</th><th>Fi</th><th>Places</th><th>Inscrits</th><th>Responsable</th><th>Centre</th></tr></thead>
+      <thead><tr><th>Nom</th><th>Curs</th><th>Inici</th><th>Fi</th><th>Places</th><th>Inscrits</th><th>Responsable</th><th>Centre</th></tr></thead>
       <tbody id="projectList"></tbody>
     </table>
   </div>
@@ -51,12 +51,13 @@ async function loadProjects() {
         const projects = await res.json();
         const tbody = document.getElementById('projectList');
         if (!projects.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--color-text-soft);">No hi ha projectes</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--color-text-soft);">No hi ha projectes</td></tr>';
             return;
         }
         tbody.innerHTML = projects.map(p => `
             <tr class="clickable" onclick="window.location.href='/projecte.html?id=${p.idProyecto}'">
                 <td><strong>${p.Nom_projecte || ''}</strong></td>
+                <td>${p.Nom_curs_lectiu || '-'}</td>
                 <td>${p.fecha_inicio_act ? new Date(p.fecha_inicio_act).toLocaleDateString() : '-'}</td>
                 <td>${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</td>
                 <td>${p.plazas || 0}</td>

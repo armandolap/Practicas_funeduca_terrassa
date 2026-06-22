@@ -123,6 +123,7 @@ async function loadProject() {
                 <div class="info-card"><div class="label">Fi</div><div class="value">${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</div></div>
                 <div class="info-card"><div class="label">Places</div><div class="value">${p.plazas || 0}</div></div>
                 <div class="info-card"><div class="label">Inscrits</div><div class="value">${p.inscritos || 0}</div></div>
+                <div class="info-card"><div class="label">Curs lectiu</div><div class="value">${p.Nom_curs_lectiu || '-'}</div></div>
             </div>
             ${renderRespSection(p.responsables, 1, 'Responsable de zona', '#e6f4f0')}
             ${renderRespSection(p.responsables, 2, 'Responsables de projecte', '#e6f4f0')}
