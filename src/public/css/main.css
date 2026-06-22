@@ -109,6 +109,13 @@ tr.clickable { cursor: pointer; }
 .card { background: var(--color-surface); border-radius: 12px; box-shadow: var(--shadow-card); padding: 20px; margin-bottom: 16px; }
 .card h2 { font-size: var(--fs-lg); font-weight: 700; margin-bottom: 12px; color: var(--color-text-strong); }
 .card h3 { font-size: var(--fs-md); font-weight: 600; margin-bottom: 8px; color: var(--color-text-muted); }
+.resp-details summary { cursor: pointer; font-weight: 600; color: var(--color-primary); list-style: none; user-select: none; }
+.resp-details summary::-webkit-details-marker { display: none; }
+.resp-details summary::before { content: '▸ '; }
+.resp-details[open] summary::before { content: '▾ '; }
+.resp-details .resp-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.resp-details .resp-list a:hover { text-decoration: underline; }
+
 .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .card-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
 

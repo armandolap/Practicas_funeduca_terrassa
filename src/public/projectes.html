@@ -61,11 +61,43 @@ async function loadProjects() {
                 <td>${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</td>
                 <td>${p.plazas || 0}</td>
                 <td>${p.inscritos || 0}</td>
-                <td>${p.responsable_zona_nom ? `${p.responsable_zona_nom} ${p.responsable_zona_cognoms || ''}` : '-'}</td>
+                <td onclick="event.stopPropagation()">${renderResponsables(p.responsables)}</td>
                 <td>${p.nom_centre_activitats || '-'}</td>
             </tr>
         `).join('');
     } catch {}
+}
+
+const RESP_TIPUS = {
+    1: { nom: 'Zona', badge: 'badge-blue' },
+    2: { nom: 'Projecte', badge: 'badge-green' },
+    3: { nom: 'Treballador', badge: 'badge-gray' }
+};
+
+function renderResponsableLink(r) {
+    const t = RESP_TIPUS[r.tipus_responsable] || { nom: '', badge: 'badge-gray' };
+    const nom = `${r.Nom || ''} ${r.Cognoms || ''}`.trim();
+    return `<a href="/usuari.html?id=${r.idUsuario_APP}" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+                <span class="badge ${t.badge}">${t.nom}</span>${nom}
+            </a>`;
+}
+
+function parseResponsables(resp) {
+    if (!resp) return [];
+    return resp.split('\x1e').map(s => {
+        const [idUsuario_APP, Nom, Cognoms, tipus_responsable] = s.split('\x1f');
+        return { idUsuario_APP, Nom, Cognoms, tipus_responsable: parseInt(tipus_responsable) };
+    });
+}
+
+function renderResponsables(resp) {
+    const list = parseResponsables(resp);
+    if (!list.length) return '-';
+    if (list.length === 1) return renderResponsableLink(list[0]);
+    return `<details class="resp-details">
+                <summary>${list.length} responsables</summary>
+                <div class="resp-list">${list.map(renderResponsableLink).join('')}</div>
+            </details>`;
 }
 
 function checkRole() {

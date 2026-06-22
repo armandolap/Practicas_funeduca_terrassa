@@ -4,14 +4,15 @@ const pool = createPool();
 async function getAll(filter = "todos", q = "", responsable_id, idCentre) {
     let sql = `
         SELECT p.*,
-               r.idUsuario_APP AS responsable_zona_id,
-               r_u.Nom AS responsable_zona_nom,
-               r_u.Cognoms AS responsable_zona_cognoms,
                ca.nom_centre_activitats,
-               (SELECT COUNT(*) FROM proyectos_has_client phc WHERE phc.idProyecto = p.idProyecto) AS inscritos
+               (SELECT COUNT(*) FROM proyectos_has_client phc WHERE phc.idProyecto = p.idProyecto) AS inscritos,
+               (SELECT GROUP_CONCAT(
+                            CONCAT_WS('\x1f', r.idUsuario_APP, ru.Nom, ru.Cognoms, r.tipus_responsable)
+                            ORDER BY r.tipus_responsable, ru.Nom SEPARATOR '\x1e')
+                FROM Responsables r
+                JOIN usuario_app ru ON ru.idUsuario_APP = r.idUsuario_APP
+                WHERE r.proyectos_idProyecto = p.idProyecto) AS responsables
         FROM proyectos p
-        LEFT JOIN Responsables r ON r.proyectos_idProyecto = p.idProyecto AND r.tipus_responsable = 1
-        LEFT JOIN usuario_app r_u ON r_u.idUsuario_APP = r.idUsuario_APP
         LEFT JOIN centre_activitats ca ON p.idcentre_activitats = ca.idcentre_activitats
         WHERE 1=1
     `;
