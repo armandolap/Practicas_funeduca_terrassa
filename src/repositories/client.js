@@ -84,6 +84,7 @@ async function getDetailById(id) {
                ca.Nom AS curs_actual_nom,
                ra.Nom_resultat_acad,
                mb.Nom_motiu_baixa,
+               pn.Nom_pais AS pais_naixement_nom,
                (SELECT COUNT(*) FROM proyectos_has_client phc WHERE phc.idClient = cl.idClient) AS num_activitats
         FROM client cl
         JOIN familia f ON cl.idFamilia = f.idFamilia
@@ -104,9 +105,36 @@ async function getDetailById(id) {
         LEFT JOIN curs_actual ca ON cl.Curs_actual = ca.idCurs_actual
         LEFT JOIN resultat_academic ra ON cl.Resultat_academic = ra.idResultat_academic
         LEFT JOIN motiu_baixa mb ON cl.Motiu_baixa = mb.idMotiu_baixa
+        LEFT JOIN pais pn ON cl.Pais_naixement = pn.idPais
         WHERE cl.idClient = ?
     `, [id]);
     return rows[0] || null;
+}
+
+async function getNacionalitats(idClient) {
+    const [rows] = await pool.query(`
+        SELECT p.idPais, p.Nom_pais
+        FROM nacionalitat n
+        JOIN pais p ON n.idPais = p.idPais
+        WHERE n.idClient = ?
+        ORDER BY p.Nom_pais
+    `, [idClient]);
+    return rows;
+}
+
+async function addNacionalitat(idClient, idPais) {
+    await pool.query(
+        `INSERT IGNORE INTO nacionalitat (idPais, idClient) VALUES (?, ?)`,
+        [idPais, idClient]
+    );
+}
+
+async function removeNacionalitat(idClient, idPais) {
+    const [result] = await pool.query(
+        `DELETE FROM nacionalitat WHERE idClient = ? AND idPais = ?`,
+        [idClient, idPais]
+    );
+    return result.affectedRows;
 }
 
 async function getProjectsByClient(id, filter = "tots") {
@@ -139,19 +167,37 @@ async function create(clientData) {
             Pais_naixement, Risc, Resultat_academic, Motiu_baixa, idSituacio_economica,
             idSebas, idNecessitat_especial, derivacio_serveis_socials, Curs_actual,
             idDomicili, Baixa } = clientData;
-    const [result] = await pool.query(`
-        INSERT INTO client (idFamilia, idRol, idGenere, Nom, Cognoms, Telefon, Correu_electronic,
-            Data_d_alta, C_temps_a_lentitat, Fecha_nacimiento, C_edad, Data_baixa,
-            Pais_naixement, Risc, Resultat_academic, Motiu_baixa, idSituacio_economica,
-            idSebas, idNecessitat_especial, derivacio_serveis_socials, Curs_actual,
-            idDomicili, Baixa)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [idFamilia, idRol, idGenere, Nom, Cognoms, Telefon ?? null, Correu_electronic ?? null,
-        Data_d_alta, C_temps_a_lentitat, Fecha_nacimiento, C_edad, Data_baixa ?? null,
-        Pais_naixement, Risc, Resultat_academic, Motiu_baixa ?? null, idSituacio_economica,
-        idSebas, idNecessitat_especial ?? null, derivacio_serveis_socials, Curs_actual ?? null,
-        idDomicili ?? null, Baixa ?? 0]);
-    return result.insertId;
+    const conn = await pool.getConnection();
+    try {
+        await conn.beginTransaction();
+        const [result] = await conn.query(`
+            INSERT INTO client (idFamilia, idRol, idGenere, Nom, Cognoms, Telefon, Correu_electronic,
+                Data_d_alta, C_temps_a_lentitat, Fecha_nacimiento, C_edad, Data_baixa,
+                Pais_naixement, Risc, Resultat_academic, Motiu_baixa, idSituacio_economica,
+                idSebas, idNecessitat_especial, derivacio_serveis_socials, Curs_actual,
+                idDomicili, Baixa)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [idFamilia, idRol, idGenere, Nom, Cognoms, Telefon ?? null, Correu_electronic ?? null,
+            Data_d_alta, C_temps_a_lentitat, Fecha_nacimiento, C_edad, Data_baixa ?? null,
+            Pais_naixement, Risc, Resultat_academic, Motiu_baixa ?? null, idSituacio_economica,
+            idSebas, idNecessitat_especial ?? null, derivacio_serveis_socials, Curs_actual ?? null,
+            idDomicili ?? null, Baixa ?? 0]);
+        const idClient = result.insertId;
+        // Reflectim el país de naixement com a nacionalitat inicial del client.
+        if (Pais_naixement) {
+            await conn.query(
+                `INSERT IGNORE INTO nacionalitat (idPais, idClient) VALUES (?, ?)`,
+                [Pais_naixement, idClient]
+            );
+        }
+        await conn.commit();
+        return idClient;
+    } catch (error) {
+        await conn.rollback();
+        throw error;
+    } finally {
+        conn.release();
+    }
 }
 
 async function update(id, clientData) {
@@ -172,6 +218,22 @@ async function update(id, clientData) {
         Pais_naixement, Risc, Resultat_academic, Motiu_baixa ?? null, idSituacio_economica,
         idSebas, idNecessitat_especial ?? null, derivacio_serveis_socials, Curs_actual ?? null,
         idDomicili ?? null, Baixa ?? 0, id]);
+    return result.affectedRows;
+}
+
+async function setBaixa(id, { Motiu_baixa, Data_baixa }) {
+    const [result] = await pool.query(
+        `UPDATE client SET Baixa = 1, Motiu_baixa = ?, Data_baixa = ? WHERE idClient = ?`,
+        [Motiu_baixa ?? null, Data_baixa, id]
+    );
+    return result.affectedRows;
+}
+
+async function setAlta(id) {
+    const [result] = await pool.query(
+        `UPDATE client SET Baixa = 0, Motiu_baixa = NULL, Data_baixa = NULL WHERE idClient = ?`,
+        [id]
+    );
     return result.affectedRows;
 }
 
@@ -225,7 +287,7 @@ async function createFull(data) {
             client.derivacio_serveis_socials ?? 0, client.Curs_actual ?? null, idDomicili, 0]);
         const idClient = rCli.insertId;
         if (nacionalitat) {
-            await conn.query(`INSERT INTO nacionalitat (idPais, idClient) VALUES (?, ?)`, [nacionalitat, idClient]);
+            await conn.query(`INSERT IGNORE INTO nacionalitat (idPais, idClient) VALUES (?, ?)`, [nacionalitat, idClient]);
         }
         await conn.commit();
         return idClient;
@@ -287,4 +349,4 @@ async function updateFull(id, data) {
     }
 }
 
-module.exports = { getAll, getFiltered, getDetailById, getProjectsByClient, create, update, remove, createFull, updateFull };
+module.exports = { getAll, getFiltered, getDetailById, getProjectsByClient, getNacionalitats, addNacionalitat, removeNacionalitat, setBaixa, setAlta, create, update, remove, createFull, updateFull };

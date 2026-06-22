@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Projecte — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -26,22 +30,16 @@
   </div>
 </div>
 <script src="/js/sidebar.js"></script>
+<script src="/js/validate.js"></script>
 <script>
 let projectId = new URLSearchParams(location.search).get('id');
-let clientSearchTimeout;
-
-function debounceClientSearch() {
-    clearTimeout(clientSearchTimeout);
-    clientSearchTimeout = setTimeout(searchClients, 300);
-}
+const debounceClientSearch = debounce(searchClients, 300);
 
 async function searchClients() {
     const q = document.getElementById('clientSearch').value.trim();
     if (!q || q.length < 2) { document.getElementById('clientResults').innerHTML = ''; return; }
     try {
-        const res = await fetch(`/client?q=${encodeURIComponent(q)}&limit=10`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/client?q=${encodeURIComponent(q)}&limit=10`);
         const data = await res.json();
         const rows = data.rows || data || [];
         const list = document.getElementById('clientResults');
@@ -51,32 +49,35 @@ async function searchClients() {
                 <button class="btn btn-sm btn-primary" onclick="addClient(${c.idClient})">Afegir</button>
             </div>
         `).join('');
-        if (!rows.length) list.innerHTML = '<div style="padding:12px;color:#94a3b8;">Cap resultat</div>';
-    } catch (err) { console.error(err); }
+        if (!rows.length) list.innerHTML = '<div style="padding:12px;color:var(--color-text-soft);">Cap resultat</div>';
+    } catch {}
 }
 
 async function addClient(clientId) {
     try {
-        const res = await fetch(`/projectes/${projectId}/clients`, {
+        showLoading();
+        const res = await authFetch(`/projectes/${projectId}/clients`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ clientIds: [clientId] })
         });
         if (res.ok) { showToast('Participant afegit', 'success'); closeModal(); loadProject(); }
         else { showToast('Error en afegir participant', 'error'); }
     } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 async function removeClient(clientId) {
-    if (!confirm('Eliminar aquest participant del projecte?')) return;
+    if (!await confirmModal('Eliminar aquest participant del projecte?')) return;
     try {
-        const res = await fetch(`/projectes/${projectId}/clients/${clientId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        showLoading();
+        const res = await authFetch(`/projectes/${projectId}/clients/${clientId}`, {
+            method: 'DELETE'
         });
         if (res.ok) { showToast('Participant eliminat', 'success'); loadProject(); }
         else { showToast('Error en eliminar participant', 'error'); }
     } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 function openAddModal() { document.getElementById('modalOverlay').style.display = 'flex'; }
@@ -85,9 +86,7 @@ function closeModal() { document.getElementById('modalOverlay').style.display = 
 async function loadProject() {
     if (!requireAuth()) return;
     try {
-        const res = await fetch(`/projectes/${projectId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/projectes/${projectId}`);
         const p = await res.json();
         if (!p) { document.getElementById('projectContent').innerHTML = '<p>Projecte no trobat</p>'; return; }
 
@@ -104,7 +103,7 @@ async function loadProject() {
 
         function renderRespSection(responsables, tipo, label, color) {
             const items = (responsables || []).filter(r => r.tipus_responsable === tipo);
-            if (!items.length) return `<div class="card"><h3>${label}</h3><p style="color:#94a3b8;">Cap</p></div>`;
+            if (!items.length) return `<div class="card"><h3>${label}</h3><p style="color:var(--color-text-soft);">Cap</p></div>`;
             return `<div class="card"><h3>${label} (${items.length})</h3>` +
                 items.map(r => `<p><strong>${r.Nom || ''} ${r.Cognoms || ''}</strong></p>`).join('') +
                 `</div>`;
@@ -124,9 +123,10 @@ async function loadProject() {
                 <div class="info-card"><div class="label">Fi</div><div class="value">${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</div></div>
                 <div class="info-card"><div class="label">Places</div><div class="value">${p.plazas || 0}</div></div>
                 <div class="info-card"><div class="label">Inscrits</div><div class="value">${p.inscritos || 0}</div></div>
+                <div class="info-card"><div class="label">Curs lectiu</div><div class="value">${p.Nom_curs_lectiu || '-'}</div></div>
             </div>
-            ${renderRespSection(p.responsables, 1, 'Responsable de zona', '#e0f2fe')}
-            ${renderRespSection(p.responsables, 2, 'Responsables de projecte', '#e0f2fe')}
+            ${renderRespSection(p.responsables, 1, 'Responsable de zona', '#e6f4f0')}
+            ${renderRespSection(p.responsables, 2, 'Responsables de projecte', '#e6f4f0')}
             ${renderRespSection(p.responsables, 3, 'Treballadors', '#fef3c7')}
             <div class="card">
                 <h3>Centre d'activitats</h3>
@@ -153,18 +153,12 @@ async function loadProject() {
                                 <td>${c.Cognom_familiar || ''}</td>
                                 ${canEdit ? `<td><button class="btn btn-sm btn-danger" onclick="removeClient(${c.idClient})">Treure</button></td>` : ''}
                             </tr>
-                        `).join('') || '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">Cap participant</td></tr>'}
+                        `).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--color-text-soft);">Cap participant</td></tr>'}
                     </tbody>
                 </table>
             </div>
         `;
-    } catch (err) { console.error(err); document.getElementById('projectContent').innerHTML = '<p>Error carregant projecte</p>'; }
-}
-
-function showToast(msg, type) {
-    const t = document.getElementById('toast');
-    t.textContent = msg; t.className = `toast ${type} show`;
-    setTimeout(() => t.className = 'toast', 3000);
+    } catch (err) { document.getElementById('projectContent').innerHTML = '<p>Error carregant projecte</p>'; }
 }
 
 renderSidebar('projectes');

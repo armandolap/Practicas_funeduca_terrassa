@@ -4,33 +4,49 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informes — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 <aside class="sidebar" id="sidebar"></aside>
 <main class="main-content">
   <h1>Informes</h1>
-  <div class="filters" style="flex-wrap:wrap;">
-    <button class="btn btn-sm btn-secondary" data-report="projectes/generesEdats" onclick="loadReport('projectes/generesEdats')">Projectes/Gènere-Edat</button>
-    <button class="btn btn-sm btn-secondary" data-report="genere" onclick="loadReport('genere')">Gènere</button>
-    <button class="btn btn-sm btn-secondary" data-report="sitEco" onclick="loadReport('sitEco')">Situació Econòmica</button>
-    <button class="btn btn-sm btn-secondary" data-report="rolFam" onclick="loadReport('rolFam')">Rol Familiar</button>
-    <button class="btn btn-sm btn-secondary" data-report="tipHab" onclick="loadReport('tipHab')">Tipus Habitatge</button>
-    <button class="btn btn-sm btn-secondary" data-report="cont" onclick="loadReport('cont')">Comptadors</button>
-    <button class="btn btn-sm btn-secondary" data-report="neses" onclick="loadReport('neses')">NESE</button>
-    <button class="btn btn-sm btn-secondary" data-report="sebasDev" onclick="loadReport('sebasDev')">SEBAS/Deriv.</button>
-    <button class="btn btn-sm btn-secondary" data-report="cursAcademic" onclick="loadReport('cursAcademic')">Curs/Res. Acadèmic</button>
-    <button class="btn btn-sm btn-secondary" data-report="resAcad" onclick="loadReport('resAcad')">Res. Acadèmic</button>
-    <button class="btn btn-sm btn-secondary" data-report="motiusBaixa" onclick="loadReport('motiusBaixa')">Motius Baixa</button>
-    <button class="btn btn-sm btn-secondary" data-report="riscos" onclick="loadReport('riscos')">Riscos</button>
-    <button class="btn btn-sm btn-secondary" data-report="paisos" onclick="loadReport('paisos')">Països</button>
+  <div class="filters" style="flex-wrap:wrap;align-items:flex-end;gap:16px;">
+    <div class="form-group" style="margin-bottom:0;min-width:240px;">
+      <label>Informe</label>
+      <select id="reportSelect" onchange="loadReport(this.value)">
+        <option value="">-- Selecciona un informe --</option>
+        <option value="projectes/generesEdats">Projectes/Gènere-Edat</option>
+        <option value="genere">Gènere</option>
+        <option value="sitEco">Situació Econòmica</option>
+        <option value="rolFam">Rol Familiar</option>
+        <option value="tipHab">Tipus Habitatge</option>
+        <option value="cont">Comptadors</option>
+        <option value="neses">NESE</option>
+        <option value="sebasDev">SEBAS/Deriv.</option>
+        <option value="cursAcademic">Curs/Res. Acadèmic</option>
+        <option value="resAcad">Res. Acadèmic</option>
+        <option value="motiusBaixa">Motius Baixa</option>
+        <option value="riscos">Riscos</option>
+        <option value="paisos">Països</option>
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0;min-width:160px;">
+      <label>Any lectiu</label>
+      <select id="anyLectiuSelect" onchange="if(currentReport)loadReport(currentReport)">
+        <option value="">Tots els anys</option>
+      </select>
+    </div>
   </div>
   <div class="filters" style="justify-content:flex-end;">
     <button class="btn btn-sm btn-success" onclick="exportCSV()">Exportar CSV</button>
     <button class="btn btn-sm btn-primary" onclick="exportAllCSV()">Exportar Tots</button>
   </div>
   <div class="card" id="reportContent">
-    <p style="color:#94a3b8;text-align:center;padding:40px;">Selecciona un informe per visualitzar-lo</p>
+    <p style="color:var(--color-text-soft);text-align:center;padding:40px;">Selecciona un informe per visualitzar-lo</p>
   </div>
 </main>
 <script src="/js/sidebar.js"></script>
@@ -40,27 +56,44 @@ let currentData = null;
 
 async function loadReport(name) {
     if (!requireAuth()) return;
-    document.querySelectorAll('[data-report]').forEach(b => b.className = 'btn btn-sm btn-secondary');
-    document.querySelector(`[data-report="${name}"]`).className = 'btn btn-sm btn-primary';
+    if (!name) {
+        currentReport = null;
+        currentData = null;
+        document.getElementById('reportContent').innerHTML = '<p style="color:var(--color-text-soft);text-align:center;padding:40px;">Selecciona un informe per visualitzar-lo</p>';
+        return;
+    }
     currentReport = name;
+    document.getElementById('reportSelect').value = name;
 
     try {
-        const res = await fetch(`/reports/${name}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const anyLectiu = document.getElementById('anyLectiuSelect').value;
+        const params = anyLectiu ? `?anyLectiu=${encodeURIComponent(anyLectiu)}` : '';
+        const res = await authFetch(`/reports/${name}${params}`);
         const data = await res.json();
         currentData = data;
         renderReport(name, data);
     } catch (err) {
-        document.getElementById('reportContent').innerHTML = '<p style="color:#ef4444;">Error carregant informe</p>';
-        console.error(err);
+        document.getElementById('reportContent').innerHTML = '<p style="color:#e57373;">Error carregant informe</p>';
+    }
+}
+
+async function loadAnysLectius() {
+    const sel = document.getElementById('anyLectiuSelect');
+    try {
+        const res = await authFetch('/desplegables/curs_lectiu');
+        if (!res.ok) throw new Error();
+        const cursos = await res.json();
+        sel.innerHTML = '<option value="">Tots els anys</option>' +
+            cursos.map(c => `<option value="${c.id}">${c.Nom}</option>`).join('');
+    } catch (e) {
+        sel.innerHTML = '<option value="">Tots els anys</option>';
     }
 }
 
 function renderReport(name, data) {
     const div = document.getElementById('reportContent');
     if (!data || (Array.isArray(data) && data.length === 0)) {
-        div.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:20px;">Sense dades</p>';
+        div.innerHTML = '<p style="color:var(--color-text-soft);text-align:center;padding:20px;">Sense dades</p>';
         return;
     }
 
@@ -103,28 +136,29 @@ function downloadCSV(csv, filename) {
 }
 
 function exportCSV() {
-    if (!currentReport || !currentData) { alert('Selecciona un informe primer'); return; }
+    if (!currentReport || !currentData) { alertModal('Selecciona un informe primer'); return; }
     const csv = convertToCSV(currentData);
     downloadCSV(csv, `informe_${currentReport.replace(/\//g, '_')}.csv`);
 }
 
 async function exportAllCSV() {
     const reports = ['projectes/generesEdats', 'genere', 'sitEco', 'rolFam', 'tipHab', 'cont', 'neses', 'sebasDev', 'cursAcademic', 'resAcad', 'motiusBaixa', 'riscos', 'paisos'];
+    const anyLectiu = document.getElementById('anyLectiuSelect').value;
+    const params = anyLectiu ? `?anyLectiu=${encodeURIComponent(anyLectiu)}` : '';
     let allCsv = '';
     for (const name of reports) {
         try {
-            const res = await fetch(`/reports/${name}`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-            });
+            const res = await authFetch(`/reports/${name}${params}`);
             const data = await res.json();
             allCsv += `\n=== ${name} ===\n`;
             allCsv += convertToCSV(data);
-        } catch (e) { console.error(e); }
+        } catch {}
     }
     downloadCSV(allCsv, 'tots_informes.csv');
 }
 
 renderSidebar('informes');
+loadAnysLectius();
 </script>
 </body>
 </html>

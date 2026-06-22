@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Configuració — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -35,11 +39,13 @@
   </div>
   <div class="card">
     <div id="configContent">
-      <p style="color:#94a3b8;text-align:center;padding:40px;">Selecciona una taula per gestionar-la</p>
+      <p style="color:var(--color-text-soft);text-align:center;padding:40px;">Selecciona una taula per gestionar-la</p>
     </div>
   </div>
 </main>
+<div class="toast" id="toast"></div>
 <script src="/js/sidebar.js"></script>
+<script src="/js/validate.js"></script>
 <script>
 const FIELD_MAP = {
     paisos: { label: 'Nom_pais', valueField: 'idPais' },
@@ -84,15 +90,13 @@ const ENDPOINT_MAP = {
 async function loadTable() {
     if (!requireAuth()) return;
     const table = document.getElementById('tableSelect').value;
-    if (!table) { document.getElementById('configContent').innerHTML = '<p style="color:#94a3b8;text-align:center;padding:40px;">Selecciona una taula</p>'; return; }
+    if (!table) { document.getElementById('configContent').innerHTML = '<p style="color:var(--color-text-soft);text-align:center;padding:40px;">Selecciona una taula</p>'; return; }
 
     const endpoint = ENDPOINT_MAP[table] || table;
     const fields = FIELD_MAP[table] || { label: 'Nom', valueField: 'id' };
 
     try {
-        const res = await fetch(`/${endpoint}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/${endpoint}`);
         const data = await res.json();
         const items = Array.isArray(data) ? data : [];
         const div = document.getElementById('configContent');
@@ -102,58 +106,64 @@ async function loadTable() {
                 <button class="btn btn-sm btn-success" onclick="addRecord('${table}')">+ Afegir</button>
             </div>
             <table>
-                <thead><tr><th>ID</th><th>Valor</th><th></th></tr></thead>
+                <thead><tr><th>ID</th><th>Valor</th><th style="text-align:right;"></th></tr></thead>
                 <tbody>
                     ${items.map(item => `
                         <tr>
                             <td>${item[fields.valueField] || ''}</td>
                             <td>${item[fields.label] || ''}</td>
-                            <td><button class="btn btn-sm btn-danger" onclick="deleteRecord('${table}', ${item[fields.valueField]})">Eliminar</button></td>
+                            <td style="text-align:right;"><button class="btn btn-sm btn-danger" onclick="deleteRecord('${table}', ${item[fields.valueField]})">Eliminar</button></td>
                         </tr>
-                    `).join('') || '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">Sense registres</td></tr>'}
+                    `).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--color-text-soft);">Sense registres</td></tr>'}
                 </tbody>
             </table>
         `;
     } catch (err) {
-        document.getElementById('configContent').innerHTML = '<p style="color:#ef4444;">Error carregant taula</p>';
-        console.error(err);
+        document.getElementById('configContent').innerHTML = '<p style="color:#e57373;">Error carregant taula</p>';
     }
 }
 
 async function addRecord(table) {
     const endpoint = ENDPOINT_MAP[table] || table;
     const fields = FIELD_MAP[table] || { label: 'Nom', valueField: 'id' };
-    const name = prompt(`Nou valor per a ${table}:`);
-    if (!name || !name.trim()) return;
+    const name = await promptModal(`Nou valor per a ${table}:`, { title: 'Afegir registre', placeholder: 'Escriu el valor...' });
+    if (name === null) return; // cancel·lat
+    // El codi postal ha de ser numèric; la resta només obligatori
+    const rules = table === 'codiPostal' ? ['required', 'number'] : ['required'];
+    const err = validateValue(name, rules);
+    if (err) { showToast(err, 'error'); return; }
     try {
         const body = {};
         body[fields.label] = name.trim();
-        const res = await fetch(`/${endpoint}`, {
+        showLoading();
+        const res = await authFetch(`/${endpoint}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
-        if (res.ok) { alert('Registre afegit'); loadTable(); }
-        else { alert('Error afegint registre'); }
-    } catch (err) { alert('Error de connexió'); }
+        if (res.ok) { showToast('Registre afegit', 'success'); loadTable(); }
+        else { showToast('Error afegint registre', 'error'); }
+    } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 async function deleteRecord(table, id) {
-    if (!confirm('Eliminar aquest registre?')) return;
+    if (!await confirmModal('Eliminar aquest registre?')) return;
     const endpoint = ENDPOINT_MAP[table] || table;
     try {
-        const res = await fetch(`/${endpoint}/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        showLoading();
+        const res = await authFetch(`/${endpoint}/${id}`, {
+            method: 'DELETE'
         });
-        if (res.ok) { alert('Registre eliminat'); loadTable(); }
-        else { alert('Error eliminant registre'); }
-    } catch (err) { alert('Error de connexió'); }
+        if (res.ok) { showToast('Registre eliminat', 'success'); loadTable(); }
+        else { showToast('Error eliminant registre', 'error'); }
+    } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 // Check auth + role
 const role = getRole();
-if (role !== 1) { alert('No tens permís per accedir a la configuració'); window.location.href = '/projectes.html'; }
+if (role !== 1) { alertModal('No tens permís per accedir a la configuració').then(() => { window.location.href = '/projectes.html'; }); }
 else { renderSidebar('config'); }
 </script>
 </body>

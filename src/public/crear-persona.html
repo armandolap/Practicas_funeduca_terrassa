@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="pageTitle">Crear Persona</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 <link rel="stylesheet" href="/css/client-create.css">
 </head>
@@ -192,18 +196,19 @@
 <script>
 requireAuth();
 const role = getRole();
-if (role !== 1 && role !== 2 && role !== 3) {
-    alert('No tens permís per crear persones');
-    window.location.href = '/clients.html';
-}
-renderSidebar('clients');
 const editPersonId = new URLSearchParams(location.search).get('id');
-if (editPersonId) {
-    document.title = 'Editar Persona';
-    document.getElementById('formTitle').textContent = 'Editar Persona';
-    document.getElementById('btnCrear').textContent = 'ACTUALITZAR';
+if (role !== 1 && role !== 2 && role !== 3) {
+    alertModal('No tens permís per crear persones').then(() => { window.location.href = '/clients.html'; });
+} else {
+    renderSidebar('clients');
+    if (editPersonId) {
+        document.title = 'Editar Persona';
+        document.getElementById('formTitle').textContent = 'Editar Persona';
+        document.getElementById('btnCrear').textContent = 'ACTUALITZAR';
+    }
 }
 </script>
+<script src="/js/validate.js"></script>
 <script src="/js/client-create.js"></script>
 </body>
 </html>

@@ -4,13 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Crear Usuari — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
 <aside class="sidebar" id="sidebar"></aside>
 <main class="main-content">
   <h1>Crear Usuari de l'App</h1>
-  <form id="userForm" onsubmit="return saveUser(event)" style="max-width:500px">
+  <form id="userForm" onsubmit="return saveUser(event)" novalidate style="max-width:500px">
     <div class="card">
       <div class="form-row">
         <div class="form-group">
@@ -49,28 +53,39 @@
     </div>
   </form>
 </main>
+<div class="toast" id="toast"></div>
 <script src="/js/sidebar.js"></script>
+<script src="/js/validate.js"></script>
 <script>
 async function init() {
     if (!requireAuth()) return;
     const role = getRole();
-    if (role !== 1) { alert('No tens permís per crear usuaris'); window.location.href = '/usuaris.html'; return; }
+    if (role !== 1) { await alertModal('No tens permís per crear usuaris'); window.location.href = '/usuaris.html'; return; }
     renderSidebar('usuaris');
     try {
-        const res = await fetch('/desplegables/nivells-acces', {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch('/desplegables/nivells-acces');
         if (!res.ok) throw new Error('Error carregant nivells');
         const levels = await res.json();
         const sel = document.getElementById('nivellAcces');
         sel.innerHTML = '<option value="">-- Selecciona --</option>' + levels.map(l => `<option value="${l.id}">${l.Nom}</option>`).join('');
     } catch (e) {
-        console.error('No s\'han pogut carregar els nivells d\'accés:', e);
     }
 }
 
 async function saveUser(e) {
     e.preventDefault();
+
+    const v = validateForm([
+        { id: 'nom',         rules: ['required'] },
+        { id: 'cognoms',     rules: ['required'] },
+        { id: 'username',    rules: ['required'] },
+        { id: 'email',       rules: ['email'] },
+        { id: 'telefon',     rules: ['phone'] },
+        { id: 'nivellAcces', rules: ['required'] },
+        { id: 'password',    rules: ['required', ['minlength', 6]] },
+    ]);
+    if (!v.ok) return;
+
     const nom = document.getElementById('nom').value.trim();
     const cognoms = document.getElementById('cognoms').value.trim();
     const username = document.getElementById('username').value.trim();
@@ -79,20 +94,18 @@ async function saveUser(e) {
     const idNivel_acceso = document.getElementById('nivellAcces').value;
     const password = document.getElementById('password').value;
 
-    if (!nom || !cognoms || !username || !idNivel_acceso || !password) {
-        alert('Omple tots els camps obligatoris'); return;
-    }
-
     try {
-        const res = await fetch('/usuario', {
+        showLoading();
+        const res = await authFetch('/usuario', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ Nom: nom, Cognoms: cognoms, username, email: email || null, Telefon: telefon, idNivel_acceso: parseInt(idNivel_acceso), password })
         });
         const data = await res.json();
-        if (res.ok) { alert('Usuari creat correctament'); window.location.href = `/usuari.html?id=${data.id}`; }
-        else { alert(data.error || 'Error creant usuari'); }
-    } catch (err) { alert('Error de connexió'); console.error(err); }
+        if (res.ok) { notifyAndRedirect('Usuari creat correctament', `/usuari.html?id=${data.id}`); }
+        else { showToast(data.error || 'Error creant usuari', 'error'); }
+    } catch (err) { showToast('Error de connexió', 'error'); }
+    finally { hideLoading(); }
 }
 
 init();

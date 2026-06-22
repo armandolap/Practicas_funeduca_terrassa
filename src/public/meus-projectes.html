@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Els meus projectes — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -19,7 +23,7 @@
   </div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Nom</th><th>Inici</th><th>Fi</th><th>Places</th><th>Inscrits</th><th>Centre</th></tr></thead>
+      <thead><tr><th>Nom</th><th>Curs</th><th>Inici</th><th>Fi</th><th>Places</th><th>Inscrits</th><th>Centre</th></tr></thead>
       <tbody id="myProjectList"></tbody>
     </table>
   </div>
@@ -36,7 +40,7 @@
   </div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Nom</th><th>Inici</th><th>Fi</th><th>Places</th><th>Inscrits</th><th>Responsable</th><th>Centre</th></tr></thead>
+      <thead><tr><th>Nom</th><th>Curs</th><th>Inici</th><th>Fi</th><th>Places</th><th>Inscrits</th><th>Responsable</th><th>Centre</th></tr></thead>
       <tbody id="allProjectList"></tbody>
     </table>
   </div>
@@ -45,17 +49,8 @@
 <script>
 let currentMyFilter = 'todos';
 let currentAllFilter = 'todos';
-let mySearchTimeout;
-let allSearchTimeout;
-
-function debounceMySearch() {
-    clearTimeout(mySearchTimeout);
-    mySearchTimeout = setTimeout(loadMyProjects, 300);
-}
-function debounceAllSearch() {
-    clearTimeout(allSearchTimeout);
-    allSearchTimeout = setTimeout(loadAllProjects, 300);
-}
+const debounceMySearch = debounce(loadMyProjects, 300);
+const debounceAllSearch = debounce(loadAllProjects, 300);
 
 function setMyFilter(filter) {
     currentMyFilter = filter;
@@ -77,18 +72,17 @@ async function loadMyProjects() {
     const params = new URLSearchParams({ filter: currentMyFilter, responsable_id: user.idUsuario_APP });
     if (q) params.set('q', q);
     try {
-        const res = await fetch(`/projectes?${params}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/projectes?${params}`);
         const projects = await res.json();
         const tbody = document.getElementById('myProjectList');
         if (!projects.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">No tens projectes assignats</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--color-text-soft);">No tens projectes assignats</td></tr>';
             return;
         }
         tbody.innerHTML = projects.map(p => `
             <tr class="clickable" onclick="window.location.href='/projecte.html?id=${p.idProyecto}'">
                 <td><strong>${p.Nom_projecte || ''}</strong></td>
+                <td>${p.Nom_curs_lectiu || '-'}</td>
                 <td>${p.fecha_inicio_act ? new Date(p.fecha_inicio_act).toLocaleDateString() : '-'}</td>
                 <td>${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</td>
                 <td>${p.plazas || 0}</td>
@@ -96,7 +90,7 @@ async function loadMyProjects() {
                 <td>${p.nom_centre_activitats || '-'}</td>
             </tr>
         `).join('');
-    } catch (err) { console.error(err); }
+    } catch {}
 }
 
 async function loadAllProjects() {
@@ -105,27 +99,58 @@ async function loadAllProjects() {
     const params = new URLSearchParams({ filter: currentAllFilter });
     if (q) params.set('q', q);
     try {
-        const res = await fetch(`/projectes?${params}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/projectes?${params}`);
         const projects = await res.json();
         const tbody = document.getElementById('allProjectList');
         if (!projects.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha projectes</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--color-text-soft);">No hi ha projectes</td></tr>';
             return;
         }
         tbody.innerHTML = projects.map(p => `
             <tr class="clickable" onclick="window.location.href='/projecte.html?id=${p.idProyecto}'">
                 <td><strong>${p.Nom_projecte || ''}</strong></td>
+                <td>${p.Nom_curs_lectiu || '-'}</td>
                 <td>${p.fecha_inicio_act ? new Date(p.fecha_inicio_act).toLocaleDateString() : '-'}</td>
                 <td>${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</td>
                 <td>${p.plazas || 0}</td>
                 <td>${p.inscritos || 0}</td>
-                <td>${p.responsable_nom ? `${p.responsable_nom} ${p.responsable_cognoms || ''}` : '-'}</td>
+                <td onclick="event.stopPropagation()">${renderResponsables(p.responsables)}</td>
                 <td>${p.nom_centre_activitats || '-'}</td>
             </tr>
         `).join('');
-    } catch (err) { console.error(err); }
+    } catch {}
+}
+
+const RESP_TIPUS = {
+    1: { nom: 'Zona', badge: 'badge-blue' },
+    2: { nom: 'Projecte', badge: 'badge-green' },
+    3: { nom: 'Treballador', badge: 'badge-gray' }
+};
+
+function renderResponsableLink(r) {
+    const t = RESP_TIPUS[r.tipus_responsable] || { nom: '', badge: 'badge-gray' };
+    const nom = `${r.Nom || ''} ${r.Cognoms || ''}`.trim();
+    return `<a href="/usuari.html?id=${r.idUsuario_APP}" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;">
+                <span class="badge ${t.badge}">${t.nom}</span>${nom}
+            </a>`;
+}
+
+function parseResponsables(resp) {
+    if (!resp) return [];
+    return resp.split('\x1e').map(s => {
+        const [idUsuario_APP, Nom, Cognoms, tipus_responsable] = s.split('\x1f');
+        return { idUsuario_APP, Nom, Cognoms, tipus_responsable: parseInt(tipus_responsable) };
+    });
+}
+
+function renderResponsables(resp) {
+    const list = parseResponsables(resp);
+    if (!list.length) return '-';
+    if (list.length === 1) return renderResponsableLink(list[0]);
+    return `<details class="resp-details">
+                <summary>${list.length} responsables</summary>
+                <div class="resp-list">${list.map(renderResponsableLink).join('')}</div>
+            </details>`;
 }
 
 renderSidebar('meus-projectes');

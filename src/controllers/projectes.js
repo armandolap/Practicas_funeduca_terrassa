@@ -39,7 +39,7 @@ async function getProjectesById(req, res) {
 async function createProject(req, res) {
     try {
         const projecte = req.body.projecte || {};
-        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, responsable_zona, responsables_projecte, treballadors } = projecte;
+        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, idCurs_lectiu, responsable_zona, responsables_projecte, treballadors } = projecte;
 
         if (!Nom_projecte?.trim()) return res.status(400).json({ message: "El nom del projecte és obligatori." });
         if (!idcentre_activitats) return res.status(400).json({ message: "idcentre_activitats és obligatori." });
@@ -56,7 +56,7 @@ async function createProject(req, res) {
             return res.status(400).json({ message: "La data de finalització no pot ser anterior a la data d'inici." });
         }
 
-        const newId = await repo.create({ Nom_projecte: nomProj, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
+        const newId = await repo.create({ Nom_projecte: nomProj, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, idCurs_lectiu });
         await repo.syncResponsables(newId, responsable_zona, responsables_projecte, treballadors);
 
         res.status(201).json({ message: "Projecte creat correctament", id: newId });
@@ -69,7 +69,7 @@ async function createProject(req, res) {
 async function updateProject(req, res) {
     try {
         const projecte = req.body.projecte || {};
-        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, responsable_zona, responsables_projecte, treballadors, responsables_projecte_add, treballadors_add } = projecte;
+        const { Nom_projecte, Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, idCurs_lectiu, responsable_zona, responsables_projecte, treballadors, responsables_projecte_add, treballadors_add } = projecte;
 
         const existing = await repo.getById(req.params.id);
         if (!existing) return res.status(404).json({ message: "Projecte no trobat" });
@@ -99,7 +99,7 @@ async function updateProject(req, res) {
             return res.status(400).json({ message: "La data de finalització no pot ser anterior a la data d'inici." });
         }
 
-        await repo.update(req.params.id, { Nom_projecte: Nom_projecte.trim(), Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats });
+        await repo.update(req.params.id, { Nom_projecte: Nom_projecte.trim(), Descripcio, plazas, fecha_inicio_act, fecha_fin_act, idcentre_activitats, idCurs_lectiu });
 
         if (userRole === 3) {
             await repo.addResponsables(req.params.id, responsables_projecte_add, treballadors_add);

@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Usuaris App — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -27,12 +31,7 @@
 <script src="/js/sidebar.js"></script>
 <script>
 let currentFilter = 'tots';
-let searchTimeout;
-
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(loadUsers, 300);
-}
+const debounceSearch = debounce(loadUsers, 300);
 
 function setFilter(filter) {
     currentFilter = filter;
@@ -47,11 +46,11 @@ async function loadUsers() {
     const params = new URLSearchParams({ filter: currentFilter });
     if (q) params.set('q', q);
     try {
-        const res = await fetch(`/usuario?${params}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const res = await authFetch(`/usuario?${params}`);
         const users = await res.json();
         const tbody = document.getElementById('userList');
         if (!users.length) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha usuaris</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--color-text-soft);">No hi ha usuaris</td></tr>';
             return;
         }
         tbody.innerHTML = users.map(u => `
@@ -65,7 +64,7 @@ async function loadUsers() {
                 <td>${u.num_projectes_actius || 0}</td>
             </tr>
         `).join('');
-    } catch (err) { console.error(err); }
+    } catch {}
 }
 
 const role = getRole();

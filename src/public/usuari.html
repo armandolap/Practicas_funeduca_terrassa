@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Usuari — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -18,9 +22,7 @@ const userId = new URLSearchParams(location.search).get('id');
 async function loadUser() {
     if (!requireAuth()) return;
     try {
-        const res = await fetch(`/usuario/${userId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/usuario/${userId}`);
         const u = await res.json();
         if (!u || !u.idUsuario_APP) {
             document.getElementById('userContent').innerHTML = '<p>Usuari no trobat</p>';
@@ -61,12 +63,12 @@ async function loadUser() {
                                 <td>${p.fecha_fin_act ? new Date(p.fecha_fin_act).toLocaleDateString() : '-'}</td>
                                 <td>${p.inscritos || 0}</td>
                             </tr>
-                        `).join('') || '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">Cap projecte</td></tr>'}
+                        `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--color-text-soft);">Cap projecte</td></tr>'}
                     </tbody>
                 </table>
             </div>
         `;
-    } catch (err) { console.error(err); document.getElementById('userContent').innerHTML = '<p>Error carregant usuari</p>'; }
+    } catch (err) { document.getElementById('userContent').innerHTML = '<p>Error carregant usuari</p>'; }
 }
 
 renderSidebar('usuaris');
