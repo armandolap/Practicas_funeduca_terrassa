@@ -285,7 +285,7 @@ function renderSidebar(activePage) {
         html += `<hr>`;
     }
     if (user.Nom) {
-        html += `<div class="user-info">${user.Nom} ${user.Cognoms || ''}<br><small style="cursor:pointer;color:#e57373;" onclick="logout()">Tancar sessió</small></div>`;
+        html += `<div class="user-info">${user.Nom} ${user.Cognoms || ''}<br><button type="button" style="margin-top:8px;padding:6px 14px;background:#e57373;color:#fff;border:none;border-radius:4px;cursor:pointer;font-size:0.85em;font-family:'Montserrat',sans-serif;" onclick="logout()">Tancar sessió</button></div>`;
     }
     sidebar.innerHTML = html;
     // En mòbil, tancar el menú en seguir un enllaç de navegació.
