@@ -474,8 +474,12 @@ async function searchCentres() {
     try {
         const res = await fetch(`/centre-activitats/search?q=${encodeURIComponent(q)}`, { headers: AUTH_HEADERS() });
         const data = await res.json();
+        const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         if (data.length) {
-            dropdown.innerHTML = data.map(c => `<div onclick="selectCentre(${c.idcentre_activitats}, '${c.nom_centre_activitats.replace(/'/g, "\\'")}', '${(c.tipus_via || '') + ' ' + (c.Nom_calle || '')}')">${c.nom_centre_activitats} — ${c.tipus_via || ''} ${c.Nom_calle || ''}</div>`).join('');
+            dropdown.innerHTML = data.map(c => {
+                const address = `${c.tipus_via || ''} ${c.Nom_calle || ''}`.trim();
+                return `<div class="centre-option" data-id="${c.idcentre_activitats}" data-name="${esc(c.nom_centre_activitats)}" data-address="${esc(address)}">${esc(c.nom_centre_activitats)} — ${esc(address)}</div>`;
+            }).join('');
             dropdown.innerHTML += `<hr style="margin:4px 0"><div onclick="showNewCentreForm()" style="color:#4f9c8d;font-weight:600;">+ Crear nou centre</div>`;
             dropdown.style.display = 'block';
         } else {
@@ -490,9 +494,21 @@ document.getElementById('centreSearch').addEventListener('input', function() {
     centreSearchTimeout = setTimeout(searchCentres, 300);
 });
 
+document.getElementById('centreDropdown').addEventListener('click', function(e) {
+    const opt = e.target.closest('.centre-option');
+    if (!opt) return;
+    selectCentre(parseInt(opt.dataset.id), opt.dataset.name, opt.dataset.address);
+});
+
 document.getElementById('newStreetSearch').addEventListener('input', function() {
     clearTimeout(centreSearchTimeout);
     centreSearchTimeout = setTimeout(searchNewStreets, 300);
+});
+
+document.getElementById('newStreetDropdown').addEventListener('click', function(e) {
+    const opt = e.target.closest('.street-option');
+    if (!opt) return;
+    selectNewStreet(parseInt(opt.dataset.id), opt.dataset.tipus, opt.dataset.nom, opt.dataset.barri, opt.dataset.cp);
 });
 
 document.addEventListener('click', function(e) {
@@ -534,10 +550,11 @@ async function searchNewStreets() {
     try {
         const res = await fetch(`/callejero?q=${encodeURIComponent(q)}`, { headers: AUTH_HEADERS() });
         const data = await res.json();
+        const esc = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         if (data.length) {
             dropdown.innerHTML = data.map(s =>
-                `<div onclick="selectNewStreet(${s.idcallejero}, '${s.tipus_via.replace(/'/g, "\\'")}', '${s.Nom_calle.replace(/'/g, "\\'")}', '${s.barri.replace(/'/g, "\\'")}', '${s.codi_postal}')">
-                    ${s.tipus_via} ${s.Nom_calle} — ${s.barri} (${s.codi_postal})
+                `<div class="street-option" data-id="${s.idcallejero}" data-tipus="${esc(s.tipus_via)}" data-nom="${esc(s.Nom_calle)}" data-barri="${esc(s.barri)}" data-cp="${esc(s.codi_postal)}">
+                    ${esc(s.tipus_via)} ${esc(s.Nom_calle)} — ${esc(s.barri)} (${esc(s.codi_postal)})
                 </div>`
             ).join('');
             dropdown.style.display = 'block';
