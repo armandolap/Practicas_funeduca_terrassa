@@ -110,6 +110,27 @@ function validateForm(fields) {
   return { ok: !firstInvalid, firstInvalid };
 }
 
+/**
+ * Valida un valor solt (sense DOM) contra una llista de regles.
+ * Útil per a modals tipus prompt on no hi ha un camp amb label.
+ * @returns {string|null} missatge d'error o null si és vàlid
+ */
+function validateValue(val, rules) {
+  val = val ?? "";
+  for (const rule of rules) {
+    let error = null;
+    if (typeof rule === "function") error = rule(val);
+    else if (Array.isArray(rule)) {
+      const [name, ...args] = rule;
+      error = RULES[name] ? RULES[name](val, ...args) : null;
+    } else {
+      error = RULES[rule] ? RULES[rule](val) : null;
+    }
+    if (error) return error;
+  }
+  return null;
+}
+
 // Neteja tots els errors d'un formulari (útil en reset)
 function clearFormErrors(container = document) {
   container.querySelectorAll(".field-invalid").forEach((el) =>

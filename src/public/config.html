@@ -45,6 +45,7 @@
 </main>
 <div class="toast" id="toast"></div>
 <script src="/js/sidebar.js"></script>
+<script src="/js/validate.js"></script>
 <script>
 const FIELD_MAP = {
     paisos: { label: 'Nom_pais', valueField: 'idPais' },
@@ -126,7 +127,11 @@ async function addRecord(table) {
     const endpoint = ENDPOINT_MAP[table] || table;
     const fields = FIELD_MAP[table] || { label: 'Nom', valueField: 'id' };
     const name = await promptModal(`Nou valor per a ${table}:`, { title: 'Afegir registre', placeholder: 'Escriu el valor...' });
-    if (!name || !name.trim()) return;
+    if (name === null) return; // cancel·lat
+    // El codi postal ha de ser numèric; la resta només obligatori
+    const rules = table === 'codiPostal' ? ['required', 'number'] : ['required'];
+    const err = validateValue(name, rules);
+    if (err) { showToast(err, 'error'); return; }
     try {
         const body = {};
         body[fields.label] = name.trim();
