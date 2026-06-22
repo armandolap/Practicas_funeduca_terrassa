@@ -500,49 +500,26 @@ CREATE TABLE IF NOT EXISTS `crm_funeduca`.`Responsables` (
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4;
 
-DELIMITER $$
-CREATE FUNCTION calcTempsEntitat(altaDate DATE) 
-RETURNS VARCHAR(50)
-DETERMINISTIC
-BEGIN
-    DECLARE anys INT;
-    DECLARE mesos INT;
-    -- Calculamos años completos
-    SET anys = TIMESTAMPDIFF(YEAR, altaDate, CURDATE());
-    -- Calculamos meses restantes (meses totales - años12)
-    SET mesos = TIMESTAMPDIFF(MONTH, altaDate, CURDATE()) - (anys*12);
-    IF anys > 0 THEN
-        IF anys = 1 THEN
-            RETURN '1 any';
-        ELSE
-            RETURN CONCAT(anys, ' anys');
-        END IF;
-    ELSEIF mesos > 0 THEN
-        IF mesos = 1 THEN
-            RETURN '1 mes';
-        ELSE
-            RETURN CONCAT(mesos, ' mesos');
-        END IF;
-    ELSE
-        RETURN '0';
-    END IF;
-END$$
-DELIMITER ;
-
 drop event if exists actualizar_tiempo_entidad_edad ;
 delimiter //
 create event actualizar_tiempo_entidad_edad
- on schedule every 1 day 
+ on schedule every 1 minute 
  STARTS CURRENT_TIMESTAMP
+on completion preserve
+enable
 do
 begin
 	UPDATE client
-    SET C_temps_a_lentitat = calcTempsEntitat(Data_d_alta),
+    SET C_temps_a_lentitat = CONCAT(
+    TIMESTAMPDIFF(YEAR, Data_d_alta, CURDATE()),
+    ' anys ',
+    MOD(TIMESTAMPDIFF(MONTH, Data_d_alta, CURDATE()),12),
+    ' mesos'
+),
 		C_edad = TIMESTAMPDIFF(YEAR, Fecha_nacimiento, CURDATE())
-    WHERE data_d_alta IS NOT NULL;
+    WHERE Data_d_alta IS NOT NULL;
 end //
 delimiter ;
-
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
