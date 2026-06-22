@@ -362,16 +362,33 @@ async function riscos(anyLectiu) {
 }
 
 async function paisos(anyLectiu) {
-    const f = anyLectiuFilter("cl", anyLectiu);
+    // Filtre opcional per any lectiu: només clients inscrits en projectes
+    // amb aquest idCurs_lectiu (s'aplica tant a naixement com a nacionalitat).
+    const sub = anyLectiu ? `
+        AND %ALIAS%.idClient IN (
+            SELECT phc_f.idClient FROM proyectos_has_client phc_f
+            JOIN proyectos pr_f ON phc_f.idProyecto = pr_f.idProyecto
+            WHERE pr_f.idCurs_lectiu = ?
+        )` : "";
+    const nascutsSub = sub.replace("%ALIAS%", "cl");
+    const nacSub = sub.replace("%ALIAS%", "n");
+    const params = anyLectiu ? [anyLectiu, anyLectiu] : [];
+
     const [rows] = await pool.query(`
-        SELECT p.Nom_pais AS pais_naixement, COUNT(*) AS total
-        FROM client cl
-        JOIN pais p ON cl.Pais_naixement = p.idPais
-        WHERE 1=1${f.clause}
-        GROUP BY p.Nom_pais
-        ORDER BY total DESC
-    `, f.params);
-    return rows.map(r => ({ 'PAÍS DE NAIXEMENT': r.pais_naixement, 'TOTAL': Number(r.total) }));
+        SELECT p.Nom_pais AS pais,
+               (SELECT COUNT(*) FROM client cl
+                WHERE cl.Pais_naixement = p.idPais${nascutsSub}) AS nascuts,
+               (SELECT COUNT(*) FROM nacionalitat n
+                WHERE n.idPais = p.idPais${nacSub}) AS nacionalitat
+        FROM pais p
+        HAVING nascuts > 0 OR nacionalitat > 0
+        ORDER BY nascuts DESC, nacionalitat DESC
+    `, params);
+    return rows.map(r => ({
+        'PAÍS': r.pais,
+        'NASCUTS': Number(r.nascuts),
+        'NACIONALITAT': Number(r.nacionalitat)
+    }));
 }
 
 module.exports = {
