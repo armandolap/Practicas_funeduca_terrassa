@@ -305,7 +305,11 @@ async function donarAlta() {
     if (!await confirmModal('Tornar a donar d\'alta aquesta persona?')) return;
     try {
         showLoading();
-        const res = await authFetch(`/client/${clientId}/alta`, { method: 'PUT' });
+        const res = await authFetch(`/client/${clientId}/alta`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
         if (res.ok) { showToast('Persona donada d\'alta', 'success'); loadClient(); }
         else { showToast('Error', 'error'); }
     } catch (e) { showToast('Error de connexió', 'error'); }
