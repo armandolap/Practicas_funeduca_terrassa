@@ -276,7 +276,11 @@ async function cursAcademic(anyLectiu) {
     const f = anyLectiuFilter("cl", anyLectiu);
     const [rows] = await pool.query(`
         SELECT ca.idCurs_actual, ca.Nom AS curs,
-               COUNT(cl.idClient) AS totals,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%promociona%'
+                          OR ra.Nom_resultat_acad LIKE '%repeteix%'
+                          OR ra.Nom_resultat_acad LIKE '%abandona%'
+                          OR ra.Nom_resultat_acad LIKE '%plaça%'
+                          OR ra.Nom_resultat_acad LIKE '%laboral%' THEN 1 ELSE 0 END) AS totals,
                SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%promociona%' THEN 1 ELSE 0 END) AS promociona,
                SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%repeteix%' THEN 1 ELSE 0 END) AS repeteix,
                SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%abandona%' THEN 1 ELSE 0 END) AS abandona,
@@ -285,6 +289,7 @@ async function cursAcademic(anyLectiu) {
         FROM curs_actual ca
         LEFT JOIN client cl ON cl.Curs_actual = ca.idCurs_actual${f.clause}
         LEFT JOIN resultat_academic ra ON cl.Resultat_academic = ra.idResultat_academic
+        WHERE ca.Nom <> 'No aplica'
         GROUP BY ca.idCurs_actual, ca.Nom
         ORDER BY ca.idCurs_actual
     `, f.params);
