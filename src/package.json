@@ -11,6 +11,7 @@
     "all_tests": "bash run_tests.sh",
     "dev": "node --watch server.js",
     "seed": "node seeder/seeder.js",
+    "seed2": "node seeder/seed2.js",
     "config": "node ../setup.js"
   },
   "keywords": [],

@@ -10,7 +10,7 @@ INSERT INTO motiu_baixa (Nom_motiu_baixa)
 VALUES ('Quotes impagades'),
     ('Fan altres activitats'),
     ('Comportament disruptiu'),
-    ('La família no vol que segueixi veí'),
+    ('La família no vol que segueixi venint'),
     ('Falta assistència recurrent'),
     ('L''infant no vol tornar'),
     ('Canvi de centre'),

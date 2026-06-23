@@ -56,14 +56,31 @@ Every entity has the same CRUD pattern: `getAll`, `getById`, `create`, `update`,
 
 ## Seed (dades de prova)
 
-**Ja no s'executen automàticament.** Per inserir dades de prova:
+**Ja no s'executen automàticament.** Hi ha dos seeders:
+
+### seed1 — dades mínimes (6 usuaris, 13 clients, 9 projectes)
 
 ```bash
 cd src
 npm run seed
 ```
 
-Això esborra TOTES les dades de les taules i les torna a inserir (schema + inserts estàtics + dades de prova).
+### seed2 — càrrega massiva per test de rendiment (400 clients, 80 famílies, 50 projectes, 15 usuaris)
+
+```bash
+cd src
+npm run seed2
+```
+
+Genera:
+- 400 clients (~5% donats de baixa), 80 famílies amb cognoms repetits + identificador
+- 15 usuaris (2 admin, 3 zona, 3 projectes, 4 treballadors, 3 visitants) — password `1234`
+- 50 projectes distribuïts entre 2023–2032
+- 5 centres d'activitats
+- 40 domicilis
+- Assignacions aleatòries client-projecte i responsable-projecte
+
+Ambdós esborren TOTES les dades existents i reinsereixen schema + inserts estàtics.
 
 ## Key gotchas
 
@@ -84,6 +101,26 @@ Això esborra TOTES les dades de les taules i les torna a inserir (schema + inse
 | projectes@test.com    | 1234     | Responsable projectes (3) | Projectes |
 | treballador@test.com  | 1234     | Treballador (4)      | Treballador  |
 | visitant@test.com     | 1234     | Visitant (5)         | Visitant     |
+
+### seed2 users (password: `1234` for all)
+
+| username        | Rol (idNivel_acceso) | Nom / Cognoms              |
+|-----------------|----------------------|----------------------------|
+| admin1          | Admin (1)            | Admin Principal            |
+| admin2          | Admin (1)            | Admin Secundari            |
+| zona_nord       | Responsable zona (2) | Zona Nord                  |
+| zona_sud        | Responsable zona (2) | Zona Sud                   |
+| zona_est        | Responsable zona (2) | Zona Est                   |
+| proj_inf        | Resp. projectes (3)  | Projectes Infantil         |
+| proj_joves      | Resp. projectes (3)  | Projectes Joves            |
+| proj_fam        | Resp. projectes (3)  | Projectes Famílies         |
+| treb_social     | Treballador (4)      | Treballador Social         |
+| treb_educ       | Treballador (4)      | Treballador Educador       |
+| treb_psi        | Treballador (4)      | Treballador Psicòleg       |
+| treb_admin      | Treballador (4)      | Treballador Admin          |
+| visit_ext       | Visitant (5)         | Visitant Extern            |
+| visit_col       | Visitant (5)         | Visitant Col·laborador     |
+| visit_vol       | Visitant (5)         | Visitant Voluntari         |
 
 ## Auth
 
