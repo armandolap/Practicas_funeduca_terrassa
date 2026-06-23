@@ -37,8 +37,8 @@ async function loadUser() {
         document.getElementById('userContent').innerHTML = `
             <a class="back-link" href="/usuaris.html">← Tornar</a>
             <div class="detail-header">
+                ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="deleteUser()" style="margin-right:12px;">Eliminar</button>` : ''}
                 <h1>${u.Nom || ''} ${u.Cognoms || ''}</h1>
-                ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="deleteUser()" style="margin-left:12px;">Eliminar</button>` : ''}
                 <div class="subtitle">${u.nivel_acceso_nom || ''}</div>
             </div>
             <div class="info-row">
