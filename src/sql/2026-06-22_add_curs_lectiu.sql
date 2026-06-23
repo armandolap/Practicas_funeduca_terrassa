@@ -33,7 +33,7 @@ SELECT * FROM (
 WHERE NOT EXISTS (SELECT 1 FROM `curs_lectiu`);
 
 -- 3) Columna nova a proyectos ---------------------------------
---    MySQL < 8.0 no suporta ADD COLUMN IF NOT EXISTS; aquest bloc
+--    MySQL < 8.0 no suporta ADD COLUMN IF NOT EXISTS(aqui iba un punto y coma) aquest bloc
 --    afegeix la columna només si encara no existeix.
 SET @col_exists := (
   SELECT COUNT(*) FROM information_schema.COLUMNS

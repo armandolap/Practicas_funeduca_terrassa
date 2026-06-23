@@ -1,12 +1,12 @@
   -- MySQL Workbench Forward Engineering
 
-  SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-  SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-  SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
-
-  -- -----------------------------------------------------
-  -- Schema crm_funeduca
-  -- -----------------------------------------------------
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+SET GLOBAL event_scheduler = ON;
+-- -----------------------------------------------------
+-- Schema crm_funeduca
+-- -----------------------------------------------------
 
   -- -----------------------------------------------------
   -- Schema crm_funeduca
@@ -461,7 +461,6 @@
     `Telefon` VARCHAR(45) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`idUsuario_APP`, `idNivel_acceso`),
-    UNIQUE INDEX `username_UNIQUE` (`username` ASC),
     INDEX `fk_usuario_app_Nivel_acceso1_idx` (`idNivel_acceso` ASC),
     CONSTRAINT `fk_usuario_app_Nivel_acceso1`
       FOREIGN KEY (`idNivel_acceso`)
@@ -494,6 +493,26 @@
   ENGINE = InnoDB
   DEFAULT CHARACTER SET = utf8mb4;
 
+drop event if exists actualizar_tiempo_entidad_edad ;
+delimiter //
+create event actualizar_tiempo_entidad_edad
+ on schedule every 1 day 
+ STARTS CURRENT_TIMESTAMP
+on completion preserve
+enable
+do
+begin
+	UPDATE client
+    SET C_temps_a_lentitat = CONCAT(
+    TIMESTAMPDIFF(YEAR, Data_d_alta, CURDATE()),
+    ' anys ',
+    MOD(TIMESTAMPDIFF(MONTH, Data_d_alta, CURDATE()),12),
+    ' mesos'
+),
+		C_edad = TIMESTAMPDIFF(YEAR, Fecha_nacimiento, CURDATE())
+    WHERE Data_d_alta IS NOT NULL;
+end //
+delimiter ;
 
   -- -----------------------------------------------------
   -- Table `crm_funeduca`.`Responsables`
