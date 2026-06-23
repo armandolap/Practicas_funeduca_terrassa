@@ -109,6 +109,8 @@ async function ensureDatabase(bootstrap) {
     await runSQLFile(bootstrap, path.join(__dirname, "sql", "Base_datos.sql"));
     console.log("Ejecutando inserts_tablas_estaticas.sql...");
     await runSQLFile(bootstrap, path.join(__dirname, "sql", "inserts_tablas_estaticas.sql"));
+    console.log("Ejecutando creacion de curso lectiu...");
+    await runSQLFile(bootstrap, path.join(__dirname, "sql", "2026-06-22_add_curs_lectiu.sql"));
 }
 
 async function startServer() {

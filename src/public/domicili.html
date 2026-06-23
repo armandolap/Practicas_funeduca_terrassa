@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Domicili — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -18,9 +22,7 @@ const domiciliId = new URLSearchParams(location.search).get('id');
 async function loadDomicili() {
     if (!requireAuth()) return;
     try {
-        const res = await fetch(`/domicili/${domiciliId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/domicili/${domiciliId}`);
         const d = await res.json();
         if (!d || !d.idDomicili) {
             document.getElementById('domiciliContent').innerHTML = '<p>Domicili no trobat</p>';
@@ -47,7 +49,7 @@ async function loadDomicili() {
                                 <td>${p.Nom_rol || ''}</td>
                                 <td><a href="/familia.html?id=${p.idFamilia}">${p.Cognom_familiar || ''}</a></td>
                             </tr>
-                        `).join('') || '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">Cap persona</td></tr>'}
+                        `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--color-text-soft);">Cap persona</td></tr>'}
                     </tbody>
                 </table>
             </div>
@@ -56,17 +58,17 @@ async function loadDomicili() {
                 <h3>Famílies</h3>
                 ${(d.families || []).map(f => `
                     <div style="padding:6px 0;"><a href="/familia.html?id=${f.idFamilia}">${f.Cognom_familiar || ''}</a> · ${f.estructura_familiar_nom || ''} · ${f.num_membres || 0} membres</div>
-                `).join('') || '<p style="color:#94a3b8;">Cap família</p>'}
+                `).join('') || '<p style="color:var(--color-text-soft);">Cap família</p>'}
             </div>
 
             <div class="card">
                 <h3>Projectes relacionats</h3>
                 ${(d.projectes || []).map(p => `
                     <div style="padding:6px 0;"><a href="/projecte.html?id=${p.idProyecto}">${p.Nom_projecte || ''}</a></div>
-                `).join('') || '<p style="color:#94a3b8;">Cap projecte</p>'}
+                `).join('') || '<p style="color:var(--color-text-soft);">Cap projecte</p>'}
             </div>
         `;
-    } catch (err) { console.error(err); document.getElementById('domiciliContent').innerHTML = '<p>Error carregant domicili</p>'; }
+    } catch (err) { document.getElementById('domiciliContent').innerHTML = '<p>Error carregant domicili</p>'; }
 }
 
 renderSidebar('domicilis');

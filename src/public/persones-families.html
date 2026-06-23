@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Persones i Famílies — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -41,24 +45,19 @@
 </main>
 <script src="/js/sidebar.js"></script>
 <script>
-let searchTimeout;
-
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(search, 300);
-}
+const debounceSearch = debounce(search, 300);
 
 async function loadFilters() {
     try {
         const [genRes, barriRes, estRes] = await Promise.all([
-            fetch('/genere', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-            fetch('/barri', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-            fetch('/estFamilia', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+            authFetch('/genere'),
+            authFetch('/barri'),
+            authFetch('/estFamilia')
         ]);
         document.getElementById('genereFilter').innerHTML = '<option value="">Tots</option>' + (await genRes.json()).map(g => `<option value="${g.idGenere}">${g.Nom_genere}</option>`).join('');
         document.getElementById('barriFilter').innerHTML = '<option value="">Tots</option>' + (await barriRes.json()).map(b => `<option value="${b.idBarri}">${b.Nom}</option>`).join('');
         document.getElementById('estructuraFilter').innerHTML = '<option value="">Totes</option>' + (await estRes.json()).map(e => `<option value="${e.idEstructura_familiar}">${e.Nom_est_fam}</option>`).join('');
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 async function search() {
@@ -73,9 +72,7 @@ async function search() {
         if (q) famParams.set('q', q);
         if (estructura) famParams.set('estructura', estructura);
         if (barri) famParams.set('barri', barri);
-        const famRes = await fetch(`/familia?${famParams}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const famRes = await authFetch(`/familia?${famParams}`);
         const famData = await famRes.json();
         const families = famData.rows || famData || [];
         document.getElementById('familyResults').innerHTML = families.map(f => `
@@ -84,15 +81,13 @@ async function search() {
                 <td>${f.num_membres || 0}</td>
                 <td>${f.estructura_familiar_nom || ''}</td>
             </tr>
-        `).join('') || '<tr><td colspan="3" style="text-align:center;color:#94a3b8;">Cap resultat</td></tr>';
+        `).join('') || '<tr><td colspan="3" style="text-align:center;color:var(--color-text-soft);">Cap resultat</td></tr>';
 
         const perParams = new URLSearchParams({ limit: 10 });
         if (q) perParams.set('q', q);
         if (genere) perParams.set('genere', genere);
         if (barri) perParams.set('barri', barri);
-        const perRes = await fetch(`/client?${perParams}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const perRes = await authFetch(`/client?${perParams}`);
         const perData = await perRes.json();
         const persons = perData.rows || perData || [];
         document.getElementById('personResults').innerHTML = persons.map(p => `
@@ -103,8 +98,8 @@ async function search() {
                 <td>${p.Nom_genere || ''}</td>
                 <td>${p.Cognom_familiar || ''}</td>
             </tr>
-        `).join('') || '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">Cap resultat</td></tr>';
-    } catch (err) { console.error(err); }
+        `).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--color-text-soft);">Cap resultat</td></tr>';
+    } catch {}
 }
 
 renderSidebar('clients');

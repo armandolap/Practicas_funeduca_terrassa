@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Centre — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 <style>.projectes-section { margin-top: 24px; }</style>
 </head>
@@ -12,7 +16,7 @@
 <main class="main-content">
   <div id="centreDetail">
     <h1 id="centreNom"></h1>
-    <p id="adrecaCentre" style="color:#64748b;"></p>
+    <p id="adrecaCentre" style="color:var(--color-text-muted);"></p>
     <div style="display:flex;gap:8px;margin:12px 0;">
       <span class="badge badge-info" id="numProjectes"></span>
     </div>
@@ -33,38 +37,29 @@
 <script src="/js/sidebar.js"></script>
 <script>
 const centreId = new URLSearchParams(location.search).get('id');
-let searchTimeout;
-
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => loadProjectes(), 300);
-}
+const debounceSearch = debounce(() => loadProjectes(), 300);
 
 async function loadCentre() {
     if (!requireAuth() || !centreId) return;
     try {
-        const res = await fetch(`/centre-activitats/${centreId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/centre-activitats/${centreId}`);
         const c = await res.json();
         if (!c) { document.getElementById('centreDetail').innerHTML = '<p>Centre no trobat</p>'; return; }
         document.getElementById('centreNom').textContent = c.nom_centre_activitats || '';
         document.getElementById('adrecaCentre').textContent = `${c.tipus_via || ''} ${c.Nom_calle || ''}, ${c.Num_calle || ''}${c.Pis ? ', ' + c.Pis : ''}${c.Escala ? ' ' + c.Escala : ''} — ${c.barri || ''} (${c.codi_postal || ''})`;
         document.getElementById('numProjectes').textContent = `${c.num_projectes || 0} projectes`;
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 async function loadProjectes() {
     if (!requireAuth() || !centreId) return;
     const q = document.getElementById('searchQ').value.trim();
     try {
-        const res = await fetch(`/projectes/centre/${centreId}?q=${encodeURIComponent(q)}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/projectes/centre/${centreId}?q=${encodeURIComponent(q)}`);
         const data = await res.json();
         const tbody = document.getElementById('projectesList');
         if (!data.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha projectes en aquest centre</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--color-text-soft);">No hi ha projectes en aquest centre</td></tr>';
             return;
         }
         tbody.innerHTML = data.map(p => {
@@ -84,7 +79,7 @@ async function loadProjectes() {
                 <td><span class="badge ${cls}">${estat}</span></td>
             </tr>`;
         }).join('');
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 renderSidebar('centres');

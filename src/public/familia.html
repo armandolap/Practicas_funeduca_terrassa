@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Família — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -18,9 +22,7 @@ const familyId = new URLSearchParams(location.search).get('id');
 async function loadFamily() {
     if (!requireAuth()) return;
     try {
-        const res = await fetch(`/familia/${familyId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
+        const res = await authFetch(`/familia/${familyId}`);
         const f = await res.json();
         if (!f || !f.idFamilia) {
             document.getElementById('familyContent').innerHTML = '<p>Família no trobada</p>';
@@ -39,9 +41,9 @@ async function loadFamily() {
                 ${(f.domicilis || []).map(d => `
                     <div style="padding:8px 0;border-bottom:1px solid #f1f5f9;">
                         <a href="/domicili.html?id=${d.idDomicili}">${d.tipus_via || ''} ${d.Nom_calle || ''}, ${d.Num_calle || ''}${d.Pis ? `, ${d.Pis}${d.Escala ? ` ${d.Escala}` : ''}` : ''}</a>
-                        <span style="font-size:12px;color:#64748b;margin-left:8px;">(${d.Nom_domicili || ''})</span>
+                        <span style="font-size:var(--fs-xs);color:var(--color-text-muted);margin-left:8px;">(${d.Nom_domicili || ''})</span>
                     </div>
-                `).join('') || '<p style="color:#94a3b8;">Sense domicilis</p>'}
+                `).join('') || '<p style="color:var(--color-text-soft);">Sense domicilis</p>'}
             </div>
 
             <div class="card">
@@ -58,7 +60,7 @@ async function loadFamily() {
                                 <td>${m.Nom_genere || ''}</td>
                                 <td>${m.num_projectes || 0}</td>
                             </tr>
-                        `).join('') || '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">Sense membres</td></tr>'}
+                        `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--color-text-soft);">Sense membres</td></tr>'}
                     </tbody>
                 </table>
             </div>
@@ -67,10 +69,10 @@ async function loadFamily() {
                 <h3>Projectes familiars</h3>
                 ${(f.projectes || []).map(p => `
                     <div style="padding:6px 0;"><a href="/projecte.html?id=${p.idProyecto}">${p.Nom_projecte || ''}</a></div>
-                `).join('') || '<p style="color:#94a3b8;">Cap projecte</p>'}
+                `).join('') || '<p style="color:var(--color-text-soft);">Cap projecte</p>'}
             </div>
         `;
-    } catch (err) { console.error(err); document.getElementById('familyContent').innerHTML = '<p>Error carregant família</p>'; }
+    } catch (err) { document.getElementById('familyContent').innerHTML = '<p>Error carregant família</p>'; }
 }
 
 renderSidebar('families');

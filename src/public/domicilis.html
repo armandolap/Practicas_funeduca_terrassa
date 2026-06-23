@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Domicilis — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -32,14 +36,14 @@ const PAGE_SIZE = 15;
 async function loadFilterOptions() {
     try {
         const [tipRes, barriRes] = await Promise.all([
-            fetch('/tipusDom', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-            fetch('/barri', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+            authFetch('/tipusDom'),
+            authFetch('/barri')
         ]);
         const tipus = await tipRes.json();
         const barris = await barriRes.json();
         document.getElementById('tipusFilter').innerHTML = '<option value="">Tots</option>' + tipus.map(t => `<option value="${t.idTipus_domicili}">${t.Nom_domicili}</option>`).join('');
         document.getElementById('barriFilter').innerHTML = '<option value="">Tots</option>' + barris.map(b => `<option value="${b.idBarri}">${b.Nom}</option>`).join('');
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 async function loadDomicilis() {
@@ -51,13 +55,13 @@ async function loadDomicilis() {
     if (barri) params.set('barri', barri);
 
     try {
-        const res = await fetch(`/domicili?${params}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const res = await authFetch(`/domicili?${params}`);
         const data = await res.json();
         const rows = data.rows || data || [];
         const total = data.total || rows.length;
         const tbody = document.getElementById('domiciliList');
         if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha domicilis</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--color-text-soft);">No hi ha domicilis</td></tr>';
             document.getElementById('pagination').innerHTML = '';
             return;
         }
@@ -70,12 +74,8 @@ async function loadDomicilis() {
             </tr>
         `).join('');
         const totalPages = Math.ceil(total / PAGE_SIZE);
-        document.getElementById('pagination').innerHTML = `
-            <button onclick="goPage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>Anterior</button>
-            <span>Pàg ${currentPage + 1} de ${totalPages || 1}</span>
-            <button onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Següent</button>
-        `;
-    } catch (err) { console.error(err); }
+        renderPagination('pagination', currentPage, totalPages, 'goPage');
+    } catch {}
 }
 
 function goPage(page) { if (page < 0) return; currentPage = page; loadDomicilis(); }

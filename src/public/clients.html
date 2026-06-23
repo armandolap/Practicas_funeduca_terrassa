@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Persones — FunEduca CRM</title>
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
@@ -45,19 +49,14 @@
 <script>
 let currentPage = 0;
 const PAGE_SIZE = 15;
-let searchTimeout;
-
-function debounceSearch() {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => { currentPage = 0; loadClients(); }, 300);
-}
+const debounceSearch = debounce(() => { currentPage = 0; loadClients(); }, 300);
 
 async function loadFilterOptions() {
     try {
         const [genRes, famRes, barriRes] = await Promise.all([
-            fetch('/genere', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-            fetch('/familia', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
-            fetch('/barri', { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+            authFetch('/genere'),
+            authFetch('/familia'),
+            authFetch('/barri')
         ]);
         const generes = await genRes.json();
         const families = await famRes.json();
@@ -71,7 +70,7 @@ async function loadFilterOptions() {
 
         const barriSel = document.getElementById('barriFilter');
         barriSel.innerHTML = '<option value="">Tots</option>' + barris.map(b => `<option value="${b.idBarri}">${b.Nom}</option>`).join('');
-    } catch (e) { console.error(e); }
+    } catch {}
 }
 
 async function loadClients() {
@@ -94,13 +93,13 @@ async function loadClients() {
     }
 
     try {
-        const res = await fetch(`/client?${params}`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+        const res = await authFetch(`/client?${params}`);
         const data = await res.json();
         const rows = data.rows || data || [];
         const total = data.total || rows.length;
         const tbody = document.getElementById('clientList');
         if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">No hi ha persones</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--color-text-soft);">No hi ha persones</td></tr>';
             document.getElementById('pagination').innerHTML = '';
             return;
         }
@@ -111,16 +110,13 @@ async function loadClients() {
                 <td>${c.C_edad || 0}</td>
                 <td>${c.Nom_genere || ''}</td>
                 <td>${c.Cognom_familiar || ''}</td>
-                <td style="font-size:12px;color:#64748b;">${c.projectes || ''}</td>
+                <td style="font-size:var(--fs-xs);color:var(--color-text-muted);">${c.projectes || ''}</td>
             </tr>
         `).join('');
 
         const totalPages = Math.ceil(total / PAGE_SIZE);
-        let pagHtml = `<button onclick="goPage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>Anterior</button>`;
-        pagHtml += `<span>Pàg ${currentPage + 1} de ${totalPages || 1} (${total} total)</span>`;
-        pagHtml += `<button onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Següent</button>`;
-        document.getElementById('pagination').innerHTML = pagHtml;
-    } catch (err) { console.error(err); }
+        renderPagination('pagination', currentPage, totalPages, 'goPage', total);
+    } catch {}
 }
 
 function goPage(page) {

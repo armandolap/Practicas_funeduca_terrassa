@@ -1,8 +1,16 @@
 const repo = require("../repositories/reports");
 
+// L'any lectiu (idCurs_lectiu) arriba per query string i és opcional.
+function getAnyLectiu(req) {
+    const v = req.query.anyLectiu;
+    if (v === undefined || v === null || v === "") return null;
+    const n = parseInt(v);
+    return Number.isFinite(n) ? n : null;
+}
+
 async function getProjectesGeneresEdats(req, res) {
     try {
-        const data = await repo.projectesGeneresEdats();
+        const data = await repo.projectesGeneresEdats(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -12,7 +20,7 @@ async function getProjectesGeneresEdats(req, res) {
 
 async function getGenere(req, res) {
     try {
-        const data = await repo.genere();
+        const data = await repo.genere(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -22,7 +30,7 @@ async function getGenere(req, res) {
 
 async function getSitEco(req, res) {
     try {
-        const data = await repo.sitEco();
+        const data = await repo.sitEco(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -32,7 +40,7 @@ async function getSitEco(req, res) {
 
 async function getRolFam(req, res) {
     try {
-        const data = await repo.rolFam();
+        const data = await repo.rolFam(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -42,7 +50,7 @@ async function getRolFam(req, res) {
 
 async function getTipHab(req, res) {
     try {
-        const data = await repo.tipHab();
+        const data = await repo.tipHab(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -52,7 +60,7 @@ async function getTipHab(req, res) {
 
 async function getCont(req, res) {
     try {
-        const data = await repo.cont();
+        const data = await repo.cont(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -62,7 +70,7 @@ async function getCont(req, res) {
 
 async function getNeses(req, res) {
     try {
-        const data = await repo.neses();
+        const data = await repo.neses(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -72,7 +80,7 @@ async function getNeses(req, res) {
 
 async function getSebasDev(req, res) {
     try {
-        const data = await repo.sebasDev();
+        const data = await repo.sebasDev(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -92,7 +100,7 @@ async function getCursAny(req, res) {
 
 async function getCursAcademic(req, res) {
     try {
-        const data = await repo.cursAcademic();
+        const data = await repo.cursAcademic(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -102,7 +110,7 @@ async function getCursAcademic(req, res) {
 
 async function getResAcad(req, res) {
     try {
-        const data = await repo.resAcad();
+        const data = await repo.resAcad(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -112,7 +120,7 @@ async function getResAcad(req, res) {
 
 async function getMotiusBaixa(req, res) {
     try {
-        const data = await repo.motiusBaixa();
+        const data = await repo.motiusBaixa(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -122,7 +130,7 @@ async function getMotiusBaixa(req, res) {
 
 async function getRiscos(req, res) {
     try {
-        const data = await repo.riscos();
+        const data = await repo.riscos(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);
@@ -132,7 +140,7 @@ async function getRiscos(req, res) {
 
 async function getPaisos(req, res) {
     try {
-        const data = await repo.paisos();
+        const data = await repo.paisos(getAnyLectiu(req));
         res.json(data);
     } catch (error) {
         console.error(error);

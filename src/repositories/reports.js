@@ -1,7 +1,24 @@
 const { createPool } = require("../config/database");
 const pool = createPool();
 
-async function projectesGeneresEdats() {
+// Subconsulta reutilitzable: restringeix els clients als inscrits en algun
+// projecte amb l'any lectiu (idCurs_lectiu) indicat. `alias` és l'àlies de la
+// taula client a la query. Retorna { clause, params } per concatenar al WHERE.
+function anyLectiuFilter(alias, anyLectiu) {
+    if (!anyLectiu) return { clause: "", params: [] };
+    return {
+        clause: ` AND ${alias}.idClient IN (
+            SELECT phc_f.idClient FROM proyectos_has_client phc_f
+            JOIN proyectos pr_f ON phc_f.idProyecto = pr_f.idProyecto
+            WHERE pr_f.idCurs_lectiu = ?
+        )`,
+        params: [anyLectiu]
+    };
+}
+
+async function projectesGeneresEdats(anyLectiu) {
+    const f = anyLectiu ? ` AND p.idCurs_lectiu = ?` : "";
+    const fp = anyLectiu ? [anyLectiu] : [];
     const [rows] = await pool.query(`
         SELECT p.idProyecto, p.Nom_projecte,
                g.Nom_genere, cl.C_edad,
@@ -10,8 +27,9 @@ async function projectesGeneresEdats() {
         JOIN proyectos_has_client phc ON p.idProyecto = phc.idProyecto
         JOIN client cl ON phc.idClient = cl.idClient
         JOIN genere g ON cl.idGenere = g.idGenere
+        WHERE 1=1${f}
         ORDER BY p.Nom_projecte, cl.C_edad
-    `);
+    `, fp);
 
     const ageSegment = (edad) => {
         if (edad >= 0 && edad <= 3) return '0-3 ANYS';
@@ -58,28 +76,31 @@ async function projectesGeneresEdats() {
     return Array.from(projectMap.values());
 }
 
-async function genere() {
+async function genere(anyLectiu) {
+    const f = anyLectiuFilter("cl", anyLectiu);
     const [rows] = await pool.query(`
         SELECT g.Nom_genere, COUNT(*) AS total
         FROM client cl
         JOIN genere g ON cl.idGenere = g.idGenere
+        WHERE 1=1${f.clause}
         GROUP BY g.Nom_genere
-    `);
+    `, f.params);
     return rows;
 }
 
-async function sitEco() {
+async function sitEco(anyLectiu) {
+    const f = anyLectiuFilter("cl", anyLectiu);
     const [rows] = await pool.query(`
         SELECT se.idSituacio_economica, se.Nom AS situacio_economica,
                SUM(CASE WHEN r.idRol = 3 THEN 1 ELSE 0 END) AS fills,
                SUM(CASE WHEN r.idRol != 3 THEN 1 ELSE 0 END) AS resta,
                COUNT(cl.idClient) AS total
         FROM situacio_economica se
-        LEFT JOIN client cl ON cl.idSituacio_economica = se.idSituacio_economica
+        LEFT JOIN client cl ON cl.idSituacio_economica = se.idSituacio_economica${f.clause}
         LEFT JOIN rol r ON cl.idRol = r.idRol
         GROUP BY se.idSituacio_economica, se.Nom
         ORDER BY se.idSituacio_economica
-    `);
+    `, f.params);
     return rows.map(r => ({
         'SITUACIÓ ECONÒMICA': r.situacio_economica,
         'FILLS/FILLES': Number(r.fills),
@@ -88,43 +109,64 @@ async function sitEco() {
     }));
 }
 
-async function rolFam() {
+async function rolFam(anyLectiu) {
+    const f = anyLectiuFilter("cl", anyLectiu);
     const [rows] = await pool.query(`
         SELECT r.Nom_rol, COUNT(*) AS total
         FROM client cl
         JOIN rol r ON cl.idRol = r.idRol
+        WHERE 1=1${f.clause}
         GROUP BY r.Nom_rol
-    `);
+    `, f.params);
     return rows;
 }
 
-async function tipHab() {
+async function tipHab(anyLectiu) {
+    const f = anyLectiu ? ` AND d.idDomicili IN (
+            SELECT cl_f.idDomicili FROM client cl_f
+            WHERE cl_f.idClient IN (
+                SELECT phc_f.idClient FROM proyectos_has_client phc_f
+                JOIN proyectos pr_f ON phc_f.idProyecto = pr_f.idProyecto
+                WHERE pr_f.idCurs_lectiu = ?
+            )
+        )` : "";
+    const fp = anyLectiu ? [anyLectiu] : [];
     const [rows] = await pool.query(`
         SELECT td.Nom_domicili, COUNT(*) AS total
         FROM domicili d
         JOIN tipus_domicili td ON d.Tipus_domicili = td.idTipus_domicili
+        WHERE 1=1${f}
         GROUP BY td.Nom_domicili
         ORDER BY total DESC
-    `);
+    `, fp);
     return rows;
 }
 
-async function cont() {
+async function cont(anyLectiu) {
+    const f = anyLectiuFilter("cl", anyLectiu);
     const [genderRows] = await pool.query(`
         SELECT g.idGenere, COUNT(cl.idClient) AS total
         FROM genere g
-        LEFT JOIN client cl ON cl.idGenere = g.idGenere
+        LEFT JOIN client cl ON cl.idGenere = g.idGenere${f.clause}
         GROUP BY g.idGenere
         ORDER BY g.idGenere
-    `);
+    `, f.params);
     const [baixesRows] = await pool.query(`
         SELECT g.idGenere, COUNT(cl.idClient) AS total
         FROM genere g
-        LEFT JOIN client cl ON cl.idGenere = g.idGenere AND cl.Baixa = 1
+        LEFT JOIN client cl ON cl.idGenere = g.idGenere AND cl.Baixa = 1${f.clause}
         GROUP BY g.idGenere
         ORDER BY g.idGenere
-    `);
-    const [[famTotal]] = await pool.query(`SELECT COUNT(*) AS total FROM familia`);
+    `, f.params);
+    const famFilter = anyLectiu ? ` WHERE f.idFamilia IN (
+            SELECT cl_f.idFamilia FROM client cl_f
+            WHERE cl_f.idClient IN (
+                SELECT phc_f.idClient FROM proyectos_has_client phc_f
+                JOIN proyectos pr_f ON phc_f.idProyecto = pr_f.idProyecto
+                WHERE pr_f.idCurs_lectiu = ?
+            )
+        )` : "";
+    const [[famTotal]] = await pool.query(`SELECT COUNT(*) AS total FROM familia f${famFilter}`, anyLectiu ? [anyLectiu] : []);
 
     const toCounts = (rows) => {
         const home = Number(rows.find(r => r.idGenere === 1)?.total || 0);
@@ -143,7 +185,8 @@ async function cont() {
     ];
 }
 
-async function neses() {
+async function neses(anyLectiu) {
+    const f = anyLectiuFilter("cl", anyLectiu);
     const [rows] = await pool.query(`
         SELECT ne.idNecessitat_especial, ne.Nom_necessitat,
                SUM(CASE WHEN g.Nom_genere = 'Masculí' THEN 1 ELSE 0 END) AS homes,
@@ -151,11 +194,11 @@ async function neses() {
                SUM(CASE WHEN g.Nom_genere = 'Non binari' THEN 1 ELSE 0 END) AS nb,
                COUNT(cl.idClient) AS total
         FROM necessitats_especials ne
-        LEFT JOIN client cl ON cl.idNecessitat_especial = ne.idNecessitat_especial
+        LEFT JOIN client cl ON cl.idNecessitat_especial = ne.idNecessitat_especial${f.clause}
         LEFT JOIN genere g ON cl.idGenere = g.idGenere
         GROUP BY ne.idNecessitat_especial, ne.Nom_necessitat
         ORDER BY ne.idNecessitat_especial
-    `);
+    `, f.params);
 
     const result = rows.map(r => ({
         'NESE': r.Nom_necessitat,
@@ -176,16 +219,17 @@ async function neses() {
     return result;
 }
 
-async function sebasDev() {
+async function sebasDev(anyLectiu) {
+    const f = anyLectiuFilter("cl", anyLectiu);
     const [rows] = await pool.query(`
         SELECT s.idSebas, s.Nom,
                COUNT(cl.idClient) AS ambSeguiment,
                SUM(CASE WHEN cl.derivacio_serveis_socials = 1 THEN 1 ELSE 0 END) AS derivacions
         FROM sebas s
-        LEFT JOIN client cl ON cl.idSebas = s.idSebas
+        LEFT JOIN client cl ON cl.idSebas = s.idSebas${f.clause}
         GROUP BY s.idSebas, s.Nom
         ORDER BY s.idSebas
-    `);
+    `, f.params);
 
     const result = rows.map(r => ({
         'SEBAS': r.Nom,
@@ -228,21 +272,27 @@ async function cursAny(any) {
     }));
 }
 
-async function cursAcademic() {
+async function cursAcademic(anyLectiu) {
+    const f = anyLectiuFilter("cl", anyLectiu);
     const [rows] = await pool.query(`
         SELECT ca.idCurs_actual, ca.Nom AS curs,
-               COUNT(cl.idClient) AS totals,
+               SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%promociona%'
+                          OR ra.Nom_resultat_acad LIKE '%repeteix%'
+                          OR ra.Nom_resultat_acad LIKE '%abandona%'
+                          OR ra.Nom_resultat_acad LIKE '%plaça%'
+                          OR ra.Nom_resultat_acad LIKE '%laboral%' THEN 1 ELSE 0 END) AS totals,
                SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%promociona%' THEN 1 ELSE 0 END) AS promociona,
                SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%repeteix%' THEN 1 ELSE 0 END) AS repeteix,
                SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%abandona%' THEN 1 ELSE 0 END) AS abandona,
                SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%plaça%' THEN 1 ELSE 0 END) AS sense_placa,
                SUM(CASE WHEN ra.Nom_resultat_acad LIKE '%laboral%' THEN 1 ELSE 0 END) AS mon_laboral
         FROM curs_actual ca
-        LEFT JOIN client cl ON cl.Curs_actual = ca.idCurs_actual
+        LEFT JOIN client cl ON cl.Curs_actual = ca.idCurs_actual${f.clause}
         LEFT JOIN resultat_academic ra ON cl.Resultat_academic = ra.idResultat_academic
+        WHERE ca.Nom <> 'No aplica'
         GROUP BY ca.idCurs_actual, ca.Nom
         ORDER BY ca.idCurs_actual
-    `);
+    `, f.params);
     const pct = (part, total) => total > 0 ? String(Math.round((part / total) * 100)) + '%' : '0%';
     const result = rows.map(r => ({
         'CURS ACTUAL': r.curs,
@@ -277,49 +327,73 @@ async function cursAcademic() {
     return result;
 }
 
-async function resAcad() {
+async function resAcad(anyLectiu) {
+    const f = anyLectiuFilter("cl", anyLectiu);
     const [rows] = await pool.query(`
         SELECT ra.Nom_resultat_acad, COUNT(*) AS total
         FROM client cl
         JOIN resultat_academic ra ON cl.Resultat_academic = ra.idResultat_academic
+        WHERE 1=1${f.clause}
         GROUP BY ra.Nom_resultat_acad
         ORDER BY total DESC
-    `);
+    `, f.params);
     return rows;
 }
 
-async function motiusBaixa() {
+async function motiusBaixa(anyLectiu) {
+    const f = anyLectiuFilter("cl", anyLectiu);
     const [rows] = await pool.query(`
         SELECT mb.Nom_motiu_baixa, COUNT(*) AS total
         FROM client cl
         JOIN motiu_baixa mb ON cl.Motiu_baixa = mb.idMotiu_baixa
-        WHERE cl.Baixa = 1
+        WHERE cl.Baixa = 1${f.clause}
         GROUP BY mb.Nom_motiu_baixa
         ORDER BY total DESC
-    `);
+    `, f.params);
     return rows;
 }
 
-async function riscos() {
+async function riscos(anyLectiu) {
+    const f = anyLectiuFilter("cl", anyLectiu);
     const [rows] = await pool.query(`
         SELECT r.Nivel, COUNT(*) AS total
         FROM client cl
         JOIN risc r ON cl.Risc = r.idRisc
+        WHERE 1=1${f.clause}
         GROUP BY r.Nivel
         ORDER BY r.Nivel
-    `);
+    `, f.params);
     return rows;
 }
 
-async function paisos() {
+async function paisos(anyLectiu) {
+    // Filtre opcional per any lectiu: només clients inscrits en projectes
+    // amb aquest idCurs_lectiu (s'aplica tant a naixement com a nacionalitat).
+    const sub = anyLectiu ? `
+        AND %ALIAS%.idClient IN (
+            SELECT phc_f.idClient FROM proyectos_has_client phc_f
+            JOIN proyectos pr_f ON phc_f.idProyecto = pr_f.idProyecto
+            WHERE pr_f.idCurs_lectiu = ?
+        )` : "";
+    const nascutsSub = sub.replace("%ALIAS%", "cl");
+    const nacSub = sub.replace("%ALIAS%", "n");
+    const params = anyLectiu ? [anyLectiu, anyLectiu] : [];
+
     const [rows] = await pool.query(`
-        SELECT p.Nom_pais AS pais_naixement, COUNT(*) AS total
-        FROM client cl
-        JOIN pais p ON cl.Pais_naixement = p.idPais
-        GROUP BY p.Nom_pais
-        ORDER BY total DESC
-    `);
-    return rows.map(r => ({ 'PAÍS DE NAIXEMENT': r.pais_naixement, 'TOTAL': Number(r.total) }));
+        SELECT p.Nom_pais AS pais,
+               (SELECT COUNT(*) FROM client cl
+                WHERE cl.Pais_naixement = p.idPais${nascutsSub}) AS nascuts,
+               (SELECT COUNT(*) FROM nacionalitat n
+                WHERE n.idPais = p.idPais${nacSub}) AS nacionalitat
+        FROM pais p
+        HAVING nascuts > 0 OR nacionalitat > 0
+        ORDER BY nascuts DESC, nacionalitat DESC
+    `, params);
+    return rows.map(r => ({
+        'PAÍS': r.pais,
+        'NASCUTS': Number(r.nascuts),
+        'NACIONALITAT': Number(r.nacionalitat)
+    }));
 }
 
 module.exports = {
