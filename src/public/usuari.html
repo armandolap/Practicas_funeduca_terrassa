@@ -29,11 +29,16 @@ async function loadUser() {
             return;
         }
         const s = u.stats || {};
+        const role = getRole();
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const isSelf = currentUser.idUsuario_APP == userId;
+        const canDelete = role === 1 && !isSelf;
 
         document.getElementById('userContent').innerHTML = `
             <a class="back-link" href="/usuaris.html">← Tornar</a>
             <div class="detail-header">
                 <h1>${u.Nom || ''} ${u.Cognoms || ''}</h1>
+                ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="deleteUser()" style="margin-left:12px;">Eliminar</button>` : ''}
                 <div class="subtitle">${u.nivel_acceso_nom || ''}</div>
             </div>
             <div class="info-row">
@@ -69,6 +74,24 @@ async function loadUser() {
             </div>
         `;
     } catch (err) { document.getElementById('userContent').innerHTML = '<p>Error carregant usuari</p>'; }
+}
+
+async function deleteUser() {
+    if (!await confirmModal(
+        'Eliminar aquest usuari permanentment?\n\nTambé es perdran totes les seves assignacions a projectes.',
+        { okText: 'Eliminar', cancelText: 'Cancel·lar' }
+    )) return;
+    try {
+        const res = await authFetch(`/usuario/${userId}`, { method: 'DELETE' });
+        if (res.ok) {
+            notifyAndRedirect('Usuari eliminat', '/usuaris.html', 'success');
+        } else {
+            const err = await res.json();
+            showToast(err.error || 'Error en eliminar usuari', 'error');
+        }
+    } catch (err) {
+        showToast('Error de connexió', 'error');
+    }
 }
 
 renderSidebar('usuaris');

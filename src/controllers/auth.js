@@ -40,7 +40,7 @@ async function login(req, res) {
                 email: user.email
             },
             JWT_SECRET,
-            { expiresIn: "24h" }
+            { expiresIn: "8h" }
         );
 
         res.json({
