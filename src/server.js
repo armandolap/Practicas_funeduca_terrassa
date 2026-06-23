@@ -95,7 +95,8 @@ server.use("/nivell-acces", nivelAcceso);
 
 async function ensureDatabase(bootstrap) {
     const dbName = process.env.DB_NAME;
-    await bootstrap.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+    try {
+        await bootstrap.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
     await bootstrap.query(`USE \`${dbName}\``);
     const [rows] = await bootstrap.query(
         `SELECT COUNT(*) AS cnt FROM information_schema.tables WHERE table_schema = ?`,
@@ -111,7 +112,9 @@ async function ensureDatabase(bootstrap) {
     await runSQLFile(bootstrap, path.join(__dirname, "sql", "inserts_tablas_estaticas.sql"));
     console.log("Ejecutando creacion de curso lectiu...");
     await runSQLFile(bootstrap, path.join(__dirname, "sql", "2026-06-22_add_curs_lectiu.sql"));
-}
+}catch(err){
+    console.log("Error extremo: ",err);
+}} 
 
 async function startServer() {
     try {

@@ -461,7 +461,6 @@ SET GLOBAL event_scheduler = ON;
     `Telefon` VARCHAR(45) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
     PRIMARY KEY (`idUsuario_APP`, `idNivel_acceso`),
-    UNIQUE INDEX `username_UNIQUE` (`username` ASC),
     INDEX `fk_usuario_app_Nivel_acceso1_idx` (`idNivel_acceso` ASC),
     CONSTRAINT `fk_usuario_app_Nivel_acceso1`
       FOREIGN KEY (`idNivel_acceso`)
