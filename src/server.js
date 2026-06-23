@@ -1,14 +1,14 @@
 const path = require("path");
 const fs = require("fs");
 const mysql = require("mysql2/promise");
-const dotenvPath = path.resolve(__dirname, "..", ".env");
+// const dotenvPath = path.resolve(__dirname, "..", ".env");
 
-if (!fs.existsSync(dotenvPath)) {
-    console.error("ERROR: No s'ha trobat el fitxer .env.");
-    process.exit(1);
-}
+// if (!fs.existsSync(dotenvPath)) {
+//     console.error("ERROR: No s'ha trobat el fitxer .env.");
+//     process.exit(1);
+// }
 
-require("dotenv").config({ path: dotenvPath });
+// require("dotenv").config({ path: dotenvPath });
 
 const express = require("express");
 const server = express();
