@@ -496,7 +496,7 @@ SET GLOBAL event_scheduler = ON;
 drop event if exists actualizar_tiempo_entidad_edad ;
 delimiter //
 create event actualizar_tiempo_entidad_edad
- on schedule every 1 minute 
+ on schedule every 1 day 
  STARTS CURRENT_TIMESTAMP
 on completion preserve
 enable
